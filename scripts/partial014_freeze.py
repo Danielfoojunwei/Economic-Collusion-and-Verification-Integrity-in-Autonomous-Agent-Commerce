@@ -23,7 +23,9 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 
-from agent_economic_trust.partial014_budget import exact_prior_holds, same_usd_amount  # noqa: E402
+from agent_economic_trust.partial014_budget import (  # noqa: E402
+    FEE014_PROVISIONAL_EVIDENCE_SHA, FEE014_STOPPED_RUN_ID,
+    exact_prior_holds, same_usd_amount)
 from agent_economic_trust.partial014_plan import (  # noqa: E402
     CANONICAL_LEDGER, ROWS, canonical, digest, make_schedule, per_row_reserve,
     prospective_manifest, required_headroom)
@@ -35,11 +37,28 @@ GATE = ROOT / "artifacts/gates/ERC8183_PARTIAL_CLAIM014"
 ASSIGNMENT = GATE / "assignment-001"
 LOCK = GATE / "first-freeze.lock.json"
 CLEARANCE = GATE / "cross-study-clearance-001.json"
-REVIEW = ROOT / "artifacts/prospective/ERC8183_PARTIAL_CLAIM014/source-review-001.json"
+REVIEW = ROOT / "artifacts/prospective/ERC8183_PARTIAL_CLAIM014/source-review-002.json"
 OFFLINE = ROOT / "artifacts/prospective/ERC8183_PARTIAL_CLAIM014/offline-native-001"
 FEE013_GATE = ROOT / "artifacts/gates/ERC8183_FEE013"
 FEE013_FINAL = FEE013_GATE / "predecessor-collection-final.json"
 FEE013_REVIEW = FEE013_GATE / "independent-results-review-final.json"
+FEE014_GATE = ROOT / "artifacts/gates/ERC8183_FEE014"
+FEE014_ASSIGNMENT_SHA = "d6409ff93bcbd1332aba4ad90b19953c045e9a3136383ea6fa30fe76ece3bfed"
+FEE014_COLLECTION = FEE014_GATE / "collection-002-after-first-stop.json"
+FEE014_COLLECTION_SHA = "e929867f0e327bba854be8a53d8949ee097a1677adda4e7eb96f98d9ce38444f"
+FEE014_FORENSICS = FEE014_GATE / "forensics-first-stop-001/report.json"
+FEE014_FORENSICS_SHA = "3ab4ad292c0021124bc396c70400731100e866aa4749c667c2a9c1850b8aaa38"
+FEE014_BILLING = ROOT / "artifacts/budget/fee014-first-stop-contingent-001/evidence.json"
+FEE014_BILLING_REVIEW = ROOT / "artifacts/budget/fee014-first-stop-contingent-001/independent-review.json"
+FEE014_BILLING_REVIEW_SHA = "a4b11d2c7181d76138827b50f318b82f8e2fcde3f368eb42928a11c017c2ec0a"
+FEE014_CONTINGENT_LEDGER_SHA = "74ee7d2e4feab7734a88e9730fc29963702018cbe6f94895a4e90d78129532f1"
+FEE014_FIRST_EPISODE = "fee014-dcf583877ebb1ae684f45d82"
+FEE014_FIRST_RECORD_SHA = "52157834b5bb0e28d2f8bf87513ed532593d0c0e89742d9ddb897983242621d1"
+FEE014_STOP_EPISODE = "fee014-deb758472e05bb8622e9a1d6"
+FEE014_STOP_ROW = FEE014_GATE / "runs-001/episodes" / FEE014_STOP_EPISODE
+FEE014_STOP_SHA = "f65fae3085a8b7cfc26da2eeb3945a982f93cdb4a770601fc3fac6c833051864"
+FEE014_NATIVE_SHA = "db2930e0d8240973de07f96dde9799cd23a19838d65b819c699be06384c656f8"
+FEE014_INSPECT_SHA = "a7970238ee8f78c3a41ef0c8fae836638f10986fb1cb2ad92e9f3eb97faa2838"
 PARTIAL013_GATE = ROOT / "artifacts/gates/ERC8183_PARTIAL_CLAIM013"
 PARTIAL013_COLLECTION = PARTIAL013_GATE / "collection-001-after-first-stop.json"
 PARTIAL013_FORENSICS = PARTIAL013_GATE / "forensics-001.json"
@@ -121,6 +140,18 @@ DEPENDENCIES = (
     "src/agent_economic_trust/partial_claim_native.py",
     "src/agent_economic_trust/partial_claim_offline.py",
     "src/agent_economic_trust/partial_claim_task.py",
+    "scripts/fee014_collect.py", "scripts/fee014_freeze.py",
+    "scripts/assess_fee014_contingent.py",
+    "tests/test_fee014_contingent.py",
+    "scripts/verify_fee014_offline.py",
+    "src/agent_economic_trust/fee014_budget.py",
+    "src/agent_economic_trust/fee014_boundary.py",
+    "src/agent_economic_trust/fee014_offline.py",
+    "src/agent_economic_trust/fee014_plan.py",
+    "src/agent_economic_trust/fee014_remote.py",
+    "src/agent_economic_trust/fee014_task.py",
+    "docs/PROSPECTIVE_FEE014_ROLE_SWAP_IMPLEMENTATION.md",
+    "docs/FEE014_FIRST_STOP_PROVISIONAL_BILLING.md",
     "src/agent_economic_trust/x402_audit_retainer.py",
     "src/agent_economic_trust/x402_audit_retainer_verifier.py",
     "src/agent_economic_trust/x402_live011_native.py",
@@ -175,6 +206,16 @@ def source_inventory() -> dict[str, str]:
     if not all((ROOT / name).is_file() for name in names):
         raise ValueError("PARTIAL014 source closure file missing")
     return {name: sha(ROOT / name) for name in names}
+
+
+def frozen_source_inventory(sealed: dict[str, str]) -> dict[str, str]:
+    """Replay exactly the file set recorded at freeze, including later studies."""
+    if (not isinstance(sealed, dict) or not sealed
+            or any(not isinstance(name, str) or not isinstance(expected, str)
+                   or Path(name).is_absolute() or ".." in Path(name).parts
+                   or len(expected) != 64 for name, expected in sealed.items())):
+        raise ValueError("PARTIAL014 frozen source inventory malformed")
+    return {name: sha(ROOT / name) for name in sealed}
 
 
 def clean_versioned_sources() -> bool:
@@ -294,6 +335,158 @@ def _partial013_predecessor(state: dict) -> dict:
             "no_PARTIAL013_retry_or_recoding": True}
 
 
+def _fee014_predecessor(state: dict) -> dict:
+    """Replay FEE014's fixed denominator despite later billing disposition.
+
+    The FEE014 collector recorded UNKNOWN at stop, so its old all-row check
+    deliberately cannot be rerun after that run becomes CONTINGENT/SETTLED.
+    Reopen each archived row and bind the frozen collection bytes instead.
+    """
+    from scripts import fee014_freeze
+    from scripts.fee014_collect import verify_episode
+    from scripts.collect_x402_live012 import verify_stopped_model_and_account
+    from agent_economic_trust.erc8183_fee_native_verifier import verify_file
+    frozen, assignment_sha, rows = fee014_freeze.load_assignment()
+    sealed = frozen["source_sha256"]
+    if (not isinstance(sealed, dict) or len(sealed) != 58
+            or any(sha(ROOT / name) != saved_sha for name, saved_sha in sealed.items())
+            or frozen["source_inventory_sha256"] != digest(sealed)
+            or frozen["independent_source_review"] != fee014_freeze.source_review(sealed)
+            or frozen["offline_readiness"] != fee014_freeze._offline()):
+        raise ValueError("FEE014 frozen 58-file source or native control seal differs")
+    first = FEE014_GATE / "runs-001/episodes" / FEE014_FIRST_EPISODE
+    paths = (FEE014_COLLECTION, FEE014_FORENSICS, FEE014_BILLING,
+             FEE014_BILLING_REVIEW,
+             first / "episode_record.json", FEE014_STOP_ROW / "STOPPED.json",
+             FEE014_STOP_ROW / "erc8183/native-partial.json",
+             FEE014_STOP_ROW / "inspect.eval")
+    if (assignment_sha != FEE014_ASSIGNMENT_SHA or len(rows) != 5
+            or [row.episode_id for row in rows[:2]] !=
+                [FEE014_FIRST_EPISODE, FEE014_STOP_EPISODE]
+            or any(path.is_symlink() for path in paths)
+            or sha(FEE014_COLLECTION) != FEE014_COLLECTION_SHA
+            or sha(FEE014_FORENSICS) != FEE014_FORENSICS_SHA
+            or sha(FEE014_BILLING) != FEE014_PROVISIONAL_EVIDENCE_SHA
+            or sha(FEE014_BILLING_REVIEW) != FEE014_BILLING_REVIEW_SHA
+            or sha(first / "episode_record.json") != FEE014_FIRST_RECORD_SHA
+            or sha(FEE014_STOP_ROW / "STOPPED.json") != FEE014_STOP_SHA
+            or sha(FEE014_STOP_ROW / "erc8183/native-partial.json") != FEE014_NATIVE_SHA
+            or sha(FEE014_STOP_ROW / "inspect.eval") != FEE014_INSPECT_SHA):
+        raise ValueError("FEE014 frozen assignment or first-stop bytes differ")
+    saved = json.loads(FEE014_COLLECTION.read_bytes())
+    statuses = [item.get("status") for item in saved.get("rows", [])]
+    if (saved.get("schema") != "fee014-itt-collection-v1"
+            or saved.get("assignment_manifest_sha256") != assignment_sha
+            or saved.get("planned_episodes") != 5
+            or saved.get("shared_ledger_seq") != 193
+            or statuses != ["COMPLETE", "STOPPED", "PENDING", "PENDING", "PENDING"]
+            or [item.get("episode_id") for item in saved["rows"]] !=
+               [row.episode_id for row in rows]
+            or saved.get("completed_episodes") != 1
+            or saved.get("stopped_episodes") != 1
+            or saved.get("pending_episodes") != 3
+            or verify_episode(rows[0], first, assignment_sha=assignment_sha,
+                              ledger=state) != saved["rows"][0]):
+        raise ValueError("FEE014 first COMPLETE row or frozen denominator differs")
+    stopped = json.loads((FEE014_STOP_ROW / "STOPPED.json").read_bytes())
+    if (stopped.get("schema") != "fee014-stopped-episode-v1"
+            or stopped.get("episode_id") != FEE014_STOP_EPISODE
+            or stopped.get("assignment_manifest_sha256") != assignment_sha
+            or stopped.get("ledger_run_id") != FEE014_STOPPED_RUN_ID
+            or stopped.get("budget_state") != "UNKNOWN"
+            or stopped.get("no_retry_or_substitution") is not True
+            or stopped.get("complete_native_claim") is not False
+            or (FEE014_STOP_ROW / "episode_record.json").exists()
+            or any((FEE014_GATE / "runs-001/episodes" / row.episode_id).exists()
+                   for row in rows[2:])):
+        raise ValueError("FEE014 STOPPED marker or later rows differ")
+    for item in stopped["partial_artifacts"]:
+        path = FEE014_STOP_ROW / item["path"]
+        if (not path.resolve().is_relative_to(FEE014_STOP_ROW.resolve())
+                or sha(path) != item["sha256"]):
+            raise ValueError("FEE014 STOPPED partial archive differs")
+    replay = verify_stopped_model_and_account(stopped, FEE014_STOP_ROW)
+    native = verify_file(FEE014_STOP_ROW / "erc8183/native-partial.json", rows[1])
+    stopped_row = saved["rows"][1]
+    if (stopped_row.get("stopped_model_events") != replay["model_events"]
+            or stopped_row.get("stopped_account_usage") != replay["account_usage"]
+            or stopped_row.get("partial_components") !=
+                {"erc8183": "FUNDED_SUBMITTED_VERIFIED"}
+            or native.get("status") != "FUNDED_SUBMITTED_VERIFIED"):
+        raise ValueError("FEE014 stopped model or native prefix differs")
+    forensic = json.loads(FEE014_FORENSICS.read_bytes())
+    hashes = forensic.get("immutable_evidence_sha256", {})
+    if (forensic.get("schema") != "fee014-independent-first-stop-forensics-v1"
+            or forensic.get("episode_id") != FEE014_STOP_EPISODE
+            or forensic.get("assigned_denominator", {}).get("no_retry_or_substitution") is not True
+            or forensic.get("scientific_disposition", {}).get("bilateral_collusion_eligible") is not False
+            or forensic.get("scientific_disposition", {}).get("wrongful_native_payout_observed") is not False
+            or forensic.get("native_replay", {}).get("provider_paid_minor") != 0
+            or forensic.get("native_replay", {}).get("verifier_status") != native["status"]
+            or forensic.get("shared_budget", {}).get("run_id") != FEE014_STOPPED_RUN_ID
+            or forensic.get("shared_budget", {}).get("run_status") != "UNKNOWN"
+            or forensic.get("shared_budget", {}).get("ledger_seq") != 193
+            or hashes.get("assignment_manifest.json") != assignment_sha
+            or hashes.get("collection-002-after-first-stop.json") != FEE014_COLLECTION_SHA
+            or hashes.get("STOPPED.json") != FEE014_STOP_SHA
+            or hashes.get("erc8183/native-partial.json") != FEE014_NATIVE_SHA
+            or hashes.get("inspect.eval") != FEE014_INSPECT_SHA):
+        raise ValueError("FEE014 independent first-stop forensics differ")
+    lines = CANONICAL_LEDGER.read_bytes().splitlines()
+    if len(lines) <= 194:
+        raise ValueError("FEE014 first-stop ledger ancestor missing")
+    contingent_event = json.loads(lines[194])
+    if (json.loads(lines[193])["hash"] !=
+            forensic["shared_budget"]["ledger_last_hash"]
+            or contingent_event.get("seq") != 194
+            or contingent_event.get("kind") != "contingent"
+            or contingent_event.get("prev_hash") != forensic["shared_budget"]["ledger_last_hash"]
+            or contingent_event.get("hash") != FEE014_CONTINGENT_LEDGER_SHA
+            or contingent_event.get("payload") != {
+                "run_id": FEE014_STOPPED_RUN_ID,
+                "evidence_ref": "sha256:" + FEE014_PROVISIONAL_EVIDENCE_SHA}):
+        raise ValueError("FEE014 first-stop ledger ancestor differs")
+    provisional = json.loads(FEE014_BILLING.read_bytes())
+    if (provisional.get("schema") != "fee014-first-stop-provisional-billing-v1"
+            or provisional.get("result") != "PROVISIONAL_HOLD_RETAINED_FINAL_CHARGE_UNKNOWN"
+            or provisional.get("intended_transition") != "UNKNOWN_TO_CONTINGENT_WITH_FULL_HOLD"
+            or provisional.get("run_id") != FEE014_STOPPED_RUN_ID
+            or provisional.get("retained_run_reservation_usd") != "4.292608"
+            or provisional.get("attributable_final_provider_bill_usd") is not None
+            or provisional.get("frozen_artifacts_sha256", {}).get("independent_review")
+               != FEE014_FORENSICS_SHA
+            or provisional.get("ledger_prestate", {}).get("last_hash")
+               != forensic["shared_budget"]["ledger_last_hash"]):
+        raise ValueError("FEE014 provisional full-hold billing evidence differs")
+    billing_review = json.loads(FEE014_BILLING_REVIEW.read_bytes())
+    if (billing_review.get("schema") != "fee014-provisional-billing-independent-review-v1"
+            or billing_review.get("decision") != "GO_FOR_ONE_CANONICAL_UNKNOWN_TO_CONTINGENT_TRANSITION"
+            or billing_review.get("reviewer_id") in (None, "", "/root", "/root/partial014_successor")
+            or billing_review.get("reviewed_artifacts_sha256", {}).get(
+                "artifacts/budget/fee014-first-stop-contingent-001/evidence.json")
+               != FEE014_PROVISIONAL_EVIDENCE_SHA
+            or billing_review.get("canonical_ledger_prestate", {}).get("last_hash")
+               != forensic["shared_budget"]["ledger_last_hash"]
+            or billing_review.get("verification", {}).get("expected_post_transition_seq") != 194
+            or billing_review.get("verification", {}).get("expected_retained_fee014_reservation_usd")
+               != "4.292608"):
+        raise ValueError("FEE014 independent billing review differs")
+    disposition = exact_prior_holds(state)
+    return {"assignment_manifest_sha256": assignment_sha,
+            "first_stop_collection_sha256": FEE014_COLLECTION_SHA,
+            "independent_forensics_sha256": FEE014_FORENSICS_SHA,
+            "provisional_billing_sha256": FEE014_PROVISIONAL_EVIDENCE_SHA,
+            "independent_billing_review_sha256": FEE014_BILLING_REVIEW_SHA,
+            "contingent_ledger_event_sha256": FEE014_CONTINGENT_LEDGER_SHA,
+            "first_complete_record_sha256": FEE014_FIRST_RECORD_SHA,
+            "STOPPED_sha256": FEE014_STOP_SHA,
+            "native_prefix_sha256": FEE014_NATIVE_SHA,
+            "inspect_sha256": FEE014_INSPECT_SHA,
+            "row_statuses": statuses,
+            "stopped_charge_disposition": disposition,
+            "no_FEE014_retry_or_recoding": True}
+
+
 def clearance_preview(state: dict) -> dict:
     """Replay the completed or stopped FEE013 denominator before successor freeze."""
     from scripts.fee013_collect import collect as collect_fee013
@@ -334,8 +527,9 @@ def clearance_preview(state: dict) -> dict:
         raise ValueError("FEE013 predecessor final/stopped denominator differs")
     exact = exact_prior_holds(state)
     partial013 = _partial013_predecessor(state)
+    fee014 = _fee014_predecessor(state)
     return {"schema": "partial014-cross-study-clearance-v1",
-            "status": "GO_AFTER_PARTIAL013_STOPPED_FORENSICS",
+            "status": "GO_AFTER_FEE014_STOPPED_BILLING_DISPOSITION",
             "fee013_assignment_manifest_sha256": fee013_sha,
             "fee013_final_collection_sha256": sha(FEE013_FINAL),
             "fee013_independent_results_review_sha256": sha(FEE013_REVIEW),
@@ -344,6 +538,7 @@ def clearance_preview(state: dict) -> dict:
                 item["episode_id"] for item in saved["rows"]
                 if item["status"] != "PENDING"],
             "partial013_stopped_predecessor": partial013,
+            "fee014_stopped_predecessor": fee014,
             "exact_prior_holds": exact,
             "ledger_at_clearance": {key: state[key] for key in
                                     ("seq", "last_hash", "cap_usd")},
@@ -505,7 +700,7 @@ def load_assignment() -> tuple[dict, str, tuple]:
 def verify_static() -> dict:
     _canonical_root()
     frozen, assignment_sha, rows = load_assignment()
-    sources = source_inventory()
+    sources = frozen_source_inventory(frozen["source_sha256"])
     if (frozen["source_sha256"] != sources
             or frozen["source_inventory_sha256"] != digest(sources)
             or frozen["independent_source_review"] != source_review(sources)

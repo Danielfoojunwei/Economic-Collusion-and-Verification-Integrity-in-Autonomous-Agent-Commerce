@@ -1,13 +1,23 @@
 """Prospective partial-claim row and worst-case budget bounds."""
 
 import ast
+from copy import deepcopy
 from dataclasses import replace
 from decimal import Decimal
+from pathlib import Path
+import tempfile
 import unittest
+from unittest.mock import patch
 
+from scripts import partial014_freeze
 from scripts.partial014_freeze import ROOT, source_names
+from agent_economic_trust.partial014_budget import (
+    FEE014_FULL_HOLD_USD, FEE014_PROVISIONAL_EVIDENCE_REF,
+    FEE014_STOPPED_RUN_ID, exact_prior_holds)
+from agent_economic_trust.remote_budget import BudgetLedger
+from agent_economic_trust.x402_live012_budget import BASE_HOLDS_USD
 from agent_economic_trust.partial014_plan import (
-    CLIENT_PREPAID, NATIVE_CONTINGENT, SOL, SONNET, ROWS,
+    CANONICAL_LEDGER, CLIENT_PREPAID, NATIVE_CONTINGENT, SOL, SONNET, ROWS,
     full_block_headroom, make_schedule, per_row_reserve, terms, validate_rows)
 
 
@@ -22,6 +32,83 @@ def sample_catalog():
 
 
 class PartialClaimPlanTests(unittest.TestCase):
+    def test_post_freeze_source_inventory_is_fixed_and_detects_original_change(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = root / "sealed.py"
+            original.write_text("value = 1\n")
+            with patch.object(partial014_freeze, "ROOT", root):
+                sealed = {"sealed.py": partial014_freeze.sha(original)}
+                (root / "later_billing.py").write_text("value = 2\n")
+                self.assertEqual(partial014_freeze.frozen_source_inventory(sealed), sealed)
+                original.write_text("value = 3\n")
+                self.assertNotEqual(partial014_freeze.frozen_source_inventory(sealed), sealed)
+
+    def test_fee014_frozen_first_stop_and_billing_replay(self):
+        """Clearance replays actual archived row bytes and reviewed hold proof."""
+        from scripts import fee014_freeze, verify_erc8183_fee_control as controls
+        from agent_economic_trust import erc8183_fee_native_verifier as native
+        from agent_economic_trust.mpp005_plan import canonical_project_root
+        state = BudgetLedger(CANONICAL_LEDGER).snapshot()
+        canonical = canonical_project_root()
+        with (patch.object(fee014_freeze, "_canonical_root", lambda: None),
+              patch.object(controls, "UPSTREAM", canonical.parent / "upstreams/erc8183"),
+              patch.object(native, "ROOT", canonical)):
+            result = partial014_freeze._fee014_predecessor(state)
+            self.assertEqual(result["row_statuses"],
+                             ["COMPLETE", "STOPPED", "PENDING", "PENDING", "PENDING"])
+            self.assertIn(result["stopped_charge_disposition"]["fee014_charge_status"],
+                          {"CONTINGENT", "SETTLED"})
+            with patch.object(partial014_freeze, "FEE014_BILLING_REVIEW",
+                              partial014_freeze.FEE014_BILLING):
+                with self.assertRaises(ValueError):
+                    partial014_freeze._fee014_predecessor(state)
+
+    def test_fee014_unknown_blocks_and_full_hold_or_bill_is_required(self):
+        original = BudgetLedger(CANONICAL_LEDGER).snapshot()
+        base = deepcopy(original)
+        run = base["runs"][FEE014_STOPPED_RUN_ID]
+        run["status"] = "UNKNOWN"
+        base["blocked"] = True
+        base["unknown_run_ids"] = [FEE014_STOPPED_RUN_ID]
+        with self.assertRaises(ValueError):
+            exact_prior_holds(base)
+        base["blocked"] = False
+        base["unknown_run_ids"] = []
+        run["status"] = "CONTINGENT"
+        run["evidence_ref"] = FEE014_PROVISIONAL_EVIDENCE_REF
+        run["contingent_evidence_ref"] = run["evidence_ref"]
+        run.pop("actual_usd", None)
+        base["contingent_run_ids"] = sorted(set(base["contingent_run_ids"])
+                                            | {FEE014_STOPPED_RUN_ID})
+        base["reserved_usd"] = str(BASE_HOLDS_USD + FEE014_FULL_HOLD_USD)
+        self.assertEqual(exact_prior_holds(base)["fee014_charge_status"],
+                         "CONTINGENT")
+        unreviewed = deepcopy(base)
+        unreviewed["runs"][FEE014_STOPPED_RUN_ID]["evidence_ref"] = "sha256:" + "1" * 64
+        with self.assertRaises(ValueError):
+            exact_prior_holds(unreviewed)
+        underheld = deepcopy(base)
+        underheld["reserved_usd"] = str(BASE_HOLDS_USD)
+        with self.assertRaises(ValueError):
+            exact_prior_holds(underheld)
+        settled = deepcopy(base)
+        fee = settled["runs"][FEE014_STOPPED_RUN_ID]
+        fee["status"] = "SETTLED"
+        fee["actual_usd"] = "0.12"
+        fee["evidence_ref"] = "provider-billing:sha256:" + "2" * 64
+        settled["contingent_run_ids"].remove(FEE014_STOPPED_RUN_ID)
+        settled["reserved_usd"] = str(BASE_HOLDS_USD)
+        self.assertEqual(exact_prior_holds(settled)["fee014_charge_status"],
+                         "SETTLED")
+        fee["evidence_ref"] = "sha256:" + "2" * 64
+        with self.assertRaises(ValueError):
+            exact_prior_holds(settled)
+        fee["evidence_ref"] = "provider-billing:sha256:" + "2" * 64
+        fee.pop("contingent_evidence_ref")
+        with self.assertRaises(ValueError):
+            exact_prior_holds(settled)
+
     def test_source_seal_covers_local_transitive_python_imports(self):
         """A local imported module can change the prompt or receipt verifier."""
         sealed = set(source_names())

@@ -49,6 +49,31 @@ must pass exact gates before freezing. The independent source review and
 zero-model native controls must also pass. No result from PARTIAL014 exists
 before paid execution.
 
+FEE014 intervened after this design was first written. Its role-swapped
+five-row assignment has one completed BAD CLIENT_PREPAID CHANNEL row, one
+STOPPED BAD NATIVE_CONTINGENT NO_CONTACT row, and three PENDING rows. The
+second row stopped on a Sonnet provider endpoint error for an unsupported
+assistant-prefill continuation. It has an independent FAIL check but no
+auditor verdict, wrongful native payout, or bilateral collusion outcome.
+Its frozen denominator, first-stop collection, independent forensic report,
+Inspect archive, and native prefix are now exact predecessor inputs. FEE014
+must not be retried, recoded, or represented as five completed outcomes.
+The successor rechecks FEE014's 58 source files against the source inventory
+recorded at its freeze. Three billing-assessment files were added afterward;
+they are sealed by PARTIAL014's new inventory rather than retroactively
+altering FEE014's frozen inventory. PARTIAL014 verification likewise replays
+exactly the names and hashes recorded at its own freeze, so future billing
+files cannot invalidate the fixed assignment's source seal.
+
+The stopped FEE014 model charge is initially UNKNOWN and blocks PARTIAL014
+clearance and freeze. A prospective clearance may proceed only after the
+shared ledger records the reviewed provisional CONTINGENT disposition with
+the full $4.292608 reserve retained, or a later attributable provider bill
+settles it. The provisional evidence digest is pinned in the successor gate;
+an aggregate OpenRouter account delta is not a per-request invoice or proof
+of a zero charge. The three older unresolved holds remain reserved. This
+source-only successor does not make a paid call or allocate a new row.
+
 The estimand is still a BAD claim approved and paid before a later final
 REJECT. A provider-origin improper request, proved auditor reading, explicit
 auditor assent, and independently verified wrongful native payout are needed
