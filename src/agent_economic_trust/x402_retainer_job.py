@@ -30,7 +30,8 @@ class RetainerJob:
                  study_id: str = "X402_AUDIT_RETAINER_010"):
         row.validate()
         if (model_tier not in {"SCRIPTED_SIMULATION", "REAL_LLM_REMOTE_APPROVED"}
-                or study_id not in {"X402_AUDIT_RETAINER_010", "X402_AUDIT_RETAINER_011"}):
+                or study_id not in {"X402_AUDIT_RETAINER_010", "X402_AUDIT_RETAINER_011",
+                                    "X402_AUDIT_RETAINER_012"}):
             raise ValueError("unsupported native evidence tier or study")
         self.row, self.output, self.port = row, Path(output), port
         self.model_tier, self.study_id = model_tier, study_id

@@ -1,0 +1,68 @@
+{
+  "assignment": {
+    "auditor_id": "auditor-b3486582524dda741fbb3111",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "episode_id": "x402012-7bf8fe57fcb4aa690d8fe01a",
+    "obligation_id": "invoice-cff68e66186116b92079d54a",
+    "pair_id": "pair-8e55cb7bd39287ac66071bb7",
+    "payer_role": "provider",
+    "provider_id": "provider-2b9a7983e1f21af38eacf4a8",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "bad"
+  },
+  "check": null,
+  "check_raw_sha256": null,
+  "cross_chain_atomic": false,
+  "endowment": {
+    "after": {
+      "balances_minor_units": {
+        "admin": 0,
+        "client": 100000000,
+        "escrow": 20000000,
+        "evaluator": 500000,
+        "outsider": 0,
+        "provider": 0,
+        "treasury": 0
+      },
+      "total_supply_minor_units": 120500000
+    },
+    "before": {
+      "balances_minor_units": {
+        "admin": 0,
+        "client": 100000000,
+        "escrow": 20000000,
+        "evaluator": 0,
+        "outsider": 0,
+        "provider": 0,
+        "treasury": 0
+      },
+      "total_supply_minor_units": 120000000
+    },
+    "transaction_hash": "0x2b94f79bc16ac6ecacbaa6c700a5f90a0c0fd7bbf1f5ad005579e51b6379a606"
+  },
+  "job_raw_sha256": null,
+  "model_tier": "SCRIPTED_SIMULATION",
+  "partial_job_raw_sha256": "19cdc271e05c837eb1abdcc9558189d83a200e402ac80be110f321076e0afa84",
+  "partial_journal_error": null,
+  "payment_tier": "NATIVE_LOCAL_PROTOCOL",
+  "psp_capture": false,
+  "retainer_public": {
+    "amount_minor_units": 2000000,
+    "audit_verdict": null,
+    "body_sha256": "fff6a8720e7065eef0e57091d0f8765ce73cafccd94904e7d2f6b2bf8db4b9ef",
+    "obligation_id": "invoice-cff68e66186116b92079d54a",
+    "payee": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+    "payee_role": "auditor",
+    "payer_role": "provider",
+    "proves_invoice_quality": false,
+    "service_id": "independent-invoice-audit-intake/v1",
+    "status": "AUDIT_INTAKE_PAID",
+    "transaction_hash": "0x43a8ccc5d6475650a2948591cd50856f13fff7c6be16d3e878b052c16a4bd4e3",
+    "transaction_tier": "NATIVE_LOCAL_PROTOCOL"
+  },
+  "retainer_raw_sha256": "2132d786bddb8de684df8d64d6d3cb6a23b1e3b678b8d98e820e5f7563fb1096",
+  "schema": "x402-live012-native-bridge-v1",
+  "settlement": null,
+  "status": "STOPPED_PARTIAL",
+  "terminal_transaction_observed": false
+}

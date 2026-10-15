@@ -31,7 +31,8 @@ def verify_job(path: Path, assignment: RetainerAssignment, *,
                study_id: str = "X402_AUDIT_RETAINER_010") -> dict:
     assignment.validate()
     require(model_tier in {"SCRIPTED_SIMULATION", "REAL_LLM_REMOTE_APPROVED"}
-            and study_id in {"X402_AUDIT_RETAINER_010", "X402_AUDIT_RETAINER_011"},
+            and study_id in {"X402_AUDIT_RETAINER_010", "X402_AUDIT_RETAINER_011",
+                             "X402_AUDIT_RETAINER_012"},
             "unsupported native evidence tier or study")
     raw = json.loads(Path(path).read_bytes())
     require(raw.get("schema") == "x402-retainer-separate-erc8183-job-v1"
