@@ -37,6 +37,10 @@ class FreezeAndBudgetTests(unittest.TestCase):
              patch.object(freezer, "ASSIGNMENT", Path(temporary) / "gate/assignment"), \
              patch.object(freezer, "CLEARANCE", Path(temporary) / "gate/clearance.json"), \
              patch.object(freezer, "AP2_V2_GATE", Path(temporary) / "ap2_v2"), \
+             patch.object(freezer, "canonical_checkout_preflight",
+                          return_value={"source_sha256": {}, "source_commit": "a" * 40}), \
+             patch.object(freezer, "ap2_v2_final_evidence",
+                          return_value={"ap2_v2_disposition": "COMPLETE_NO_PENDING"}), \
              patch.object(freezer, "BudgetLedger") as budget, \
              patch.object(freezer, "source_inventory") as sources, \
              patch.object(freezer, "refreshed_catalog") as catalog:
@@ -58,11 +62,13 @@ class FreezeAndBudgetTests(unittest.TestCase):
                  patch.object(freezer, "ASSIGNMENT", base / "mpp009/assignment"), \
                  patch.object(freezer, "CLEARANCE", base / "mpp009/clearance.json"), \
                  patch.object(freezer, "AP2_V2_GATE", active.parent), \
+                 patch.object(freezer, "canonical_checkout_preflight",
+                              return_value={"source_sha256": {}, "source_commit": "a" * 40}), \
                  patch.object(freezer, "BudgetLedger") as budget, \
                  patch.object(freezer, "source_inventory") as sources, \
                  patch.object(freezer, "refreshed_catalog") as catalog:
                 budget.return_value.snapshot.return_value = {}
-                with self.assertRaisesRegex(ValueError, "AP2 v2 assignment or freeze lock"):
+                with self.assertRaisesRegex(ValueError, "AP2 v2 final assignment, freeze lock"):
                     freezer.freeze(seed_hex=SEED)
                 sources.assert_not_called()
                 catalog.assert_not_called()
@@ -105,11 +111,12 @@ class FreezeAndBudgetTests(unittest.TestCase):
             state = {"seq": 137, "last_hash": "b" * 64,
                 "available_usd": "37.78874",
                 "runs": {"ap2-first-run": {"status": "SETTLED"}}}
-            record = {"schema": "mpp009-cross-study-clearance-v1",
+            ap2_v2_final = {"ap2_v2_disposition": "COMPLETE_NO_PENDING",
+                            "ap2_v2_final_collection_sha256": "c" * 64}
+            record = {"schema": "mpp009-cross-study-clearance-v2",
                 "study_id": freezer.STUDY_ID,
-                "decision": "MPP009_PRIORITY_AFTER_STOPPED_STUDIES",
+                "decision": "MPP009_PRIORITY_AFTER_AP2_V2_COMPLETION",
                 "ap2_original_disposition": "STOPPED_NO_RETRY",
-                "ap2_v2_disposition": "DEFERRED_NOT_FROZEN",
                 "ap2_original_assignment_sha256": freezer.sha(ap2_manifest),
                 "ap2_original_collection_sha256": freezer.sha(ap2_collection),
                 "ap2_first_stopped_sha256": freezer.sha(ap2_stop),
@@ -118,18 +125,20 @@ class FreezeAndBudgetTests(unittest.TestCase):
                 "mpp008_first_stopped_sha256": freezer.sha(stopped),
                 "ledger_seq": state["seq"],
                 "ledger_last_hash": state["last_hash"],
-                "ledger_available_usd": state["available_usd"]}
+                "ledger_available_usd": state["available_usd"],
+                **ap2_v2_final}
             clearance.write_text(json.dumps(record))
             with patch.object(freezer, "CLEARANCE", clearance), \
                  patch.object(freezer, "MPP008_GATE", mpp008_gate), \
                  patch.object(freezer, "AP2_GATE", ap2_gate), \
                  patch.object(freezer, "AP2_V2_GATE", base / "ap2_v2"), \
+                 patch.object(freezer, "ap2_v2_final_evidence", return_value=ap2_v2_final), \
                  patch("scripts.freeze_mpp008.load_assignment",
                        return_value=(frozen, assignment_sha, rows)):
                 self.assertEqual(freezer.cross_study_clearance(state)["decision"],
-                                 "MPP009_PRIORITY_AFTER_STOPPED_STUDIES")
+                                 "MPP009_PRIORITY_AFTER_AP2_V2_COMPLETION")
                 clearance.write_text(json.dumps({**record,
-                    "ap2_v2_disposition": "ALSO_ACTIVE"}))
+                    "ap2_v2_disposition": "INCOMPLETE"}))
                 with self.assertRaisesRegex(ValueError, "clearance differs"):
                     freezer.cross_study_clearance(state)
 

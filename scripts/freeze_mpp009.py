@@ -37,6 +37,17 @@ LOCK = GATE / "one-time-freeze.lock.json"
 CLEARANCE = GATE / "cross-study-clearance.json"
 AP2_GATE = PROJECT_ROOT / "artifacts/gates/AP2_LIVE"
 AP2_V2_GATE = PROJECT_ROOT / "artifacts/gates/AP2_LIVE_V2"
+AP2_V2_ASSIGNMENT_SHA256 = "79e039bab397a0cbc9c50186cdf68fdb458f3fb0df76fd288ad0db332fa1d6ce"
+AP2_V2_LOCK_SHA256 = "49eb58d6f4d9e5679bec9307d07d2777eb3bb81d7fd8011ce2662fa7da942933"
+AP2_V2_FINAL_COLLECTION_SHA256 = "73e2261ed2cfb10941b6867b476e7820dc72a15ed5cccba94d6ae541763b701a"
+AP2_V2_FINAL_LEDGER_SEQ = 145
+AP2_V2_FINAL_LEDGER_HASH = "ec60ee56530c226c87c0b43e60718d93307206d27e8c54abcc745fd62c8035ba"
+AP2_V2_FINAL_EPISODE_RECORD_SHA256 = {
+    "ap2live2-4dac18e8f1bc22d551ece718": "ce553d78276ba5b91ca4a31524ff3d0995188799752e59feb3b24778bcf64b68",
+    "ap2live2-9b3a2e4c73fbc890506ec424": "e0d0f5ccb58b4110cc9ba1aab595b31fa7aa5514b1ad6f7f8efa8c046a709c18",
+    "ap2live2-67aea2ccc058779f370dcc20": "91b7da883738d946bb0e74886a78f536e204f825adc425ca72be2b1067bdee10",
+    "ap2live2-93956fe860c0756c828249ed": "10a1c2f7e967fccf7e47328c1287cb7273f8fbefc8188a044a05671d76dee003",
+}
 MPP008_GATE = PROJECT_ROOT / "artifacts/gates/MPP008"
 OFFLINE = ROOT / "artifacts/prospective/mpp009-scripted-native-001"
 CONTAINER = "mpp009-pressure-localnet"
@@ -64,6 +75,7 @@ NEW_SOURCE = (
     "tests/test_mpp009_pressure.py",
     "tests/test_mpp009_offline_native.py",
     "tests/test_mpp009_runner.py",
+    "tests/test_mpp009_clearance.py",
     "protocols/mpp/mpp009-meeting-service.mjs",
     "protocols/mpp/mpp009-verify-meeting-service.mjs",
     "protocols/mpp/mpp009-meeting-local.mjs",
@@ -77,6 +89,29 @@ def source_inventory() -> dict[str, str]:
     for name in NEW_SOURCE:
         result[name] = sha(ROOT / name)
     return dict(sorted(result.items()))
+
+
+def canonical_checkout_preflight() -> dict:
+    """Allow freeze and paid-row validation only in the committed project root."""
+    if ROOT.resolve() != PROJECT_ROOT.resolve():
+        raise ValueError("MPP009 source root is not the canonical project checkout")
+    top = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=ROOT,
+                         capture_output=True, text=True, check=True, timeout=10).stdout.strip()
+    if Path(top).resolve() != PROJECT_ROOT.resolve():
+        raise ValueError("MPP009 Git checkout differs from canonical project root")
+    changed = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"],
+                             cwd=ROOT, capture_output=True, text=True,
+                             check=True, timeout=10).stdout.strip()
+    if changed:
+        raise ValueError("MPP009 tracked source must be committed before freeze or paid row")
+    sources = source_inventory()
+    tracked = subprocess.run(["git", "ls-files", "--error-unmatch", "--", *sources],
+                             cwd=ROOT, capture_output=True, text=True, timeout=10)
+    if tracked.returncode:
+        raise ValueError("MPP009 source inventory includes an untracked path")
+    commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT,
+                            capture_output=True, text=True, check=True, timeout=10).stdout.strip()
+    return {"source_commit": commit, "source_sha256": sources}
 
 
 def runtime_pins() -> dict:
@@ -140,6 +175,110 @@ def offline_readiness() -> dict:
             "scripted_cases": 9, "remote_model_calls": 0}
 
 
+def ap2_v2_final_evidence(state: dict) -> dict:
+    """Bind the completed AP2 v2 denominator to immutable rows and ledger."""
+    assignment = AP2_V2_GATE / "assignment-001/assignment_manifest.json"
+    lock = AP2_V2_GATE / "first-freeze.lock.json"
+    collection = AP2_V2_GATE / "collection-001-final.json"
+    if any(not path.is_file() or path.is_symlink()
+           for path in (assignment, lock, collection)):
+        raise ValueError("AP2 v2 final assignment, freeze lock or collection is absent or changed")
+    if (sha(assignment) != AP2_V2_ASSIGNMENT_SHA256
+            or sha(lock) != AP2_V2_LOCK_SHA256
+            or sha(collection) != AP2_V2_FINAL_COLLECTION_SHA256):
+        raise ValueError("AP2 v2 final assignment, freeze lock or collection is absent or changed")
+    frozen = json.loads(assignment.read_bytes())
+    sealed = json.loads(lock.read_bytes())
+    report = json.loads(collection.read_bytes())
+    assigned = frozen.get("public_rows")
+    results = report.get("rows")
+    if (frozen.get("schema") != "ap2-live-prospective-assignment-v2"
+            or frozen.get("study_id") != "ap2-audit-purchase-invoice-release-live-002"
+            or frozen.get("planned_episodes") != 4
+            or not isinstance(assigned, list) or len(assigned) != 4
+            or sealed.get("schema") != "ap2-live-v2-first-freeze-v1"
+            or sealed.get("assignment_manifest_sha256") != AP2_V2_ASSIGNMENT_SHA256
+            or sealed.get("paid_model_calls") != 0
+            or report.get("schema") != "ap2-live-itt-collection-v2"
+            or report.get("study_id") != frozen["study_id"]
+            or report.get("assignment_manifest_sha256") != AP2_V2_ASSIGNMENT_SHA256
+            or (report.get("planned_episodes"), report.get("completed_episodes"),
+                report.get("stopped_episodes"), report.get("pending_episodes"))
+               != (4, 4, 0, 0)
+            or report.get("shared_ledger_seq") != AP2_V2_FINAL_LEDGER_SEQ
+            or not isinstance(results, list) or len(results) != 4
+            or [item.get("episode_id") for item in results] !=
+               [item.get("episode_id") for item in assigned]
+            or len({item.get("episode_id") for item in assigned}) != 4
+            or set(AP2_V2_FINAL_EPISODE_RECORD_SHA256) !=
+               {item.get("episode_id") for item in assigned}
+            or any(item.get("status") != "COMPLETE" for item in results)):
+        raise ValueError("AP2 v2 final assigned denominator is not four COMPLETE rows")
+    if state["seq"] < AP2_V2_FINAL_LEDGER_SEQ:
+        raise ValueError("AP2 v2 final ledger head is absent")
+    if state["seq"] == AP2_V2_FINAL_LEDGER_SEQ:
+        final_hash = state["last_hash"]
+    else:
+        lines = CANONICAL_LEDGER_PATH.read_bytes().splitlines()
+        if len(lines) <= AP2_V2_FINAL_LEDGER_SEQ:
+            raise ValueError("AP2 v2 final ledger ancestor is absent")
+        final_hash = json.loads(lines[AP2_V2_FINAL_LEDGER_SEQ])["hash"]
+    if final_hash != AP2_V2_FINAL_LEDGER_HASH:
+        raise ValueError("AP2 v2 final ledger ancestor changed")
+    runs = state["runs"]
+    expected_runs = set()
+    settled = []
+    episodes = AP2_V2_GATE / "runs-001/episodes"
+    if (not episodes.is_dir() or episodes.is_symlink()
+            or {path.name for path in episodes.iterdir()} !=
+               {item["episode_id"] for item in assigned}):
+        raise ValueError("AP2 v2 run directory differs from four assigned rows")
+    for public, result in zip(assigned, results, strict=True):
+        episode_id = public["episode_id"]
+        directory = episodes / episode_id
+        if (not directory.is_dir() or directory.is_symlink()
+                or (directory / "STOPPED.json").exists()):
+            raise ValueError("AP2 v2 final row is stopped or missing")
+        record_path = directory / "episode_record.json"
+        if sha(record_path) != AP2_V2_FINAL_EPISODE_RECORD_SHA256[episode_id]:
+            raise ValueError("AP2 v2 final episode record changed since collection")
+        record = json.loads(record_path.read_bytes())
+        inspect_sha = sha(directory / "inspect.eval")
+        purchase_sha = sha(directory / "audit-purchase/native-audit-purchase.json")
+        native_sha = sha(directory / "erc8183/native-evidence.json")
+        ident = f"ap2live2-{AP2_V2_ASSIGNMENT_SHA256[:12]}-{episode_id}"
+        billed = runs.get(ident)
+        expected_runs.add(ident)
+        if (record.get("schema") != "ap2-live-paid-episode-v2"
+                or record.get("status") != "COMPLETE"
+                or record.get("episode_id") != episode_id
+                or record.get("assignment_manifest_sha256") != AP2_V2_ASSIGNMENT_SHA256
+                or record.get("ledger_run_id") != ident
+                or record.get("inspect_sha256") != inspect_sha
+                or record.get("native_purchase_sha256") != purchase_sha
+                or record.get("native_erc8183_sha256") != native_sha
+                or not isinstance(billed, dict) or billed.get("status") != "SETTLED"
+                or billed.get("evidence_ref") != "sha256:" + inspect_sha
+                or Decimal(billed["actual_usd"]) != Decimal(record["model_cost_usd"])
+                or Decimal(result["model_cost_usd"]) != Decimal(record["model_cost_usd"])):
+            raise ValueError("AP2 v2 final row, native evidence or settled billing differs")
+        settled.append({"episode_id": episode_id, "ledger_run_id": ident,
+                        "episode_record_sha256": sha(record_path),
+                        "inspect_sha256": inspect_sha,
+                        "native_purchase_sha256": purchase_sha,
+                        "native_erc8183_sha256": native_sha,
+                        "settled_model_cost_usd": billed["actual_usd"]})
+    if any(name.startswith("ap2live2-") and name not in expected_runs for name in runs):
+        raise ValueError("unassigned AP2 v2 ledger run exists")
+    return {"ap2_v2_disposition": "COMPLETE_NO_PENDING",
+            "ap2_v2_assignment_sha256": AP2_V2_ASSIGNMENT_SHA256,
+            "ap2_v2_freeze_lock_sha256": AP2_V2_LOCK_SHA256,
+            "ap2_v2_final_collection_sha256": AP2_V2_FINAL_COLLECTION_SHA256,
+            "ap2_v2_final_ledger_seq": AP2_V2_FINAL_LEDGER_SEQ,
+            "ap2_v2_final_ledger_hash": AP2_V2_FINAL_LEDGER_HASH,
+            "ap2_v2_settled_runs": settled}
+
+
 def cross_study_clearance(state: dict, *, budget_head: dict | None = None) -> dict:
     """Require explicit sequencing while MPP008 and AP2 share one USD50 cap.
 
@@ -147,9 +286,7 @@ def cross_study_clearance(state: dict, *, budget_head: dict | None = None) -> di
     authorization. It must be prepared separately after AP2 priority is
     resolved; an absent or stale record makes freeze fail closed.
     """
-    if ((AP2_V2_GATE / "assignment-001").exists()
-            or (AP2_V2_GATE / "first-freeze.lock.json").exists()):
-        raise ValueError("AP2 v2 assignment or freeze lock exists; MPP009 cannot freeze")
+    ap2_v2_final = ap2_v2_final_evidence(state)
     if not CLEARANCE.is_file() or CLEARANCE.is_symlink():
         raise ValueError("MPP009 cross-study sequencing record is absent")
     from scripts.freeze_mpp008 import load_assignment as load_mpp008
@@ -189,11 +326,10 @@ def cross_study_clearance(state: dict, *, budget_head: dict | None = None) -> di
     record = json.loads(CLEARANCE.read_bytes())
     budget_head = state if budget_head is None else budget_head
     expected = {
-        "schema": "mpp009-cross-study-clearance-v1",
+        "schema": "mpp009-cross-study-clearance-v2",
         "study_id": STUDY_ID,
-        "decision": "MPP009_PRIORITY_AFTER_STOPPED_STUDIES",
+        "decision": "MPP009_PRIORITY_AFTER_AP2_V2_COMPLETION",
         "ap2_original_disposition": "STOPPED_NO_RETRY",
-        "ap2_v2_disposition": "DEFERRED_NOT_FROZEN",
         "ap2_original_assignment_sha256": sha(ap2_assignment),
         "ap2_original_collection_sha256": sha(ap2_collection),
         "ap2_first_stopped_sha256": sha(ap2_stopped),
@@ -203,6 +339,7 @@ def cross_study_clearance(state: dict, *, budget_head: dict | None = None) -> di
         "ledger_seq": budget_head["seq"],
         "ledger_last_hash": budget_head["last_hash"],
         "ledger_available_usd": budget_head["available_usd"],
+        **ap2_v2_final,
     }
     if record != expected:
         raise ValueError("MPP009 cross-study clearance differs from current evidence or ledger")
@@ -240,12 +377,13 @@ def load_assignment(directory: Path = ASSIGNMENT) -> tuple[dict, str, tuple]:
 
 def freeze(*, seed_hex: str | None = None) -> dict:
     """Write the ten cells once, only after all local and cross-study gates pass."""
+    checkout = canonical_checkout_preflight()
     if LOCK.exists() or ASSIGNMENT.exists():
         raise FileExistsError("MPP009 already or partially frozen; no reroll")
     state = BudgetLedger(CANONICAL_LEDGER_PATH).snapshot()
     clearance = cross_study_clearance(state)
     exposure = mpp006_contingent_exposure(state)
-    sources = source_inventory()
+    sources = checkout["source_sha256"]
     pins = runtime_pins()
     offline = offline_readiness()
     prices = refreshed_catalog()
@@ -254,7 +392,8 @@ def freeze(*, seed_hex: str | None = None) -> dict:
     reserves = _reserves(prices, rows)
     budget = budget_preflight(state, reserves)
     payload = manifest(seed_hex, rows)
-    payload.update(source_sha256=sources, runtime_pins=pins,
+    payload.update(source_sha256=sources, source_commit=checkout["source_commit"],
+                   runtime_pins=pins,
                    offline_readiness=offline, cross_study_clearance=clearance,
                    public_pricing_snapshots=prices,
                    budget_at_freeze={key: state[key] for key in
@@ -280,8 +419,9 @@ def freeze(*, seed_hex: str | None = None) -> dict:
 
 
 def verify_static() -> dict:
+    checkout = canonical_checkout_preflight()
     frozen, assignment_sha, rows = load_assignment()
-    if frozen["source_sha256"] != source_inventory():
+    if frozen["source_sha256"] != checkout["source_sha256"]:
         raise ValueError("MPP009 executable source changed after freeze")
     if frozen["runtime_pins"] != runtime_pins():
         raise ValueError("MPP009 runtime pin changed after freeze")
@@ -313,6 +453,11 @@ def verify() -> dict:
 def readiness() -> dict:
     """Report blockers without creating an assignment or reserving a dollar."""
     checks: dict[str, str] = {}
+    try:
+        canonical_checkout_preflight()
+        checks["canonical_checkout"] = "PASS"
+    except Exception as exc:
+        checks["canonical_checkout"] = type(exc).__name__ + ": " + str(exc)
     if LOCK.exists() or ASSIGNMENT.exists():
         checks["one_time_freeze"] = "ALREADY_FROZEN_OR_PARTIAL"
     try:
