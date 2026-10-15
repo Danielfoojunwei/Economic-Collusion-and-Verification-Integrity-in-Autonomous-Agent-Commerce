@@ -7,8 +7,10 @@ They are not live provider behavior or evidence of agent collusion.
 from __future__ import annotations
 
 import asyncio
+from copy import deepcopy
 from contextlib import contextmanager, ExitStack
 from dataclasses import replace
+from decimal import Decimal
 import json
 import os
 from pathlib import Path
@@ -342,6 +344,51 @@ class Pressure016SourceTests(unittest.TestCase):
 class Pressure016ClearanceTests(unittest.TestCase):
     """Source approval, predecessor closure, and freeze authority stay distinct."""
 
+    def test_actual_ledger_accepts_only_reviewed_historical_holds(self):
+        gate = pressure016_freeze
+        state = gate._ledger()
+        self.assertEqual(state["cap_usd"], "50")
+        self.assertFalse(state["blocked"])
+        self.assertEqual(state["unknown_run_ids"], [])
+        self.assertEqual(state["reserved_usd"], "18.386908")
+        self.assertEqual(len(state["contingent_run_ids"]), 3)
+        self.assertEqual(len([row for row in state["runs"].values()
+                              if row["status"] == "RESERVED"]), 1)
+
+        class FakeBudget:
+            def __init__(self, _path):
+                pass
+
+            def snapshot(self):
+                return altered
+
+        def new_reservation(snapshot):
+            snapshot["runs"]["pressure016-unreviewed"] = {
+                "status": "RESERVED", "reserved_usd": "0.1"}
+            snapshot["reserved_usd"] = str(
+                Decimal(snapshot["reserved_usd"]) + Decimal("0.1"))
+            snapshot["available_usd"] = str(
+                Decimal(snapshot["available_usd"]) - Decimal("0.1"))
+
+        for label, change in (
+            ("unreviewed reserve", new_reservation),
+            ("FEE011 metadata", lambda snapshot: next(
+                row["metadata"].update(reason="UNREVIEWED")
+                for row in snapshot["runs"].values()
+                if row["status"] == "RESERVED")),
+            ("contingent evidence", lambda snapshot: snapshot["runs"][
+                state["contingent_run_ids"][0]].update(evidence_ref="sha256:" +
+                                                         "0" * 64)),
+            ("unknown charge", lambda snapshot: snapshot.update(
+                unknown_run_ids=["unknown-charge"])),
+        ):
+            altered = deepcopy(state)
+            change(altered)
+            with self.subTest(label=label), patch.object(gate, "BudgetLedger",
+                                                       FakeBudget):
+                with self.assertRaises(ValueError):
+                    gate._ledger()
+
     def test_actual_partial014_review_schema_closes_and_tampering_fails(self):
         gate = pressure016_freeze
         state = BudgetLedger(gate.CANONICAL_LEDGER).snapshot()
@@ -364,6 +411,8 @@ class Pressure016ClearanceTests(unittest.TestCase):
              .update(sha256="0" * 64)),
             ("replay attestation", lambda r: r["verification"]
              .update(saved_collector_replayed_byte_identically=False)),
+            ("weaker review status", lambda r: r.update(
+                status="REVIEW_COMPLETE_UNVERIFIED")),
             ("authorization", lambda r: r.update(freeze_or_paid_authorization=True)),
         ):
             altered = json.loads(json.dumps(original))

@@ -26,6 +26,7 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 
 from agent_economic_trust.mpp005_plan import canonical_project_root  # noqa: E402
 from agent_economic_trust.mpp008_pricing import pricing_snapshots  # noqa: E402
+from agent_economic_trust.partial014_budget import exact_prior_holds  # noqa: E402
 from agent_economic_trust.partial014_plan import per_row_reserve  # noqa: E402
 from agent_economic_trust.pressure016_plan import (  # noqa: E402
     CANONICAL_LEDGER, CELLS, NATIVE_CONTINGENT, ROWS, SOL, SONNET, digest,
@@ -41,6 +42,9 @@ CLEARANCE = GATE / "cross-study-clearance-001.json"
 REVIEW = ROOT / "artifacts/prospective/ERC8183_PRESSURE016/source-review-001.json"
 PARTIAL014_GATE = ROOT / "artifacts/gates/ERC8183_PARTIAL_CLAIM014"
 PARTIAL014_REVIEW = PARTIAL014_GATE / "independent-results-review-final.json"
+PARTIAL014_REVIEW_SHA = "a06747a5ac8ac8c64488cd059352b4e9d5cefcf92c07ee4e088d020f208dbcd5"
+PARTIAL014_REVIEW_STATUS = (
+    "REVIEW_COMPLETE_TWO_UNSUCCESSFUL_UNILATERAL_SOLICITATIONS_NO_BILATERAL_COLLUSION")
 OFFLINE = ROOT / "artifacts/prospective/ERC8183_PRESSURE016/offline-native-001"
 PARTIAL014_OFFLINE = ROOT / "artifacts/prospective/ERC8183_PARTIAL_CLAIM014/offline-native-001"
 OWN_SOURCE = (
@@ -154,8 +158,10 @@ def _ledger() -> dict:
     if (state.get("cap_usd") != "50" or state.get("blocked")
             or state.get("unknown_run_ids")):
         raise ValueError("PRESSURE016 USD50 ledger blocked or unknown")
-    if any(row.get("status") == "RESERVED" for row in state["runs"].values()):
-        raise ValueError("another live row is still reserved")
+    # FEE011's separately reviewed failed-request buffer remains RESERVED.
+    # Recheck its exact forensic evidence and the three contingent holds;
+    # the predecessor gate rejects any new reservation or changed amount.
+    exact_prior_holds(state)
     return state
 
 
@@ -196,7 +202,8 @@ def _partial014_closed(state: dict) -> dict:
             or review.get("study") != "erc8183-partial-claim-timing-014"
             or review.get("reviewer_id") in (None, "", "/root")
             or review.get("freeze_or_paid_authorization", False) is not False
-            or not str(review.get("status", "")).startswith("REVIEW_COMPLETE")):
+            or review.get("status") != PARTIAL014_REVIEW_STATUS
+            or sha(PARTIAL014_REVIEW) != PARTIAL014_REVIEW_SHA):
         raise ValueError("PARTIAL014 final independent review differs")
     saved = json.loads(collection_path.read_bytes())
     current = collect_partial014()
