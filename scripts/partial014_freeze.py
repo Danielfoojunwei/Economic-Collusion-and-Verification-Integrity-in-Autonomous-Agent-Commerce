@@ -66,6 +66,21 @@ FEE015_FINAL_SHA = "c5add35a657b6038de0f14cae106a46b48057e3428eb7db16b0b399314a2
 FEE015_REVIEW = FEE015_GATE / "independent-results-review-final.json"
 FEE015_REVIEW_SHA = "7fdb6aee08c536faa0a6734b4510b4d99429ec12de2c35c6a920f587dd4dafec"
 FEE015_FROZEN_SOURCE_SHA = "c65caa66924fed5ddaf27b5c19b8868a122d61754ffb9ef321c80971cceed2ff"
+FEE015_TRANSITIVE_SOURCE_SHA = "8c372ca8273cc12f75e49043681fc408874d0f943b2dcbcc90058ff8ec0bd600"
+FEE015_TRANSITIVE_FILES = (
+    "scripts/collect_erc8183_fee.py", "scripts/fee012_collect.py",
+    "scripts/fee012_freeze.py", "scripts/freeze_erc8183_fee.py",
+    "scripts/verify_x402_live012_readiness.py",
+    "src/agent_economic_trust/erc8183_fee_clearance.py",
+    "src/agent_economic_trust/erc8183_fee_task.py",
+    "src/agent_economic_trust/evidence.py",
+    "src/agent_economic_trust/orbit_task.py",
+    "src/agent_economic_trust/x402_live012_boundary.py",
+    "src/agent_economic_trust/x402_live012_native.py",
+    "src/agent_economic_trust/x402_live012_native_verifier.py",
+    "src/agent_economic_trust/x402_live012_plan.py",
+    "src/agent_economic_trust/x402_live012_task.py",
+)
 FEE015_LEDGER204_HASH = "6f6be923be763a6411426657dad9ae83c1d627d45a73e4bf409f7204337c863a"
 FEE015_RECORD_SHA = (
     "52434973df7f2723519019f2e04948ab2d15e72902bac301506419f43ca3cf66",
@@ -525,6 +540,8 @@ def _fee015_predecessor(state: dict) -> dict:
             or any(sha(ROOT / name) != saved_sha for name, saved_sha in sealed.items())
             or frozen["source_inventory_sha256"] != FEE015_FROZEN_SOURCE_SHA
             or digest(sealed) != FEE015_FROZEN_SOURCE_SHA
+            or digest({name: sha(ROOT / name) for name in FEE015_TRANSITIVE_FILES})
+               != FEE015_TRANSITIVE_SOURCE_SHA
             or frozen["independent_source_review"] != fee015_freeze.source_review(sealed)
             or frozen["offline_readiness"] != fee015_freeze._offline()):
         raise ValueError("FEE015 frozen source or native control seal differs")
@@ -597,6 +614,7 @@ def _fee015_predecessor(state: dict) -> dict:
             "final_collection_sha256": FEE015_FINAL_SHA,
             "independent_results_review_sha256": FEE015_REVIEW_SHA,
             "frozen_source_inventory_sha256": FEE015_FROZEN_SOURCE_SHA,
+            "omitted_transitive_source_sha256": FEE015_TRANSITIVE_SOURCE_SHA,
             "final_ledger_event_hash": FEE015_LEDGER204_HASH,
             "row_statuses": statuses,
             "settled_run_ids": disposition["fee015_settled_run_ids"],

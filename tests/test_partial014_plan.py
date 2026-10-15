@@ -48,6 +48,10 @@ class PartialClaimPlanTests(unittest.TestCase):
                               partial014_freeze.FEE015_FINAL):
                 with self.assertRaises(ValueError):
                     partial014_freeze._fee015_predecessor(state)
+            with patch.object(partial014_freeze, "FEE015_TRANSITIVE_SOURCE_SHA",
+                              "0" * 64):
+                with self.assertRaises(ValueError):
+                    partial014_freeze._fee015_predecessor(state)
 
     def test_fee015_all_five_settlements_are_required(self):
         state = BudgetLedger(CANONICAL_LEDGER).snapshot()

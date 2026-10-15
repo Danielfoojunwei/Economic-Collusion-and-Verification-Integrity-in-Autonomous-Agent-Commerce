@@ -86,7 +86,8 @@ this one-row-per-cell block. The successor binds its frozen 71-file source
 inventory, assignment, five completed records, final collection, independent
 review, and five exact SETTLED usage-estimate ledger entries. FEE015's frozen
 source list did not include several transitive local imports; PARTIAL014's
-source inventory seals those modules. The archived Anvil receipts replay as
+source inventory seals those 14 modules and pins their reviewed combined
+digest. The archived Anvil receipts replay as
 local evidence, without authenticating a destroyed chain as a live one.
 
 After FEE015, the shared $50 ledger has $22.471244 available with the four
