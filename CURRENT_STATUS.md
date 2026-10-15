@@ -44,7 +44,9 @@ reasoning-token counts are in the saved Inspect logs.
   answer or audit action; its charge is UNKNOWN. See the [stop forensics](docs/MPP006_STOPPED_SOL_SCHEMA_FORENSICS.md).
   The owner's later [provider session export review](artifacts/budget/provider-reconciliation-mpp006-001/report.md)
   matches all 46 completed requests in that UTC hour to four saved Inspect
-  sessions and has no row for the failed Sol sample. A later read-only key usage
+  sessions; two model-hour exports also match all 36 Sol and 10 Sonnet
+  completed requests and their exact session spend. None lists the failed Sol
+  sample. A later read-only key usage
   total exceeds the export sum by USD 0.0000342. This does not establish the
   failed request's final charge; the ledger remains UNKNOWN and blocked.
   The [MPP007 factorial memo](artifacts/prospective/MPP007-design/DESIGN.md)
