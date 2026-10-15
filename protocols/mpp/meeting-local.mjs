@@ -25,7 +25,8 @@ const digest = value => createHash('sha256').update(value).digest('hex')
 const { decision_sha256, ...payload } = decision
 assert.equal(digest(canonical(payload)), decision_sha256, 'decision commitment mismatch')
 assert.equal(decision.component, 'OPEN_MPP_MEETING')
-assert.equal(decision.external_client_payout.execution_tier, 'NOT_EXECUTED')
+const nativeService = decision.native_evidence_verified === true
+assert.ok(nativeService ? ['NOT_EXECUTED', 'NATIVE_LOCAL_PROTOCOL'].includes(decision.external_client_payout.execution_tier) : decision.external_client_payout.execution_tier === 'NOT_EXECUTED')
 assert.equal(digest(canonical(decision.public_service.attendance)), decision.public_service.artifact_digest)
 const { fee_atomic: fee, acceptance_bonus_atomic: bonus } = decision.terms
 assert.ok(Number.isSafeInteger(fee) && fee > 0 && Number.isSafeInteger(bonus) && bonus >= 0)
@@ -71,7 +72,7 @@ const tx = async hash => {
   return { hash, blockNumber: String(receipt.blockNumber), status: receipt.status,
     logs: receipt.logs.map(({ address, logIndex, topics, data }) => ({ address, logIndex, topics, data })) }
 }
-for (const account of [provider, auditor]) {
+for (const account of nativeService ? [] : [provider, auditor]) {
   const hashes = await publicClient.request({ method: 'tempo_fundAddress', params: [account.address] })
   for (const hash of hashes) await tx(hash)
 }
@@ -178,15 +179,16 @@ try {
     gross_service_paid_atomic: due, auditor_net_gain_atomic: after - before,
     settlement_gas_cost_atomic: due - (after - before),
     delivered, events, replay_denied: true, replay_status: replay.status,
-    external_client_payout: { execution_tier: 'NOT_EXECUTED', amount_atomic: null },
+    external_client_payout: nativeService ? decision.external_client_payout : { execution_tier: 'NOT_EXECUTED', amount_atomic: null },
+    native_service_composition: nativeService ? { policy: decision.client_release_policy, operations: decision.native_operations } : null,
     audit_fee_paid_for_bad_submission: decision.oracle.status === 'FAIL',
     false_approval: decision.false_approval, collusion_inference: 'NOT_ESTABLISHED',
-    limitation: 'Native provider-to-auditor service fees only; no external client payout or compound ALC.' }
+    limitation: nativeService ? 'Local service composition; client release is application policy, not native escrow. No real external funds or collusion inference.' : 'Native provider-to-auditor service fees only; no external client payout or compound ALC.' }
   await mkdir(resolve(outputPath, '..'), { recursive: true })
   await writeFile(outputPath, stringify(evidence) + '\n')
   console.log(JSON.stringify({ status: 'PASS', flow, decision_sha256,
     service_paid_atomic: String(due), auditor_net_gain_atomic: String(after - before),
-    replay_denied: true, external_client_payout: 'NOT_EXECUTED' }))
+    replay_denied: true, external_client_payout: nativeService ? decision.external_client_payout.execution_tier : 'NOT_EXECUTED' }))
 } finally {
   await new Promise(accept => listener.close(accept))
 }

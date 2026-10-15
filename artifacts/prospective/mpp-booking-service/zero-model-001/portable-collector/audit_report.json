@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "raw_eval_sha256": "1042ed89f21a36308aec4cd0ea2d359e92f8b3fb10d8167469bf85aef4bd6105",
+  "decision_sha256": "f4f0dba7e729acbbf727affcb4fd7ed3a195343b0f7cad7a9c0711a2e9aec7a0",
+  "native_evidence_verified": true,
+  "model_execution_tier": "SCRIPTED_SIMULATION",
+  "client_release_policy": "APPLICATION_ACCEPT_TRIGGER_NOT_NATIVE_ESCROW"
+}

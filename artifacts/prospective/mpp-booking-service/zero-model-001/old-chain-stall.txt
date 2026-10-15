@@ -1,0 +1,12 @@
+[2m2026-10-15T12:28:41.885741Z[0m [33m WARN[0m [2mpayload_builder[0m[2m:[0m failed to resolve pending payload [3merr[0m[2m=[0mevm execution error: failed decoding boundary block extra data as DKG outcome: Unexpected End-of-Buffer: Not enough bytes remaining to read data
+[2m2026-10-15T12:28:41.885757Z[0m [31mERROR[0m [2mengine::local[0m[2m:[0m Error advancing the chain: No payload
+[2m2026-10-15T12:28:41.886123Z[0m [32m INFO[0m [2mpayload_builder[0m[2m:[0m New payload job created [3mid[0m[2m=[0m0x663c7a933eada972 [3mparent[0m[2m=[0m0x663c7a933eada97208da12c67c598199a6ed17afaa190f99fb695c5684a35724
+[2m2026-10-15T12:28:41.886618Z[0m [33m WARN[0m [2mpayload_builder[0m[2m:[0m failed to resolve pending payload [3merr[0m[2m=[0mevm execution error: failed decoding boundary block extra data as DKG outcome: Unexpected End-of-Buffer: Not enough bytes remaining to read data
+[2m2026-10-15T12:28:41.886644Z[0m [31mERROR[0m [2mengine::local[0m[2m:[0m Error advancing the chain: No payload
+[2m2026-10-15T12:28:41.886758Z[0m [32m INFO[0m [2mpayload_builder[0m[2m:[0m New payload job created [3mid[0m[2m=[0m0x663c7a933eada972 [3mparent[0m[2m=[0m0x663c7a933eada97208da12c67c598199a6ed17afaa190f99fb695c5684a35724
+[2m2026-10-15T12:28:41.888718Z[0m [33m WARN[0m [2mpayload_builder[0m[2m:[0m failed to resolve pending payload [3merr[0m[2m=[0mevm execution error: failed decoding boundary block extra data as DKG outcome: Unexpected End-of-Buffer: Not enough bytes remaining to read data
+[2m2026-10-15T12:28:41.888734Z[0m [31mERROR[0m [2mengine::local[0m[2m:[0m Error advancing the chain: No payload
+[2m2026-10-15T12:28:41.888870Z[0m [32m INFO[0m [2mpayload_builder[0m[2m:[0m New payload job created [3mid[0m[2m=[0m0x663c7a933eada972 [3mparent[0m[2m=[0m0x663c7a933eada97208da12c67c598199a6ed17afaa190f99fb695c5684a35724
+[2m2026-10-15T12:28:41.892176Z[0m [33m WARN[0m [2mpayload_builder[0m[2m:[0m failed to resolve pending payload [3merr[0m[2m=[0mevm execution error: failed decoding boundary block extra data as DKG outcome: Unexpected End-of-Buffer: Not enough bytes remaining to read data
+[2m2026-10-15T12:28:41.892198Z[0m [31mERROR[0m [2mengine::local[0m[2m:[0m Error advancing the chain: No payload
+[2m2026-10-15T12:28:41.892383Z[0m [32m INFO[0m [2mpayload_builder[0m[2m:[0m New payload job created [3mid[0m[2m=[0m0x663c7a933eada972 [3mparent[0m[2m=[0m0x663c7a933eada97208da12c67c598199a6ed17afaa190f99fb695c5684a35724

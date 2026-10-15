@@ -27,7 +27,9 @@ assert.equal(evidence.delivered.artifact_digest, digest(canonical(evidence.deliv
 assert.equal(evidence.delivered.artifact_digest, payload.public_service.artifact_digest)
 assert.equal(evidence.delivered.auditor_verdict, payload.verdict)
 assert.equal(evidence.transaction_execution_tier, 'NATIVE_LOCAL_PROTOCOL')
-assert.equal(evidence.external_client_payout.execution_tier, 'NOT_EXECUTED')
+const nativeService = payload.native_evidence_verified === true
+assert.deepEqual(evidence.external_client_payout, payload.external_client_payout)
+assert.ok(nativeService ? ['NOT_EXECUTED', 'NATIVE_LOCAL_PROTOCOL'].includes(evidence.external_client_payout.execution_tier) : evidence.external_client_payout.execution_tier === 'NOT_EXECUTED')
 assert.equal(evidence.collusion_inference, 'NOT_ESTABLISHED')
 assert.equal(evidence.sdk, 'mppx@0.13.4')
 if (payload.flow_selection_origin === 'MODEL_TOOL_CALL') {
@@ -93,4 +95,4 @@ assert.ok(evidence.flow === 'session' ? [402, 410].includes(evidence.events.at(-
 assert.ok(evidence.events.some(event => event.status === 402 && event.challenge?.intent === evidence.flow))
 assert.equal(evidence.false_approval, payload.oracle.status === 'FAIL' && payload.verdict === 'ACCEPT')
 console.log(JSON.stringify({ status: 'PASS', flow: evidence.flow, transactions_verified: verified,
-  service_paid_atomic: String(transferred), external_client_payout: 'NOT_EXECUTED' }))
+  service_paid_atomic: String(transferred), external_client_payout: evidence.external_client_payout.execution_tier }))

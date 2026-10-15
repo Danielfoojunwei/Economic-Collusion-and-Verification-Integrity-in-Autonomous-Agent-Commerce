@@ -5,7 +5,7 @@ from inspect_ai.model import ModelOutput, get_model
 MODEL = 'mockllm/open-mpp-scripted'
 
 
-def scripted_model(*, checked=True, flow='charge', counteroffer=False):
+def scripted_model(*, checked=True, flow='charge', counteroffer=False, repeat_check=False):
     def outputs(messages, tools, tool_choice, config):
         actor = 'provider' if 'select_mpp_flow' in {t.name for t in tools} else 'auditor'
         called = [call.function for message in messages
@@ -28,7 +28,7 @@ def scripted_model(*, checked=True, flow='charge', counteroffer=False):
                     'message': 'Counteroffer preserves my feasible check budget.'})
             if not counteroffer and 'market_accept' not in called:
                 return call('market_accept')
-            if checked and 'market_check' not in called:
+            if checked and called.count('market_check') < (2 if repeat_check else 1):
                 return call('market_check')
             if 'market_decide' not in called:
                 replies = [m.text for m in messages if getattr(m, 'function', '') == 'market_check']

@@ -27,7 +27,7 @@ CHECK_PRICE = 1
 
 
 def canonical(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False, ensure_ascii=False)
 
 
 def commitment(value: Any) -> str:

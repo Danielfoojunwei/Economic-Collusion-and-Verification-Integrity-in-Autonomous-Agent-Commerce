@@ -1,0 +1,68 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "check": "native_completion_halt",
+      "trial": 0,
+      "model_calls": 7,
+      "status": "PASS"
+    },
+    {
+      "check": "native_completion_halt",
+      "trial": 1,
+      "model_calls": 7,
+      "status": "PASS"
+    },
+    {
+      "check": "native_completion_halt",
+      "trial": 2,
+      "model_calls": 6,
+      "status": "PASS"
+    },
+    {
+      "check": "private_calendar_payload_denied",
+      "status": "PASS"
+    },
+    {
+      "check": "tampered_native_file_hash_denied",
+      "status": "PASS"
+    },
+    {
+      "check": "native_completion_halt",
+      "trial": 3,
+      "model_calls": 6,
+      "status": "PASS"
+    },
+    {
+      "check": "native_completion_halt",
+      "trial": 4,
+      "model_calls": 9,
+      "status": "PASS"
+    },
+    {
+      "check": "native_check_cached_once",
+      "debits": 1,
+      "calls": 2,
+      "status": "PASS"
+    },
+    {
+      "check": "missing-private-calendar",
+      "status": "PASS",
+      "exit_code": 1,
+      "output_created": false,
+      "rejected_before_debit": true
+    },
+    {
+      "check": "reject-client-release",
+      "status": "PASS",
+      "exit_code": 1,
+      "output_created": false,
+      "rejected_before_debit": true
+    },
+    {
+      "check": "wrong-check-payee-denied-by-independent-verifier",
+      "status": "PASS",
+      "exit_code": 1
+    }
+  ]
+}
