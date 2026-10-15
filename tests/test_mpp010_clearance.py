@@ -98,6 +98,11 @@ class ClearanceTests(unittest.TestCase):
         stopped = gate.mpp009_stopped_evidence(state)
         later = {"post_mpp009_ledger_events_sha256": digest([]),
                  "post_mpp009_ledger_run_ids": [], "post_mpp009_terminal_runs": {}}
+        # Isolate this exact-record unit from studies frozen concurrently in
+        # the canonical checkout. A separate test requires review of each
+        # newly frozen zero-call gate.
+        inventory = {name: value for name, value in gate.competing_gate_inventory().items()
+                     if name in gate.BASELINE_GATE_PATHS}
         with TemporaryDirectory() as temporary:
             clearance = Path(temporary) / "clearance.json"
             record = {"schema": "mpp010-cross-study-clearance-v1",
@@ -105,13 +110,13 @@ class ClearanceTests(unittest.TestCase):
                       "decision": "MPP010_PRIORITY_AFTER_MPP009_FIRST_STOP",
                       "ledger_seq": state["seq"], "ledger_last_hash": state["last_hash"],
                       "ledger_available_usd": state["available_usd"],
-                      "competing_gate_inventory": gate.competing_gate_inventory(),
-                      "competing_gate_dispositions": gate._competing_gate_dispositions(
-                          gate.competing_gate_inventory()),
+                      "competing_gate_inventory": inventory,
+                      "competing_gate_dispositions": gate._competing_gate_dispositions(inventory),
                       "new_competing_gates": [],
                       "intervening_studies": [], **later, **stopped}
             clearance.write_text(json.dumps(record))
             with patch.object(gate, "CLEARANCE", clearance), \
+                 patch.object(gate, "competing_gate_inventory", return_value=inventory), \
                  patch.object(gate, "intervening_ledger_evidence", return_value=later):
                 self.assertEqual(gate.cross_study_clearance(state)["decision"],
                                  record["decision"])
