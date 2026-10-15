@@ -12,7 +12,7 @@ from typing import Any, Mapping
 
 from .erc8183_fee_plan import CANONICAL_LEDGER, SOL, SONNET, _rate
 
-STUDY = "erc8183-native-evaluator-fee-auditor-effort-live-017"
+STUDY = "erc8183-native-evaluator-fee-auditor-effort-live-018"
 ROWS = 2
 PROVIDER_CALLS = 2
 AUDITOR_CALLS = 5

@@ -93,6 +93,10 @@ class Xhigh018SourceTests(unittest.TestCase):
         self.assertEqual(role_system_prompts(self.rows[0]),
                          role_system_prompts(self.rows[1]))
         preview = prospective_manifest("17" * 32, self.rows)
+        self.assertEqual(preview["study"],
+                         "erc8183-native-evaluator-fee-auditor-effort-live-018")
+        self.assertTrue(all(row.episode_id.startswith("xhigh018-")
+                            for row in self.rows))
         self.assertEqual(preview["role_steps"], ["provider"] * 2 + ["auditor"] * 5)
         self.assertEqual(preview["max_output_tokens"], 8192)
         self.assertEqual(preview["task_token_limit"], TASK_TOKEN_LIMIT)
