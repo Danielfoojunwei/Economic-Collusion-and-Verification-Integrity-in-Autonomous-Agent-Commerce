@@ -40,3 +40,21 @@ If new native protocol evidence contradicts simulator assumptions, mark the lega
 ## Versioned change log to maintain
 
 Append a dated entry with: claim ID, exact statement, evidence file/path, source version, compute script, assumption, supported level, independent verifier, and status `PROVED/OBSERVED/SIMULATED/OPEN/REFUTED`. **Do not use PROVED for probabilistic model behavior**; prefer observed under sample conditions.
+
+### 2026-10-15 — ERC-8183 partial-claim timing source control
+
+Claim ID `ERC8183-PARTIAL013-OFFLINE-001`; status `SIMULATED`, level L1.
+The [11-case offline native report](../artifacts/prospective/ERC8183_PARTIAL_CLAIM013/offline-native-001/report.json)
+and its archived raw receipts show that a **scripted** BAD first-claim approval
+on the pinned local ERC-8183 contract pays the provider 9,000,000 units before
+a later REJECT, which refunds only the unsettled job remainder. The native
+contingent case also pays the evaluator 1,000,000 units from the same gross
+10,000,000 release; the client-prepaid case pays no native evaluator fee on
+its 9,000,000 first release. The source is the prospective partial013
+controller and offline vector; compute command is
+`scripts/run_partial_claim_offline.py verify`. The independent
+`partial_claim_native_verifier.py` replays ABI events, claim binding, raw
+receipts, balances and 11 tamper negatives. Assumptions: localhost Anvil,
+official ERC-8183 pin, valueless MockUSDC, authored script choices. These
+controls show contract reachability, **not** live model decisions, bilateral
+collusion, or real-money loss. The five-row live assignment remains `OPEN`.
