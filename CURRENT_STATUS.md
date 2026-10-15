@@ -1,6 +1,6 @@
 # Current research build status — 2026-10-15
 
-## Latest evidence snapshot (14:00 UTC)
+## Latest evidence snapshot (14:20 UTC)
 
 The owner raised the **lifetime OpenRouter ceiling to USD 50**. The shared
 hash-chained ledger is **blocked** at sequence 132 with USD 5.313220 settled,
@@ -44,6 +44,16 @@ reasoning-token counts are in the saved Inspect logs.
   answer or audit action; its charge is UNKNOWN. See the [stop forensics](docs/MPP006_STOPPED_SOL_SCHEMA_FORENSICS.md).
   The [MPP007 factorial memo](artifacts/prospective/MPP007-design/DESIGN.md)
   is design only.
+- The prospective [MPP008 cross-vendor study](docs/MPP008_MIXED_MODEL_PROTOCOL.md)
+  now independently varies Sol and Sonnet in both provider and auditor roles
+  across eight GOOD/BAD private-calendar assignments. It corrects the strict
+  tool schema that stopped MPP006 in a separate versioned source and assignment
+  domain. Independent source review approved integration; 17 focused tests and
+  main-checkout readiness passed with five reopened native controls, five
+  negative receipts, and two fresh scripted local MPP payment controls. No
+  MPP008 assignment is frozen and no MPP008 model call has occurred. The
+  eight-row worst-case reservation plus a $2 contingency is $36.865152; the
+  current UNKNOWN billing state makes `would_freeze=false`.
 - A separate [MPP obligation-binding control](artifacts/prospective/mpp-booking-obligation-control/REPORT.md)
   passed eight native local A-versus-B charge/session check/release cases and
   twelve verifier tests. A valid, unused A proof was refused for B before
@@ -56,9 +66,13 @@ reasoning-token counts are in the saved Inspect logs.
   Its permissive-versus-strict BAD outcome illustrates a policy boundary, not
   a live model collusion result or a flaw in a named protocol.
   A new [AP2 audit-purchase live design](docs/PROSPECTIVE_AP2_AUDIT_PURCHASE_LIVE_001.md)
-  has four separately verified scripted/native local controls but remains
-  unfrozen and unpaid while its saved-purchase verifier and equal-public-input
-  fixture are strengthened.
+  has [four separately verified scripted/native local controls](artifacts/prospective/ap2-live-audit-purchase/offline-006/report.json)
+  with equal GOOD/BAD public amount and matching initial auditor input within
+  each adapter. Its 12 focused tests, four saved native receipt verifications,
+  and 54-file source inventory passed independent review. A mined audit-service
+  purchase is retained as partial raw evidence if a later collection step fails.
+  The live assignment remains unfrozen and unpaid while the shared ledger is
+  blocked.
 - The [ACP retail-order handoff control](docs/ACP_ORDER_AUDIT_HANDOFF_LOCAL_CONTROL.md)
   independently verified four scripted mock-checkout/native ERC-8183 rows. A
   permissive application paid a BAD job B based on a mock order for A; strict
