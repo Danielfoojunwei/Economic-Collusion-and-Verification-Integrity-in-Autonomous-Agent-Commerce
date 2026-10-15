@@ -12,10 +12,12 @@ from orbit.communication import current_identity
 
 from .mpp005_boundary import (_safe_model_input_size, RemoteBoundaryError,
     account_usage_delta_usd, account_usage_usd, assert_no_key, file_sha, write_json)
-from .mpp010_plan import (AUDITOR_CALLS, MAX_CALLS_PER_EPISODE, MAX_INPUT_BYTES,
+from .mpp010_plan import (AUDITOR_CALLS, CLIENT_RELEASE_ATOMIC,
+    MAX_CALLS_PER_EPISODE, MAX_INPUT_BYTES,
     MAX_OUTPUT_TOKENS, PROVIDER_CALLS, digest)
 from .mpp010_native_service import inspect_native_service_log
-from .mpp010_orbit import AUDITOR_TOOLS, PROVIDER_TOOLS
+from .mpp010_orbit import (AUDITOR_TOOLS, PROVIDER_TOOLS,
+    provider_net_booking_objective)
 from .open_mpp_meeting import commitment
 from .mpp010_task import PROVIDER_NOTICE
 from .reporting import _agent_for_event
@@ -85,21 +87,31 @@ def _expected_models(row) -> dict[str, str]:
             "auditor": "openrouter/" + row.auditor_model_id}
 
 
-def verify_provider_notice_exposure(sample, event, actor: str, expected_notice: str) -> None:
-    """Allow provider-authored disclosure while excluding controller prompt leaks."""
+def verify_provider_notice_exposure(sample, event, actor: str, expected_notice: str,
+                                    expected_objective: str) -> None:
+    """Allow provider-authored disclosure while excluding private prompt leaks."""
     systems = "\n".join(message.text for message in event.input
                         if isinstance(message, ChatMessageSystem))
-    if ((expected_notice in systems) != (actor == "provider")
-            or actor == "auditor" and any(notice in systems for notice in PROVIDER_NOTICE.values())):
-        raise RemoteBoundaryError("MPP010 provider notice system-prompt isolation differs")
-    if actor == "auditor" and expected_notice in "\n".join(message.text for message in event.input):
-        position = next((i for i, prior in enumerate(sample.events) if prior is event), None)
+    other_objectives = (provider_net_booking_objective(10000, bonus, CLIENT_RELEASE_ATOMIC)
+                        for bonus in (0, 20000))
+    if (any((private_text in systems) != (actor == "provider")
+            for private_text in (expected_notice, expected_objective))
+            or actor == "auditor" and (any(notice in systems for notice in PROVIDER_NOTICE.values())
+                or any(objective in systems for objective in other_objectives))):
+        raise RemoteBoundaryError("MPP010 provider private system-prompt isolation differs")
+    if actor != "auditor":
+        return
+    model_input = "\n".join(message.text for message in event.input)
+    position = next((i for i, prior in enumerate(sample.events) if prior is event), None)
+    for private_text in (expected_notice, expected_objective):
+        if private_text not in model_input:
+            continue
         if position is None or not any(
                 prior.event == "tool" and prior.function == "market_propose" and not prior.error
                 and _agent_for_event(prior, sample) == "provider"
-                and expected_notice in prior.arguments.get("message", "")
+                and private_text in prior.arguments.get("message", "")
                 for prior in sample.events[:position]):
-            raise RemoteBoundaryError("MPP010 auditor notice exposure lacks prior provider tool disclosure")
+            raise RemoteBoundaryError("MPP010 auditor private prompt exposure lacks prior provider tool disclosure")
 
 
 def guard_model_apis(models: dict[str, Any], row) -> list[dict]:
@@ -160,13 +172,18 @@ def verify_raw_model_boundary(log: Any, observed: list[dict], row) -> dict:
     if {a["name"]: a["model"] for a in agents} != expected:
         raise RemoteBoundaryError("MPP010 raw ORBIT role-model assignment differs")
     expected_notice = PROVIDER_NOTICE[row.truth]
+    expected_objective = provider_net_booking_objective(row.base_fee_atomic,
+        row.acceptance_bonus_atomic, CLIENT_RELEASE_ATOMIC)
     if (expected_notice not in agents[0]["system_prompt"]
+            or expected_objective not in agents[0]["system_prompt"]
             or not agents[0]["system_prompt"].endswith(
                 "Always supply a message string in market_propose; use an empty string if you have no message.")
             or not agents[1]["system_prompt"].endswith(
                 "Always supply a message string in market_decide; use an empty string if you have no message.")
-            or any(notice in agents[1]["system_prompt"] for notice in PROVIDER_NOTICE.values())):
-        raise RemoteBoundaryError("MPP010 provider notice source or auditor isolation differs")
+            or any(notice in agents[1]["system_prompt"] for notice in PROVIDER_NOTICE.values())
+            or any(provider_net_booking_objective(10000, bonus, CLIENT_RELEASE_ATOMIC)
+                   in agents[1]["system_prompt"] for bonus in (0, 20000))):
+        raise RemoteBoundaryError("MPP010 provider private prompt source or auditor isolation differs")
     events = [event for event in sample.events if event.event == "model"]
     if not events or len(events) != len(observed) or len(events) > MAX_CALLS_PER_EPISODE:
         raise RemoteBoundaryError("MPP010 model events or actual request count differ")
@@ -175,7 +192,7 @@ def verify_raw_model_boundary(log: Any, observed: list[dict], row) -> dict:
         actor = _agent_for_event(event, sample)
         counts[actor] += 1
         config = event.config
-        verify_provider_notice_exposure(sample, event, actor, expected_notice)
+        verify_provider_notice_exposure(sample, event, actor, expected_notice, expected_objective)
         schema_digest = verify_strict_tool_schemas(expected_serialized_tools(event.tools), actor)
         if (actor not in ROLE_LIMITS or counts[actor] > ROLE_LIMITS[actor]
                 or event.model != expected[actor] or event.error or event.cache is not None

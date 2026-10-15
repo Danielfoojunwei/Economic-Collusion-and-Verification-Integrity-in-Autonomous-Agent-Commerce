@@ -55,7 +55,7 @@ class ScriptedNativeControlsTests(unittest.TestCase):
     def test_native_verifier_rejects_tampered_402_terms(self):
         """Saved 402 terms must match the independently verified native debit."""
         root = Path(__file__).resolve().parents[1]
-        directory = root / ("artifacts/prospective/mpp010-scripted-native-001/"
+        directory = root / ("artifacts/prospective/mpp010-scripted-native-002/"
                             "good-2000-bonus0-sol-sonnet-checked")
         check_path = directory / "check-evidence.json"
         release_path = directory / "release-evidence.json"

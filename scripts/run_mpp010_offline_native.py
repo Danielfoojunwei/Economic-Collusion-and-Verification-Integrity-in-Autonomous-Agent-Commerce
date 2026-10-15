@@ -30,10 +30,12 @@ from inspect_ai.model import ModelOutput, ModelUsage, get_model
 from agent_economic_trust.mpp010_native_service import (
     NativeMeetingService, inspect_native_service_log,
 )
+from agent_economic_trust.mpp010_boundary import verify_provider_notice_exposure
+from agent_economic_trust.mpp010_orbit import provider_net_booking_objective
 from agent_economic_trust.mpp010_plan import (
-    CALL_SCHEDULE, MAX_INPUT_BYTES, ROLE_DIRECTIONS, make_schedule,
+    CALL_SCHEDULE, CLIENT_RELEASE_ATOMIC, MAX_INPUT_BYTES, ROLE_DIRECTIONS, make_schedule,
 )
-from agent_economic_trust.mpp010_task import native_pressure_task
+from agent_economic_trust.mpp010_task import PROVIDER_NOTICE, native_pressure_task
 from agent_economic_trust.remote import _safe_model_input_size
 from agent_economic_trust.reporting import _agent_for_event
 
@@ -41,6 +43,7 @@ from agent_economic_trust.reporting import _agent_for_event
 MODEL = "mockllm/mpp010-scripted-native"
 SEED = "a7" * 32  # Local control identity only; never a prospective assignment seed.
 SOURCE_FILES = (
+    "docs/MPP010_NET_REVENUE_AMENDMENT.md",
     "protocols/mpp/mpp010-chain-identity.mjs",
     "protocols/mpp/mpp010-meeting-service.mjs",
     "protocols/mpp/mpp010-verify-meeting-service.mjs",
@@ -50,6 +53,7 @@ SOURCE_FILES = (
     "src/agent_economic_trust/mpp010_plan.py",
     "src/agent_economic_trust/mpp010_market.py",
     "src/agent_economic_trust/mpp010_orbit.py",
+    "src/agent_economic_trust/mpp010_boundary.py",
     "src/agent_economic_trust/mpp010_native_service.py",
     "src/agent_economic_trust/mpp010_task.py",
     "src/agent_economic_trust/remote.py",
@@ -196,6 +200,24 @@ def scripted_model(case: Control):
     return model
 
 
+def verify_scripted_prompt_boundary(sample, row) -> None:
+    """Bind archived model inputs to current assigned economics and private notice."""
+    agents = sample.metadata["experiment"]["setup"]["agents"]
+    objective = provider_net_booking_objective(row.base_fee_atomic,
+        row.acceptance_bonus_atomic, CLIENT_RELEASE_ATOMIC)
+    notice = PROVIDER_NOTICE[row.truth]
+    if ([agent["name"] for agent in agents] != ["provider", "auditor"]
+            or objective not in agents[0]["system_prompt"]
+            or notice not in agents[0]["system_prompt"]
+            or objective in agents[1]["system_prompt"]
+            or any(private in agents[1]["system_prompt"]
+                   for private in PROVIDER_NOTICE.values())):
+        raise ValueError("MPP010 archived provider prompt differs from assigned private objective")
+    for event in (event for event in sample.events if event.event == "model"):
+        verify_provider_notice_exposure(sample, event, _agent_for_event(event, sample),
+                                        notice, objective)
+
+
 def run_control(case: Control, directory: Path, rpc_url: str, http_url: str) -> dict:
     service = NativeMeetingService(directory, case.row, rpc_url, http_url)
     asyncio.run(service.prepare())
@@ -217,6 +239,7 @@ def run_control(case: Control, directory: Path, rpc_url: str, http_url: str) -> 
     raw = read_eval_log(log.location, resolve_attachments=True)
     sample = raw.samples[0]
     model_events = [event for event in sample.events if event.event == "model"]
+    verify_scripted_prompt_boundary(sample, case.row)
     roles = [_agent_for_event(event, sample) for event in model_events]
     if roles != list(CALL_SCHEDULE):
         raise ValueError(f"eight scheduled role calls changed: {roles}")
@@ -372,6 +395,7 @@ def verify_offline_report(report: Path, *, rpc_url: str = "http://127.0.0.1:1976
             raise ValueError("scripted raw Inspect archive absent or changed")
         raw = read_eval_log(str(archives[0]), resolve_attachments=True)
         sample = raw.samples[0]
+        verify_scripted_prompt_boundary(sample, case.row)
         model_events = [event for event in sample.events if event.event == "model"]
         sizes = [_safe_model_input_size(event.input, event.tools) for event in model_events]
         roles = [_agent_for_event(event, sample) for event in model_events]
