@@ -42,6 +42,8 @@ from scripts import xhigh018_freeze as gate
 from agent_economic_trust.remote_budget import BudgetLedger
 from agent_economic_trust.mpp005_plan import canonical_project_root
 
+INCIDENT_RUN_ID = "mpp012-unguarded-source-test-20261015-221720"
+
 
 def prefix(row) -> dict:
     fixture, artifact = invoice_case(row.truth)
@@ -80,6 +82,34 @@ def settle_claim(row, verdict, checked):
 class Xhigh018SourceTests(unittest.TestCase):
     def setUp(self):
         self.rows = make_schedule("17" * 32)
+
+    def _historical_six_hold_projection(self):
+        """Exercise predecessor hold checks without clearing the live incident.
+
+        This projected dict is never written to the ledger or passed to a
+        readiness, freeze, or paid runner. Its available_usd stays zero.
+        """
+        actual = BudgetLedger(gate.CANONICAL_LEDGER).snapshot()
+        self.assertEqual(actual["seq"], 226)
+        self.assertTrue(actual["blocked"])
+        self.assertEqual(actual["available_usd"], "0")
+        self.assertEqual(actual["unknown_run_ids"], [INCIDENT_RUN_ID])
+        incident = actual["runs"][INCIDENT_RUN_ID]
+        self.assertEqual(incident["status"], "UNKNOWN")
+        self.assertEqual(incident["reserved_usd"], "12.816262")
+        with self.assertRaises(ValueError):
+            exact_prior_holds(actual)
+        with self.assertRaises(ValueError):
+            gate._ledger()
+        projected = deepcopy(actual)
+        del projected["runs"][INCIDENT_RUN_ID]
+        projected["unknown_run_ids"] = []
+        projected["blocked"] = False
+        projected["reserved_usd"] = str(
+            Decimal(actual["reserved_usd"]) - Decimal(incident["reserved_usd"]))
+        self.assertEqual(projected["reserved_usd"], "27.086812")
+        self.assertEqual(projected["available_usd"], "0")
+        return projected
 
     def test_two_seeded_matched_bad_rows_and_full_block_bound(self):
         self.assertEqual(self.rows, make_schedule("17" * 32))
@@ -386,7 +416,7 @@ class Xhigh018SourceTests(unittest.TestCase):
         self.assertEqual(report["replay"]["tamper_negatives_reverified"], 7)
 
     def test_xhigh017_full_hold_and_stopped_archive_are_prerequisites(self):
-        state = BudgetLedger(gate.CANONICAL_LEDGER).snapshot()
+        state = self._historical_six_hold_projection()
         self.assertEqual(state["runs"][XHIGH017_STOP_RUN_ID]["status"], "CONTINGENT")
         self.assertEqual(Decimal(state["runs"][XHIGH017_STOP_RUN_ID]["reserved_usd"]),
                          XHIGH017_HOLD_USD)
@@ -427,12 +457,6 @@ class Xhigh018SourceTests(unittest.TestCase):
                     gate._xhigh017_closure()
         self.assertEqual(closure["denominator"], {"planned": 2, "complete": 0,
                                                  "stopped": 1, "pending": 1})
-        with patch.object(gate, "UNLEDGERED_CALL_INCIDENT",
-                          canonical_project_root() /
-                          "artifacts/incidents/MPP012_UNGUARDED_TEST_001/incident.json"):
-            with self.assertRaisesRegex(ValueError,
-                                        "unledgered-call incident is not reconciled"):
-                gate._ledger()
         with patch.object(gate, "XHIGH017_TRANSITION_HASH", "0" * 64):
             with self.assertRaises(ValueError):
                 gate._ledger()
@@ -441,7 +465,7 @@ class Xhigh018SourceTests(unittest.TestCase):
                 gate._ledger()
 
     def test_pressure016_sixth_hold_cannot_be_released_or_relabelled(self):
-        state = BudgetLedger(gate.CANONICAL_LEDGER).snapshot()
+        state = self._historical_six_hold_projection()
         self.assertEqual(len(exact_prior_holds(state)["exact_open_run_ids"]), 6)
         for alteration in ("status", "reserve", "evidence", "unknown", "extra"):
             changed = deepcopy(state)
