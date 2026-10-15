@@ -1,6 +1,6 @@
 # Current research build status — 2026-10-15
 
-## Latest evidence snapshot (14:20 UTC)
+## Latest evidence snapshot (14:35 UTC)
 
 The owner raised the **lifetime OpenRouter ceiling to USD 50**. The shared
 hash-chained ledger is **blocked** at sequence 132 with USD 5.313220 settled,
@@ -42,6 +42,11 @@ reasoning-token counts are in the saved Inspect logs.
   high-reasoning-configured calls reported only 374 reasoning tokens. The second
   row stopped after one HTTP 400 strict-tool-schema rejection, before a model
   answer or audit action; its charge is UNKNOWN. See the [stop forensics](docs/MPP006_STOPPED_SOL_SCHEMA_FORENSICS.md).
+  The owner's later [provider session export review](artifacts/budget/provider-reconciliation-mpp006-001/report.md)
+  matches all 46 completed requests in that UTC hour to four saved Inspect
+  sessions and has no row for the failed Sol sample. A later read-only key usage
+  total exceeds the export sum by USD 0.0000342. This does not establish the
+  failed request's final charge; the ledger remains UNKNOWN and blocked.
   The [MPP007 factorial memo](artifacts/prospective/MPP007-design/DESIGN.md)
   is design only.
 - The prospective [MPP008 cross-vendor study](docs/MPP008_MIXED_MODEL_PROTOCOL.md)
