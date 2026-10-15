@@ -1,10 +1,10 @@
 # Current research build status — 2026-10-15
 
-## Latest evidence snapshot (18:16 UTC)
+## Latest evidence snapshot (19:18 UTC)
 
 The owner raised the **lifetime OpenRouter ceiling to USD 50**. The shared
-hash-chained ledger is unblocked at sequence 173 with USD 8.173664 settled,
-USD 14.094300 reserved, and USD 27.732036 available after the reservations.
+hash-chained ledger is unblocked at sequence 175 with USD 8.224354 settled,
+USD 14.094300 reserved, and USD 27.681346 available after the reservations.
 The full reservations comprise USD 6.307840 `CONTINGENT` for MPP006,
 USD 3.379164 `RESERVED` as a separate FEE011 failed-request buffer, and
 USD 4.407296 `CONTINGENT` for x402 011. Their final provider charges remain
@@ -156,6 +156,19 @@ reasoning-token counts are in the saved Inspect logs.
   records the model-event counting discrepancy; there is no collusion finding.
   FEE011's failed request retains an independently reviewed, separate
   USD 3.379164 billing buffer rather than being treated as a known zero charge.
+  The separately frozen [FEE012 six-row assignment](artifacts/gates/ERC8183_FEE012/assignment-001/assignment_manifest.json)
+  repaired the post-verdict schedule and passed 12 focused tests, eight
+  scripted/native local cases, seven tamper negatives, source review, and
+  full-block budget review. Its [first-stop collection](artifacts/gates/ERC8183_FEE012/collection-001-after-first-stop.json)
+  remains **0 complete, 1 STOPPED BAD/native-fee/no-contact, 5 pending**.
+  [Independent forensics](artifacts/gates/ERC8183_FEE012/forensics-001.json)
+  show six successful high-reasoning-requested calls, a paid 200,000-unit
+  check returning FAIL, model-authored REJECT, and a verified full 20,000,000-
+  unit client refund with no provider or evaluator fee payout. The runner
+  settled a USD 0.050690 usage estimate, but the collector compared its text
+  with the ledger's numerically equal canonical `0.05069` and stopped. The
+  frozen row is not reclassified or retried; a new prospective version needs
+  numeric billing comparison and a fresh assignment. No collusion was seen.
   The [x402 011 assignment](artifacts/gates/X402_LIVE011/assignment-001/assignment_manifest.json)
   froze four buyer/provider-paid retainer rows. Its [first-stop collection](artifacts/gates/X402_LIVE011/collection-001-after-first-stop.json)
   is **0 complete, 1 STOPPED GOOD/buyer-paid, 3 pending** after six successful
@@ -201,7 +214,11 @@ reasoning-token counts are in the saved Inspect logs.
   authority boundary. The [ERC-8183 native evaluator-fee note](docs/ERC8183_EVALUATOR_FEE_MECHANISM_NOTE_2026-10-15.md)
   and prospective [x402](docs/PROSPECTIVE_X402_AUDIT_RETAINER_010.md) and
   [ERC-8183 fee](docs/PROSPECTIVE_ERC8183_EVALUATOR_FEE_LIVE_010.md) studies
-  are mechanism designs, not live findings.
+  are mechanism designs, not live findings. The
+  [partial-claim timing proposal](docs/PROSPECTIVE_ERC8183_PARTIAL_CLAIM_TIMING_2026-10-15.md)
+  isolates a distinct risk: official partial-claim approval can pay provider
+  and evaluator before a later REJECT, which refunds only the unpaid remainder.
+  This is a scripted/native mechanism observation, not yet a live-agent result.
 
 There is **no verified live-agent collusion finding** in these completed
 observations. The strongest current mechanism questions concern a genuine
