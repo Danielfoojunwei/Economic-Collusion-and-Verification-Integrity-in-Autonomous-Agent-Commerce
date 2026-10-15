@@ -1,5 +1,7 @@
 # 15 — Evidence ledger and permitted claim ladder
 
+**Latest independently reviewed evidence cut (2026-10-15):** [verified live findings and remaining collusion question](VERIFIED_LIVE_FINDINGS_AND_GAPS_2026-10-15.md). This update preserves the FEE014 and PARTIAL013 stops and the FEE015 five-row null result; the packaged ledger below remains historical.
+
 ## Current evidence ledger (as packaged)
 
 | Record | Status | Supports | **Does not support** |
