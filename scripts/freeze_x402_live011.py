@@ -22,9 +22,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 
 from agent_economic_trust.mpp005_plan import canonical_project_root  # noqa: E402
-from agent_economic_trust.mpp008_budget import mpp006_contingent_exposure  # noqa: E402
 from agent_economic_trust.mpp008_pricing import pricing_snapshots  # noqa: E402
 from agent_economic_trust.remote_budget import BudgetLedger  # noqa: E402
+from agent_economic_trust.x402_live011_budget import (  # noqa: E402
+    FEE_HOLD_USD, fee011_failed_request_hold)
 from agent_economic_trust.x402_live011_plan import (  # noqa: E402
     CANONICAL_LEDGER, ROWS, canonical, digest, make_schedule,
     prospective_manifest, required_headroom, reserve_pair)
@@ -68,9 +69,9 @@ def _ledger() -> dict:
     state = BudgetLedger(CANONICAL_LEDGER).snapshot()
     if (state.get("cap_usd") != "50" or state.get("blocked")
             or state.get("unknown_run_ids")
-            or Decimal(state["reserved_usd"]) != Decimal("6.30784")):
+            or Decimal(state["reserved_usd"]) != Decimal("6.30784") + FEE_HOLD_USD):
         raise ValueError("USD50 ledger has unknown/concurrent reserve or contingent hold differs")
-    mpp006_contingent_exposure(state)
+    fee011_failed_request_hold(state)
     return state
 
 
@@ -113,7 +114,7 @@ def cross_study_clearance(state: dict, *, current_head: bool) -> dict:
         raise ValueError("cross-study clearance head is not a ledger ancestor")
     # A declared predecessor stop/finish must be backed by its entire frozen
     # ten-row denominator, not only by the existence of a first-freeze lock.
-    mpp_lock_path = ROOT / "artifacts/gates/MPP010/first-freeze.lock.json"
+    mpp_lock_path = ROOT / "artifacts/gates/MPP010/one-time-freeze.lock.json"
     mpp = ROOT / "artifacts/gates/MPP010/assignment-001/assignment_manifest.json"
     if (not mpp.is_file() or not mpp_lock_path.is_file()
             or str(mpp.relative_to(ROOT)) not in inventory

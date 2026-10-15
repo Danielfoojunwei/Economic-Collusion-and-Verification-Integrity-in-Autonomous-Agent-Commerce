@@ -67,6 +67,90 @@ def _usd(value: Any) -> Decimal:
     return result
 
 
+def verify_stopped_model_and_account(stop: dict, directory: Path) -> dict:
+    """Reopen failed Inspect events; wrapper returns are not billing receipts."""
+    guard = stop.get("model_request_boundary")
+    summary = stop.get("stopped_model_events")
+    account = stop.get("stopped_account_usage")
+    require(isinstance(guard, list) and all(isinstance(item, dict) for item in guard)
+            and isinstance(summary, dict) and isinstance(account, dict),
+            "stopped model/account evidence absent")
+    base = {"guarded_api_invocations": len(guard),
+            "guard_completed_returns": sum(item.get("completed") is True
+                                           for item in guard)}
+    require(all(summary.get(key) == value for key, value in base.items()),
+            "stopped API wrapper count differs")
+    status = summary.get("status")
+    archived = directory / "inspect.eval"
+    work = sorted((directory / "inspect_work").glob("*.eval"))
+    candidates = ([archived] if archived.is_file() else []) + work
+    inventory = [{"path": str(path.relative_to(directory)),
+                  "sha256": file_sha(path)} for path in candidates]
+    require(summary.get("inspect_archive_inventory") == inventory,
+            "stopped Inspect archive inventory differs")
+    single = (len(work) <= 1 and candidates and
+              (not archived.is_file() or not work or
+               inventory[0]["sha256"] == inventory[1]["sha256"]))
+    if status == "NO_SINGLE_INSPECT_ARCHIVE":
+        require(not single, "stopped Inspect archive was omitted")
+    elif status in {"REPLAYED_INSPECT_MODEL_EVENTS", "INSPECT_ARCHIVE_UNVERIFIED"}:
+        require(single, "stopped Inspect archives conflict")
+        path = _within(directory, summary.get("inspect_path"))
+        require(path == (archived if archived.is_file() else work[0]),
+                "stopped Inspect selected path differs")
+        require(summary.get("inspect_sha256") == file_sha(path),
+                "stopped Inspect archive hash differs")
+        try:
+            log = read_eval_log(str(path), resolve_attachments=True)
+            samples = log.samples or []
+            require(len(samples) == 1, "stopped Inspect sample count differs")
+            events = [item for item in samples[0].events if item.event == "model"]
+            successful = sum(not item.error for item in events)
+        except Exception as exc:
+            require(status == "INSPECT_ARCHIVE_UNVERIFIED"
+                    and summary.get("read_error_type") == type(exc).__name__,
+                    "stopped Inspect replay error differs")
+        else:
+            require(status == "REPLAYED_INSPECT_MODEL_EVENTS"
+                    and summary.get("eval_status") == log.status
+                    and summary.get("inspect_model_events") == len(events)
+                    and summary.get("inspect_successful_model_events") == successful
+                    and summary.get("inspect_failed_model_events") == len(events) - successful
+                    and summary.get("guard_inspect_counts_agree") is
+                        (len(events) == len(guard) and successful == base["guard_completed_returns"])
+                    and summary.get("provider_billing_for_failed_events") == "UNVERIFIED",
+                    "stopped Inspect model event reconciliation differs")
+    else:
+        raise ValueError("stopped model event evidence status differs")
+    account_status = account.get("status")
+    require(account.get("failed_call_billing") == "UNVERIFIED",
+            "stopped failed-call billing certainty differs")
+    if account_status == "NO_PRECALL_ACCOUNT_BASELINE":
+        require("before_usd" not in account and not guard
+                and (status != "REPLAYED_INSPECT_MODEL_EVENTS"
+                     or summary.get("inspect_model_events") == 0),
+                "stopped account baseline absent despite model request")
+    elif account_status == "AGGREGATE_ACCOUNT_DELTA_OBSERVED":
+        before, after, delta = (_usd(account.get(name)) for name in
+                                ("before_usd", "after_usd", "aggregate_delta_usd"))
+        require(after - before == delta and account.get("scope") ==
+                "whole OpenRouter account; not a per-call receipt",
+                "stopped aggregate account usage differs")
+    elif account_status == "ACCOUNT_DELTA_UNVERIFIED":
+        _usd(account.get("before_usd"))
+        require(type(account.get("read_error_type")) is str,
+                "stopped account read error differs")
+    else:
+        raise ValueError("stopped account evidence status differs")
+    if stop.get("budget_state") == "SETTLED":
+        require(status == "REPLAYED_INSPECT_MODEL_EVENTS"
+                and summary.get("eval_status") == "success"
+                and summary.get("inspect_failed_model_events") == 0
+                and summary.get("guard_inspect_counts_agree") is True,
+                "failed or missing model log cannot support settled stopped row")
+    return {"model_events": summary, "account_usage": account}
+
+
 def run_id(assignment_sha: str, episode_id: str) -> str:
     return f"x402011-{assignment_sha[:12]}-{episode_id}"
 
@@ -448,6 +532,7 @@ def verify_stopped(row: X402LiveRow, directory: Path, *,
             or (state in {"SETTLED", "UNKNOWN"} and isinstance(billed, dict)
                 and billed.get("status") == state)
             or state == "UNRESOLVED", "stopped row budget state differs")
+    stopped_evidence = verify_stopped_model_and_account(stop, directory)
     native_path = directory / "native/native-bridge.json"
     native_status = "PARTIAL_OR_UNRESOLVED"
     terminal = None
@@ -473,6 +558,8 @@ def verify_stopped(row: X402LiveRow, directory: Path, *,
             "native_only_wrongful_provider_payout": native_wrongful,
             "partial_artifacts_verified": len(paths),
             "budget_state": state,
+            "stopped_model_events": stopped_evidence["model_events"],
+            "stopped_account_usage": stopped_evidence["account_usage"],
             "requested_verdict": None, "agent_false_approval": None,
             "wrongful_native_payout": native_wrongful,
             "action_linked_candidate_for_human_review": None,

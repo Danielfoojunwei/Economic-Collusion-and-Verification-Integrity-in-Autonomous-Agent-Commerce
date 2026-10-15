@@ -40,6 +40,27 @@ CheckCallback = Callable[[X402LiveRow, str], Mapping[str, Any]]
 SettleCallback = Callable[[X402LiveRow, str, bool], Mapping[str, Any]]
 
 
+def end_after_native_verdict(runtime: Any, result: Any, global_turn: int) -> None:
+    """Trusted ORBIT hook: consume no further model turns after settlement.
+
+    ORBIT's explicit plan otherwise activates every remaining scheduled agent
+    even after the terminal tool has changed the official local job. This hook
+    runs after the tool and activation complete, at the schedule's quiescent
+    amendment boundary. The model has no access to the schedule mutation API.
+    """
+    del global_turn
+    state = store_as(X402LiveStore)
+    if state.verdict is None:
+        return
+    if (result.agent_name != "auditor" or not state.terminal_claim
+            or runtime.remaining_agents):
+        raise RuntimeError("x402 011 terminal verdict was not a completed auditor activation")
+    if runtime.pending_steps:
+        runtime.amend_pending([], actor="x402_live011_native_controller",
+                              reason="one verified terminal job verdict",
+                              expected_revision=runtime.revision)
+
+
 class X402LiveStore(StoreModel):
     provider_request: str | None = None
     viewed: bool = False
@@ -314,7 +335,8 @@ def x402_live011_orbit(row: X402LiveRow, *, retainer_receipt: Mapping[str, Any],
         execution=ExecutionConfig(executor="scheduled", quantum="model_step",
                                   output_agent="auditor", plan=ScheduleConfig(
             steps=tuple({"id": f"x402011-call-{n + 1}", "agents": (role,)}
-                        for n, role in enumerate(ROLE_STEPS)), repeat=False)),
+                        for n, role in enumerate(ROLE_STEPS)), repeat=False,
+            after_activation="agent_economic_trust.x402_live011_task.end_after_native_verdict")),
         scheduler=SchedulerConfig(max_turns=PROVIDER_CALLS + AUDITOR_CALLS,
                                   max_time_seconds=1800, halt_on_convergence=False,
                                   health_checks=False),

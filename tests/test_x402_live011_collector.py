@@ -5,14 +5,17 @@ from __future__ import annotations
 import json
 from hashlib import sha256
 from pathlib import Path
+import shutil
 from types import SimpleNamespace as N
 from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
 from agent_economic_trust.x402_live011_plan import make_schedule, prospective_manifest
+from agent_economic_trust.x402_live011_remote import _stopped_model_events
 from scripts.collect_x402_live011 import (classify_improper_request, collect,
-                                           file_sha, run_id, verify_conduct)
+                                           file_sha, run_id, verify_conduct,
+                                           verify_stopped_model_and_account)
 
 
 class Message:
@@ -148,6 +151,12 @@ class X402Live011CollectorTests(unittest.TestCase):
                 "no_retry_or_substitution": True,
                 "complete_native_claim": False,
                 "budget_state": "UNRESERVED", "partial_artifacts": [],
+                "model_request_boundary": [],
+                "stopped_model_events": {"status": "NO_SINGLE_INSPECT_ARCHIVE",
+                    "inspect_archive_inventory": [],
+                    "guarded_api_invocations": 0, "guard_completed_returns": 0},
+                "stopped_account_usage": {"status": "NO_PRECALL_ACCOUNT_BASELINE",
+                    "failed_call_billing": "UNVERIFIED"},
             }))
             snapshot = {"seq": 14, "runs": {}}
             report = collect(frozen, assignment_sha, rows, runs,
@@ -189,3 +198,44 @@ class X402Live011CollectorTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "later x402 live row"):
                 collect(frozen, assignment_sha, rows, runs,
                         ledger_snapshot=snapshot)
+
+    def test_failed_inspect_event_cannot_be_settled_from_guard_returns(self):
+        """Reopen FEE011's saved HTTP400 trace as a no-network failure fixture."""
+        archive = (Path(__file__).resolve().parents[1] /
+            "artifacts/gates/ERC8183_FEE011/runs-001/episodes/"
+            "fee010-b0125916b5cd2e63f69109b5")
+        guard = json.loads((archive / "STOPPED.json").read_text())[
+            "model_request_boundary"]
+        with TemporaryDirectory(prefix="x402011-failed-model-replay-", dir="/tmp") as temp:
+            directory = Path(temp)
+            shutil.copyfile(archive / "inspect.eval", directory / "inspect.eval")
+            summary = _stopped_model_events(directory, guard)
+            self.assertEqual(summary["inspect_model_events"], 8)
+            self.assertEqual(summary["inspect_failed_model_events"], 1)
+            self.assertEqual(summary["guard_completed_returns"], 8)
+            self.assertFalse(summary["guard_inspect_counts_agree"])
+            account = {"status": "ACCOUNT_DELTA_UNVERIFIED",
+                       "before_usd": "0", "read_error_type": "ConnectionError",
+                       "failed_call_billing": "UNVERIFIED"}
+            stop = {"budget_state": "UNKNOWN", "model_request_boundary": guard,
+                    "stopped_model_events": summary, "stopped_account_usage": account}
+            self.assertEqual(verify_stopped_model_and_account(stop, directory)[
+                "model_events"]["inspect_failed_model_events"], 1)
+            with self.assertRaisesRegex(ValueError, "baseline absent"):
+                verify_stopped_model_and_account({**stop, "stopped_account_usage": {
+                    "status": "NO_PRECALL_ACCOUNT_BASELINE",
+                    "failed_call_billing": "UNVERIFIED"}}, directory)
+            with self.assertRaisesRegex(ValueError, "cannot support settled"):
+                verify_stopped_model_and_account({**stop, "budget_state": "SETTLED"},
+                                                 directory)
+            work = directory / "inspect_work"
+            work.mkdir()
+            (work / "conflicting.eval").write_bytes(b"second-or-altered-attempt")
+            ambiguous = _stopped_model_events(directory, guard)
+            self.assertEqual(ambiguous["status"], "NO_SINGLE_INSPECT_ARCHIVE")
+            self.assertEqual(len(ambiguous["inspect_archive_inventory"]), 2)
+            self.assertEqual(verify_stopped_model_and_account({
+                **stop, "stopped_model_events": ambiguous}, directory)[
+                "model_events"]["status"], "NO_SINGLE_INSPECT_ARCHIVE")
+            with self.assertRaisesRegex(ValueError, "inventory differs"):
+                verify_stopped_model_and_account(stop, directory)

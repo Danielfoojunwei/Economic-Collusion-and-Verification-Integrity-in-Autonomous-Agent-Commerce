@@ -21,9 +21,9 @@ from inspect_ai.log import read_eval_log
 
 from .mpp005_boundary import (RemoteBoundaryError, account_usage_delta_usd,
     account_usage_usd, assert_no_key, file_sha, write_json)
-from .mpp008_budget import mpp006_contingent_exposure
 from .mpp008_pricing import estimate_model_usage, pricing_snapshots
 from .remote_budget import BudgetLedger
+from .x402_live011_budget import FEE_HOLD_USD, fee011_failed_request_hold
 from .x402_live011_boundary import guard_model_apis, models, verify_raw_model_boundary
 from .x402_live011_native import X402LiveNative
 from .x402_live011_native_verifier import verify_live_native
@@ -91,12 +91,15 @@ def _run_set(state: dict, frozen: dict, assignment_sha: str) -> None:
 
 
 def _ledger(state: dict, frozen: dict, assignment_sha: str,
-            *, extra_reserve: Decimal = Decimal(0)) -> None:
+            *, extra_reserve: Decimal = Decimal(0),
+            active_run_id: str | None = None) -> None:
     if (state["cap_usd"] != "50" or state["blocked"]
             or state["unknown_run_ids"]
-            or Decimal(state["reserved_usd"]) != Decimal("6.30784") + extra_reserve):
+            or Decimal(state["reserved_usd"]) !=
+               Decimal("6.30784") + FEE_HOLD_USD + extra_reserve):
         raise RemoteBoundaryError("x402 011 ledger unknown/concurrent reserve differs")
-    mpp006_contingent_exposure(state, additional_reservation_usd=extra_reserve)
+    fee011_failed_request_hold(state, additional_reservation_usd=extra_reserve,
+                               active_x402_run_id=active_run_id)
     _run_set(state, frozen, assignment_sha)
 
 
@@ -184,6 +187,78 @@ def _partial_artifacts(directory: Path) -> list[dict]:
     return result
 
 
+def _stopped_model_events(directory: Path, observed: list[dict]) -> dict:
+    """Preserve Inspect's model outcomes separately from API-wrapper returns.
+
+    A wrapper returning does not establish a successful saved ModelEvent or a
+    billable request. The FEE011 stop showed exactly that discrepancy. Failed
+    events and missing logs remain unresolved; neither can support settlement.
+    """
+    archived = directory / "inspect.eval"
+    work = sorted((directory / "inspect_work").glob("*.eval"))
+    candidates = ([archived] if archived.is_file() else []) + work
+    inventory = [{"path": str(path.relative_to(directory)),
+                  "sha256": file_sha(path)} for path in candidates]
+    single = (len(work) <= 1 and candidates and
+              (not archived.is_file() or not work or
+               inventory[0]["sha256"] == inventory[1]["sha256"]))
+    if not single:
+        return {"status": "NO_SINGLE_INSPECT_ARCHIVE",
+                "inspect_archive_inventory": inventory,
+                "guarded_api_invocations": len(observed),
+                "guard_completed_returns": sum(item.get("completed") is True
+                                               for item in observed)}
+    try:
+        selected = archived if archived.is_file() else work[0]
+        log = read_eval_log(str(selected), resolve_attachments=True)
+        samples = log.samples or []
+        if len(samples) != 1:
+            raise ValueError("Inspect stopped archive sample count differs")
+        events = [item for item in samples[0].events if item.event == "model"]
+        successful = sum(not item.error for item in events)
+        completed = sum(item.get("completed") is True for item in observed)
+        return {"status": "REPLAYED_INSPECT_MODEL_EVENTS",
+                "inspect_path": str(selected.relative_to(directory)),
+                "inspect_sha256": file_sha(selected),
+                "inspect_archive_inventory": inventory,
+                "eval_status": log.status,
+                "guarded_api_invocations": len(observed),
+                "guard_completed_returns": completed,
+                "inspect_model_events": len(events),
+                "inspect_successful_model_events": successful,
+                "inspect_failed_model_events": len(events) - successful,
+                "guard_inspect_counts_agree":
+                    len(events) == len(observed) and successful == completed,
+                "provider_billing_for_failed_events": "UNVERIFIED"}
+    except Exception as exc:
+        return {"status": "INSPECT_ARCHIVE_UNVERIFIED",
+                "inspect_path": str(selected.relative_to(directory)),
+                "inspect_sha256": file_sha(selected),
+                "inspect_archive_inventory": inventory,
+                "read_error_type": type(exc).__name__,
+                "guarded_api_invocations": len(observed),
+                "guard_completed_returns": sum(item.get("completed") is True
+                                               for item in observed)}
+
+
+def _stopped_account_usage(before: Decimal | None) -> dict:
+    if before is None:
+        return {"status": "NO_PRECALL_ACCOUNT_BASELINE",
+                "failed_call_billing": "UNVERIFIED"}
+    try:
+        after = account_usage_usd()
+        delta = account_usage_delta_usd(before, after)
+        return {"status": "AGGREGATE_ACCOUNT_DELTA_OBSERVED",
+                "before_usd": str(before), "after_usd": str(after),
+                "aggregate_delta_usd": str(delta),
+                "failed_call_billing": "UNVERIFIED",
+                "scope": "whole OpenRouter account; not a per-call receipt"}
+    except Exception as exc:
+        return {"status": "ACCOUNT_DELTA_UNVERIFIED",
+                "before_usd": str(before), "read_error_type": type(exc).__name__,
+                "failed_call_billing": "UNVERIFIED"}
+
+
 def execute_one(plan: X402LivePlan = X402LivePlan()) -> dict:
     preview = preflight(plan)
     _enabled()
@@ -200,13 +275,15 @@ def execute_one(plan: X402LivePlan = X402LivePlan()) -> dict:
     ledger = BudgetLedger(plan.ledger_path)
     reserved = settled = False
     observed: list[dict] = []
+    before: Decimal | None = None
     try:
         state = ledger.reserve(ident, reserve, Decimal("50"), metadata={
             "episode_id": row.episode_id, "assignment_sha": assignment_sha,
             "provider_model_id": row.provider_model_id,
             "auditor_model_id": row.auditor_model_id})
         reserved = True
-        _ledger(state, frozen, assignment_sha, extra_reserve=reserve)
+        _ledger(state, frozen, assignment_sha, extra_reserve=reserve,
+                active_run_id=ident)
         if (remaining_headroom([reserves[r.episode_id] for r in
                 rows[preview["next_index"] + 1:]]) > Decimal(state["available_usd"])):
             raise RemoteBoundaryError("post-reserve x402 011 remaining headroom changed")
@@ -288,6 +365,9 @@ def execute_one(plan: X402LivePlan = X402LivePlan()) -> dict:
                 unknown = True
             except Exception:
                 pass
+        partial = _partial_artifacts(directory)
+        model_events = _stopped_model_events(directory, observed)
+        account_usage = _stopped_account_usage(before)
         write_json(directory / "STOPPED.json", {
             "schema": "x402-live011-stopped-episode-v1",
             "episode_id": row.episode_id,
@@ -297,7 +377,9 @@ def execute_one(plan: X402LivePlan = X402LivePlan()) -> dict:
             "budget_state": "SETTLED" if settled else
                 "UNKNOWN" if unknown else "UNRESOLVED" if reserved else "UNRESERVED",
             "model_request_boundary": observed,
-            "partial_artifacts": _partial_artifacts(directory),
+            "stopped_model_events": model_events,
+            "stopped_account_usage": account_usage,
+            "partial_artifacts": partial,
             "no_retry_or_substitution": True,
             "complete_native_claim": False,
             "prior_native_terminal_possible": True})

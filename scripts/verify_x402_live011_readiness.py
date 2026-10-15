@@ -21,9 +21,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 
 from agent_economic_trust.mpp005_plan import canonical_project_root  # noqa: E402
-from agent_economic_trust.mpp008_budget import mpp006_contingent_exposure  # noqa: E402
 from agent_economic_trust.mpp008_pricing import pricing_snapshots  # noqa: E402
 from agent_economic_trust.remote_budget import BudgetLedger  # noqa: E402
+from agent_economic_trust.x402_live011_budget import fee011_failed_request_hold  # noqa: E402
 from agent_economic_trust.x402_live011_plan import (  # noqa: E402
     CANONICAL_LEDGER, SOL, SONNET, make_schedule, required_headroom,
     reserve_pair)
@@ -141,10 +141,9 @@ def read_only_readiness(*, refresh_pricing: bool) -> dict:
             or state.get("unknown_run_ids")):
         reasons.append("CANONICAL_USD50_LEDGER_BLOCKED")
     try:
-        mpp006_contingent_exposure(state, additional_reservation_usd=(
-            Decimal(state["reserved_usd"]) - Decimal("6.30784")))
+        fee011_failed_request_hold(state)
     except (ValueError, KeyError):
-        reasons.append("MPP006_CONTINGENT_HOLD_NOT_RECONCILED")
+        reasons.append("PRIOR_MPP006_OR_FEE011_HOLD_NOT_RECONCILED")
     if refresh_pricing:
         prices = pricing_snapshots()
         rows = make_schedule("00" * 32)  # design-only IDs, never a live assignment
