@@ -86,6 +86,7 @@ DEPENDENCIES = (
     "scripts/verify_erc8183_fee_readiness.py",
     "scripts/freeze_x402_live012.py",
     "src/agent_economic_trust/ap2_live_fixture.py",
+    "src/agent_economic_trust/open004_task.py",
     "src/agent_economic_trust/core.py",
     "src/agent_economic_trust/erc8183_fee_plan.py",
     "src/agent_economic_trust/erc8183_fee_native.py",
