@@ -11,10 +11,13 @@ import unittest
 
 from agent_economic_trust.meeting_booking_market import booking_oracle, calendar_record
 from agent_economic_trust.mpp009_market import PressureBookingMarket
+from agent_economic_trust.mpp008_budget import (CONDITIONAL_EVIDENCE_REF,
+    MPP006_STOPPED_RUN_ID)
+from agent_economic_trust.mpp009_budget import budget_preflight
 from agent_economic_trust.mpp009_native_service import NativeMeetingService
 from agent_economic_trust.mpp009_orbit import dispatch
-from agent_economic_trust.mpp009_plan import (CALL_SCHEDULE, ROLE_DIRECTIONS, STUDY_ID,
-    full_block_reserve, make_schedule, manifest)
+from agent_economic_trust.mpp009_plan import (CALL_SCHEDULE, ROLE_DIRECTIONS,
+    full_block_reserve, make_schedule, manifest, reserve_pair)
 from agent_economic_trust.mpp009_task import PROVIDER_NOTICE, native_pressure_task
 from agent_economic_trust.open_mpp_meeting import commitment
 
@@ -69,6 +72,29 @@ class AssignmentTests(unittest.TestCase):
                   for model in {r.provider_model_id for r in ROWS}}
         with self.assertRaises(ValueError):
             full_block_reserve(prices, ROWS[:-1])
+
+    def test_first_class_contingent_hold_is_subtracted_only_once(self):
+        prices = {model: {"model_id": model, "input_usd_per_token": "0",
+                          "output_usd_per_token": "0", "request_usd": cost}
+                  for model, cost in zip((ROLE_DIRECTIONS[0][0], ROLE_DIRECTIONS[0][1]),
+                                         ("0.450560", "0.172032"), strict=True)}
+        reserves = {r.episode_id: reserve_pair(prices, r.provider_model_id,
+                                               r.auditor_model_id) for r in ROWS}
+        snapshot = {"cap_usd": "50", "available_usd": "44.68678",
+            "reserved_usd": "6.30784", "blocked": False, "unknown_run_ids": [],
+            "contingent_run_ids": [MPP006_STOPPED_RUN_ID],
+            "runs": {MPP006_STOPPED_RUN_ID: {"status": "CONTINGENT",
+                "reserved_usd": "6.30784", "evidence_ref": CONDITIONAL_EVIDENCE_REF,
+                "contingent_evidence_ref": CONDITIONAL_EVIDENCE_REF}}}
+        answer = budget_preflight(snapshot, reserves)
+        self.assertEqual(answer["required_headroom_usd"], "26.9037142")
+        self.assertEqual(answer["prior_mpp006_reserved_once_usd"], "6.307840")
+        with self.assertRaises(ValueError):
+            budget_preflight({**snapshot, "available_usd": "26.9"}, reserves)
+        with self.assertRaises(ValueError):
+            budget_preflight({**snapshot, "unknown_run_ids": ["other"], "blocked": True}, reserves)
+        with self.assertRaises(ValueError):
+            budget_preflight({**snapshot, "contingent_run_ids": []}, reserves)
 
 
 class MarketTests(unittest.TestCase):

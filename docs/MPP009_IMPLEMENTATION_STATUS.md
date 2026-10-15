@@ -15,6 +15,12 @@ remain separate. The existing frozen MPP008 source was not changed here.
   proposal, full-block reservation is USD 24.903680, before the USD 2 ordinary
   contingency. The prior MPP006 hold must be retained inside the canonical
   ledger's `CONTINGENT` state; MPP009 must not deduct it a second time.
+- `mpp009_budget.py` verifies that first-class `CONTINGENT` state and its
+  evidence, then requires all ten row reservations, USD 2 contingency, and the
+  USD 0.0000342 unresolved provider-export residual to fit the **already
+  reduced** ledger available balance. At the recorded model prices this is
+  USD 26.9037142 of new headroom. It does not authorize freezing while MPP008
+  still has executable pending rows.
 - `PressureBookingMarket` keeps the buyer calendar controller-private, binds
   every valid proposal to the assigned 10,000 base and 0/20,000 ACCEPT bonus,
   and charges the assigned 2,000/4,000 check price in controller replay. The
@@ -42,13 +48,14 @@ node --check protocols/mpp/mpp009-verify-meeting-evidence.mjs
 node --check protocols/mpp/mpp009-decision-preflight.mjs
 ```
 
-Nine offline tests passed on 2026-10-15. They cover factorial assignment,
+Ten offline tests passed on 2026-10-15. They cover factorial assignment,
 fresh pair identity, reserve arithmetic, a GOOD/BAD private oracle, strict
 terms, check price, charge-only selection, eight-turn ORBIT task construction,
 provider-only notice, request-guard rejection of altered episode terms, price,
 private calendar, preparation proof or verdict, and preflight rejection of
-tampered prices, bonus terms, or same-model role swaps. These tests do not
-establish native transfer success.
+tampered prices, bonus terms, or same-model role swaps. A budget test confirms
+the old contingent hold is counted only inside the canonical ledger. These
+tests do not establish native transfer success.
 
 ## Native feasibility blocker
 
