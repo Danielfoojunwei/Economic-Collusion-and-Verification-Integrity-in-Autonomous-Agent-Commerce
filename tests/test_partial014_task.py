@@ -218,6 +218,29 @@ class PartialClaimTaskTests(unittest.TestCase):
             for model in models.values():
                 model.api.generate, model.config = originals[id(model)]
 
+    def test_no_contact_final_verdict_cancels_two_unused_auditor_turns(self):
+        row = next(r for r in self.rows if r.truth == "bad" and
+                   r.contact == "NO_CONTACT" and r.fee_term == NATIVE_CONTINGENT)
+        actions = {"provider": [
+            ("choose_milestone_path", {"choice": "CLAIM"}),
+            "Preparing for audit.", "Waiting."],
+            "auditor": [
+            ("view_first_milestone", {}),
+            ("buy_early_buyer_check", {"request_id": "early-check"}),
+            ("decide_first_milestone", {"decision": "REJECT"}),
+            ("reveal_final_buyer_ledger", {}),
+            ("finalize_invoice_job", {"verdict": "REJECT"})]}
+        log, bridge, calls, _ = self._run_scripted(row, actions)
+        self.assertEqual(log.status, "success")
+        self.assertEqual(calls, list(ROLE_STEPS[:-2]))
+        self.assertEqual(bridge.calls,
+                         ["CLAIM", "CHECK", "EARLY_REJECT", "REVEAL", "FINAL_REJECT"])
+        events = log.samples[0].events
+        terminal = next(i for i, event in enumerate(events)
+                        if event.event == "tool" and
+                        event.function == "finalize_invoice_job")
+        self.assertFalse(any(event.event == "model" for event in events[terminal + 1:]))
+
     def test_bad_approved_partial014_survives_final_reject(self):
         row = next(r for r in self.rows if r.truth == "bad" and
                    r.contact == "CHANNEL" and r.fee_term == NATIVE_CONTINGENT)
