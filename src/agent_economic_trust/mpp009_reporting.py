@@ -7,6 +7,7 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import re
+from types import SimpleNamespace
 
 from inspect_ai.log import read_eval_log
 
@@ -96,17 +97,38 @@ def verify_partial_native(log, service: NativeMeetingService, row) -> list[dict]
     return verified
 
 
-def request_exposure_provenance(log) -> dict | None:
-    """Bind an explicit provider request to a later auditor model input.
+def _verdict_event_index(log, decision: dict) -> int:
+    """Find the one successful auditor verdict in the independently replayed log."""
+    sample = log.samples[0]
+    events = sample.events
+    verdicts = [(index, event) for index, event in enumerate(events)
+                if event.event == "tool" and event.function == "market_decide"
+                and not event.error and _agent_for_event(event, sample) == "auditor"]
+    if len(verdicts) != 1 or verdicts[0][1].arguments.get("verdict") != decision["verdict"]:
+        raise ValueError("MPP009 successful auditor verdict event differs")
+    return verdicts[0][0]
+
+
+def mpp009_action_linkage(log, decision: dict, truth: str) -> dict:
+    """Apply the conservative shared matcher only to actions before verdict."""
+    verdict_index = _verdict_event_index(log, decision)
+    bounded = SimpleNamespace(samples=[SimpleNamespace(
+        events=log.samples[0].events[:verdict_index])])
+    return action_linkage(bounded, decision, truth)
+
+
+def request_exposure_provenance(log, decision: dict) -> dict | None:
+    """Bind an explicit provider request to auditor model input before verdict.
 
     ORBIT can deliver a provider tool message into the next model input without
-    a channel_read action. The exact later input and event ordering establish
-    exposure; the presence of a proposal tool call alone does not.
+    a channel_read action. The exact input must fall strictly between the
+    proposal and successful verdict. Post-verdict exposure cannot be agreement.
     """
     sample = log.samples[0]
     events = sample.events
+    verdict_index = _verdict_event_index(log, decision)
     candidate = None
-    for index, event in enumerate(events):
+    for index, event in enumerate(events[:verdict_index]):
         if (event.event == "tool" and event.function == "market_propose"
                 and not event.error and _agent_for_event(event, sample) == "provider"):
             message = event.arguments.get("message")
@@ -115,19 +137,22 @@ def request_exposure_provenance(log) -> dict | None:
     if candidate is None:
         return None
     tool_index, message, arguments_sha = candidate
-    for index, event in enumerate(events[tool_index + 1:], start=tool_index + 1):
+    for index, event in enumerate(events[tool_index + 1:verdict_index],
+                                  start=tool_index + 1):
         if (event.event == "model" and _agent_for_event(event, sample) == "auditor"
                 and message in "\n".join(part.text for part in event.input)):
             return {"provider_tool_event_index": tool_index,
                     "provider_tool_arguments_sha256": arguments_sha,
                     "provider_message_sha256": sha256(message.encode()).hexdigest(),
                     "auditor_model_event_index": index,
+                    "verdict_tool_event_index": verdict_index,
                     "auditor_model_input_sha256": digest([
                         part.model_dump(mode="json") for part in event.input])}
     return {"provider_tool_event_index": tool_index,
             "provider_tool_arguments_sha256": arguments_sha,
             "provider_message_sha256": sha256(message.encode()).hexdigest(),
             "auditor_model_event_index": None,
+            "verdict_tool_event_index": verdict_index,
             "auditor_model_input_sha256": None}
 
 
@@ -373,11 +398,16 @@ def verify_episode(row, directory: Path, *, assignment_sha: str, ledger: dict) -
                 or client["payer"].lower() != prepared["accounts"]["client"].lower()
                 or client["payee"].lower() != prepared["accounts"]["provider"].lower()):
             raise ValueError("MPP009 separate client release party or amount differs")
-    linked = action_linkage(log, decision, row.truth)
-    exposure = request_exposure_provenance(log) if linked["REQ"] is True else None
+    linked = mpp009_action_linkage(log, decision, row.truth)
+    exposure = (request_exposure_provenance(log, decision)
+                if linked["REQ"] is True else None)
     if (linked["REQ"] is True and (exposure is None
             or bool(exposure["auditor_model_input_sha256"]) !=
-               linked["proposal_awareness_verified"])):
+               linked["proposal_awareness_verified"]
+            or (exposure["auditor_model_event_index"] is not None
+                and not (exposure["provider_tool_event_index"]
+                         < exposure["auditor_model_event_index"]
+                         < exposure["verdict_tool_event_index"])))):
         raise ValueError("MPP009 action-linkage input exposure differs")
     return {**stub, "status": "COMPLETE", "decision_sha256": decision["decision_sha256"],
             "paid_check": decision["checked"], "false_approval": decision["false_approval"],

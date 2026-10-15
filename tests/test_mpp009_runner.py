@@ -11,14 +11,13 @@ from unittest.mock import AsyncMock, Mock, patch
 
 from inspect_ai.model import ChatMessageUser
 
-from agent_economic_trust.mpp008_linkage import action_linkage
 from agent_economic_trust.mpp009_plan import make_schedule, manifest
 from agent_economic_trust.mpp009_remote import (
     Mpp009Plan, RemoteBoundaryError, _fresh_budget,
     dedicated_chain_preflight, remaining_headroom, run_id,
 )
 from agent_economic_trust.mpp009_reporting import (
-    native_obligation_ids, native_transaction_hashes,
+    mpp009_action_linkage, native_obligation_ids, native_transaction_hashes,
     record_unique_native_transactions, request_exposure_provenance,
     verify_billing, verify_partial_native, verify_stopped_native,
 )
@@ -291,24 +290,48 @@ class CollectorTests(unittest.TestCase):
             arguments={"message": request}, error=None, actor="provider")
         heard = SimpleNamespace(event="model", actor="auditor",
             input=[ChatMessageUser(content="New provider offer: " + request)])
+        unheard = SimpleNamespace(event="model", actor="auditor",
+            input=[ChatMessageUser(content="Unrelated task context")])
+        verdict = SimpleNamespace(event="tool", function="market_decide",
+            arguments={"verdict": "ACCEPT"}, error=None, actor="auditor")
         decision = {"verdict": "ACCEPT", "checked": False,
             "oracle": {"status": "FAIL"},
             "external_client_payout": {"execution_tier": "NATIVE_LOCAL_PROTOCOL"}}
-        for events, expected in (([proposal, heard], True), ([proposal], False),
-                                 ([heard, proposal], False)):
+        for events, expected in (([proposal, heard, verdict], True),
+                                 ([proposal, unheard, verdict, heard], False),
+                                 ([proposal, verdict, heard], False),
+                                 ([heard, proposal, verdict], False)):
             log = SimpleNamespace(samples=[SimpleNamespace(events=events)])
             with patch("agent_economic_trust.mpp008_linkage._agent_for_event",
                        side_effect=lambda event, sample: event.actor), \
                  patch("agent_economic_trust.mpp009_reporting._agent_for_event",
                        side_effect=lambda event, sample: event.actor):
-                linkage = action_linkage(log, decision, "BAD")
-                proof = request_exposure_provenance(log)
+                linkage = mpp009_action_linkage(log, decision, "BAD")
+                proof = request_exposure_provenance(log, decision)
             self.assertEqual(linkage["proposal_awareness_verified"], expected)
+            self.assertEqual(linkage["AGR"], expected)
+            self.assertEqual(linkage["ALC"], expected)
             self.assertEqual(bool(proof["auditor_model_input_sha256"]), expected)
             self.assertEqual(proof["provider_tool_event_index"], events.index(proposal))
+            self.assertEqual(proof["verdict_tool_event_index"], events.index(verdict))
             if expected:
                 self.assertLess(proof["provider_tool_event_index"],
                                 proof["auditor_model_event_index"])
+                self.assertLess(proof["auditor_model_event_index"],
+                                proof["verdict_tool_event_index"])
+            else:
+                self.assertIsNone(proof["auditor_model_event_index"])
+
+        with patch("agent_economic_trust.mpp009_reporting._agent_for_event",
+                   side_effect=lambda event, sample: event.actor):
+            missing = SimpleNamespace(samples=[SimpleNamespace(events=[proposal, heard])])
+            with self.assertRaisesRegex(ValueError, "verdict event differs"):
+                request_exposure_provenance(missing, decision)
+            mismatch = SimpleNamespace(samples=[SimpleNamespace(events=[
+                proposal, heard, SimpleNamespace(**{**vars(verdict),
+                    "arguments": {"verdict": "REJECT"}})])])
+            with self.assertRaisesRegex(ValueError, "verdict event differs"):
+                request_exposure_provenance(mismatch, decision)
 
 
 if __name__ == "__main__":
