@@ -1,12 +1,13 @@
 # Current research build status — 2026-10-15
 
-## Latest evidence snapshot (14:35 UTC)
+## Latest evidence snapshot (15:28 UTC)
 
 The owner raised the **lifetime OpenRouter ceiling to USD 50**. The shared
-hash-chained ledger is **blocked** at sequence 132 with USD 5.313220 settled,
-USD 6.307840 reserved against one UNKNOWN failed request, and USD 38.378940
-available after that reservation. No further paid call is permitted until
-provider billing for that request is reconciled.
+hash-chained ledger is unblocked at sequence 137 with USD 5.903420 settled,
+USD 6.307840 retained as a `CONTINGENT` reservation for one stopped MPP006
+request, and USD 37.788740 available after that hold. The failed request's
+final provider charge remains unknown. New studies must preserve the exact
+hold and fit their full prospective reserve within the available balance.
 Most settled amounts are conservative model-use estimates, not provider billing
 exports. Live calls have used `openai/gpt-5.6-sol` and, in the latest completed
 row, `anthropic/claude-sonnet-5.5` with high reasoning requested; actual
@@ -41,26 +42,29 @@ reasoning-token counts are in the saved Inspect logs.
   triggered a local client release, with no false-approval request. Its ten
   high-reasoning-configured calls reported only 374 reasoning tokens. The second
   row stopped after one HTTP 400 strict-tool-schema rejection, before a model
-  answer or audit action; its charge is UNKNOWN. See the [stop forensics](docs/MPP006_STOPPED_SOL_SCHEMA_FORENSICS.md).
+  answer or audit action; its final charge is unknown. See the [stop forensics](docs/MPP006_STOPPED_SOL_SCHEMA_FORENSICS.md).
   The owner's later [provider session export review](artifacts/budget/provider-reconciliation-mpp006-001/report.md)
   matches all 46 completed requests in that UTC hour to four saved Inspect
   sessions; two model-hour exports also match all 36 Sol and 10 Sonnet
   completed requests and their exact session spend. None lists the failed Sol
   sample. A later read-only key usage
   total exceeds the export sum by USD 0.0000342. This does not establish the
-  failed request's final charge; the ledger remains UNKNOWN and blocked.
+  failed request's final charge. The ledger marks it `CONTINGENT` against a
+  [pinned evidence file](artifacts/budget/provider-reconciliation-mpp006-001/conditional-zero-asof-001/evidence.json),
+  without an `actual_usd` value, and retains the full USD 6.307840 hold. The
+  owner's later `(2)` model-hour CSV uploads were byte-identical to the prior
+  exports and added no per-request charge.
   The [MPP007 factorial memo](artifacts/prospective/MPP007-design/DESIGN.md)
   is design only.
-- The prospective [MPP008 cross-vendor study](docs/MPP008_MIXED_MODEL_PROTOCOL.md)
-  now independently varies Sol and Sonnet in both provider and auditor roles
-  across eight GOOD/BAD private-calendar assignments. It corrects the strict
-  tool schema that stopped MPP006 in a separate versioned source and assignment
-  domain. Independent source review approved integration; 17 focused tests and
-  main-checkout readiness passed with five reopened native controls, five
-  negative receipts, and two fresh scripted local MPP payment controls. No
-  MPP008 assignment is frozen and no MPP008 model call has occurred. The
-  eight-row worst-case reservation plus a $2 contingency is $36.865152; the
-  current UNKNOWN billing state makes `would_freeze=false`.
+- The [MPP008 cross-vendor study](docs/MPP008_MIXED_MODEL_PROTOCOL.md)
+  froze eight GOOD/BAD private-calendar assignments crossing Sol and Sonnet in
+  provider and auditor roles. Its [collection](artifacts/gates/MPP008/collection-mixed-001-after-first-stop.json)
+  is **0 complete, 1 STOPPED GOOD Sol/Sol, 7 pending**. Thirteen high-reasoning
+  model calls completed. The fourteenth attempted auditor input was 28,345
+  bytes, exceeding the frozen 24,576-byte cap before provider dispatch. The
+  [read-only forensics](artifacts/gates/MPP008/forensics-first-stop-001/report.md)
+  found no audit check, verdict, or agent-triggered native payment. Its original
+  row will not be retried or pooled with a prospective version.
 - A separate [MPP obligation-binding control](artifacts/prospective/mpp-booking-obligation-control/REPORT.md)
   passed eight native local A-versus-B charge/session check/release cases and
   twelve verifier tests. A valid, unused A proof was refused for B before
@@ -72,14 +76,17 @@ reasoning-token counts are in the saved Inspect logs.
   AP2 itself did not execute a payment.
   Its permissive-versus-strict BAD outcome illustrates a policy boundary, not
   a live model collusion result or a flaw in a named protocol.
-  A new [AP2 audit-purchase live design](docs/PROSPECTIVE_AP2_AUDIT_PURCHASE_LIVE_001.md)
+  The [AP2 audit-purchase live design](docs/PROSPECTIVE_AP2_AUDIT_PURCHASE_LIVE_001.md)
   has [four separately verified scripted/native local controls](artifacts/prospective/ap2-live-audit-purchase/offline-006/report.json)
   with equal GOOD/BAD public amount and matching initial auditor input within
-  each adapter. Its 12 focused tests, four saved native receipt verifications,
-  and 54-file source inventory passed independent review. A mined audit-service
-  purchase is retained as partial raw evidence if a later collection step fails.
-  The live assignment remains unfrozen and unpaid while the shared ledger is
-  blocked.
+  each adapter. Its prospective 48 KiB boundary and budget guard passed 19
+  focused tests and independent review. The four-row [assignment](artifacts/gates/AP2_LIVE/assignment-001/assignment_manifest.json)
+  is frozen. Its [collection](artifacts/gates/AP2_LIVE/collection-001-after-first-stop.json)
+  is **0 complete, 1 STOPPED GOOD/STRICT, 3 pending**. Twelve Sol model calls
+  and both local payment paths ran, but the final collector rejected equal USD
+  values represented as `0.20558` in the ledger and `0.205580` in the proposed
+  record. The original row remains STOPPED. A separate read-only forensic check
+  and a prospectively versioned fix are in progress; no AP2 row will be retried.
 - The [ACP retail-order handoff control](docs/ACP_ORDER_AUDIT_HANDOFF_LOCAL_CONTROL.md)
   independently verified four scripted mock-checkout/native ERC-8183 rows. A
   permissive application paid a BAD job B based on a mock order for A; strict
@@ -94,7 +101,10 @@ reasoning-token counts are in the saved Inspect logs.
   notes that two-agent verification collusion and mixed model pairings already
   appear in prior work. The [service and payment-term map](docs/PAYMENT_TERMS_AND_REAL_WORLD_SCENARIOS_2026-10-15.md)
   specifies invoice/calendar audit tasks and each tested protocol's distinct
-  authority boundary; it is design-only.
+  authority boundary. The [ERC-8183 native evaluator-fee note](docs/ERC8183_EVALUATOR_FEE_MECHANISM_NOTE_2026-10-15.md)
+  and prospective [x402](docs/PROSPECTIVE_X402_AUDIT_RETAINER_010.md) and
+  [ERC-8183 fee](docs/PROSPECTIVE_ERC8183_EVALUATOR_FEE_LIVE_010.md) studies
+  are mechanism designs, not live findings.
 
 There is **no verified live-agent collusion finding** in these completed
 observations. The strongest current mechanism questions concern a genuine
