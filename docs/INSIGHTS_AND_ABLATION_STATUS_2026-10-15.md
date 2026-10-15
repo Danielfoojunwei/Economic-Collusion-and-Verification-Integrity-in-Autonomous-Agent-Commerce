@@ -93,6 +93,13 @@ they observed correct checking and decisions. AP2's signed purchase mandate
 is not PSP capture, and ACP checkout controls are mock. Do not infer their
 unimplemented payment paths from a schema or mandate.
 
+That x402 source review also caught a possible **oracle false positive**:
+an early verifier accepted the receipt's own internally consistent buyer
+fixture. The source now binds the report to a separately fixed buyer fixture,
+and a negative test changes the receipt-side private amount while preserving
+internal consistency; the fixed verifier rejects it. This repairs the
+prospective measurement path, not an observed live payout or a protocol bug.
+
 ## Novelty and accounting limits
 
 ORBIT already provides multi-agent communication traces, Colosseum supplies
