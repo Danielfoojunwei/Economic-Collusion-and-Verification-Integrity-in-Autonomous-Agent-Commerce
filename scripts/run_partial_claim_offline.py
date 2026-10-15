@@ -6,6 +6,12 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+for local in (ROOT, ROOT / "src", ROOT / "scripts"):
+    if str(local) not in sys.path:
+        sys.path.insert(0, str(local))
 
 from agent_economic_trust.partial_claim_offline import ARCHIVE, run, verify
 
