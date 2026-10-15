@@ -1,0 +1,1 @@
+Model-free first-pass native readiness invalidated: four separate Anvil processes and 32 unique wallets had one shared genesis block hash. Deterministic assigned-episode genesis timestamps and four-way uniqueness gates supersede this archive. No paid calls.

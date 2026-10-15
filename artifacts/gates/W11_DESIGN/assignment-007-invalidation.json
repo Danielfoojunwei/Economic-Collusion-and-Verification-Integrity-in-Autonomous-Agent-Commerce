@@ -1,0 +1,25 @@
+{
+  "schema": "w11-prospective-assignment-invalidation-v1",
+  "assignment": "assignment-007",
+  "assignment_manifest_sha256": "d78e72a258bcdcdaf3e1d17681a48fec755aae6989364be28c85be827764cccc",
+  "status": "INVALID_SOURCE_SEAL",
+  "reason": "The frozen source_sha256 list omitted the package initializer and two event schemas loaded at runtime by evidence.py.",
+  "missing_runtime_inputs": [
+    "src/agent_economic_trust/__init__.py",
+    "schemas/event.schema.json",
+    "schemas/run_manifest.schema.json"
+  ],
+  "original_source_file_count": 27,
+  "verify_after_source_seal_amendment": "REJECTED_FROZEN_INPUTS_OR_SOURCE_CHANGED",
+  "paid_model_calls": 0,
+  "live_market_episodes": 0,
+  "scripted_smoke": {
+    "status": "TECHNICAL_CONTROL_ONLY",
+    "episodes": 10,
+    "model_behavior_tier": "SCRIPTED",
+    "payment_tier": "NATIVE_LOCAL_CHAIN",
+    "summary_sha256": "7a44f17556c52c49f1f1b63ea29eed007f9b6ac3cff33c3adda90e2eb0bc125b"
+  },
+  "replacement_assignment": "assignment-008",
+  "seed_policy": "The assignment-007 seed and order were not reused as inputs; assignment-008 used a new default secrets.token_hex(32) draw. Neither seed was rerolled."
+}

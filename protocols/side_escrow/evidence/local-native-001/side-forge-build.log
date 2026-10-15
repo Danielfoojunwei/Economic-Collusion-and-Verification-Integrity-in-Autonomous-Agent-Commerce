@@ -1,0 +1,35 @@
+Compiling 2 files with Solc 0.8.28
+Solc 0.8.28 finished in 2.41s
+Compiler run successful!
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+   ╭▸ src/ProviderAuditorBonusEscrow.sol:92:13
+   │
+92 │         if (fundingDeadline_ <= block.timestamp) revert InvalidDeadline();
+   │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   │
+   ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+   ╭▸ src/ProviderAuditorBonusEscrow.sol:98:20
+   │
+98 │                 || job.expiredAt <= block.timestamp
+   │                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   │
+   ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ src/ProviderAuditorBonusEscrow.sol:118:13
+    │
+118 │         if (block.timestamp >= fundingDeadline) revert InvalidDeadline();
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[incorrect-strict-equality]: dangerous strict equality check on an externally-influenced value
+    ╭▸ src/ProviderAuditorBonusEscrow.sol:129:13
+    │
+129 │         if (token.balanceOf(address(this)) - balanceBefore != bonusAmount) revert UnexpectedFundedAmount();
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/incorrect-strict-equality
+

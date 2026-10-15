@@ -1,0 +1,101 @@
+test_failure_preserves_partial_native_receipts_before_chain_exit (test_mechanism_native.MechanismNativeReceiptTests.test_failure_preserves_partial_native_receipts_before_chain_exit) ... ok
+test_neutral_bad_provider_fee_and_refund_without_bonus (test_mechanism_native.MechanismNativeReceiptTests.test_neutral_bad_provider_fee_and_refund_without_bonus) ... ok
+test_offer_one_minor_unit_true_native_receipt_and_immutable_collision (test_mechanism_native.MechanismNativeReceiptTests.test_offer_one_minor_unit_true_native_receipt_and_immutable_collision) ... ok
+test_two_assigned_chains_have_distinct_genesis_and_wallets (test_mechanism_native.MechanismNativeReceiptTests.test_two_assigned_chains_have_distinct_genesis_and_wallets) ... ok
+test_compiled_native_artifact_drift_stops (test_mechanism_plan.MechanismFreezeTests.test_compiled_native_artifact_drift_stops) ... ok
+test_current_ledger_must_descend_from_frozen_head (test_mechanism_plan.MechanismFreezeTests.test_current_ledger_must_descend_from_frozen_head) ... ok
+test_full_block_cap_fails_before_one_time_lock (test_mechanism_plan.MechanismFreezeTests.test_full_block_cap_fails_before_one_time_lock) ... ok
+test_offline_gate_reopens_four_cells_and_rejects_tampered_raw_receipt (test_mechanism_plan.MechanismFreezeTests.test_offline_gate_reopens_four_cells_and_rejects_tampered_raw_receipt) ... ok
+test_one_time_freeze_verifies_and_source_drift_stops (test_mechanism_plan.MechanismFreezeTests.test_one_time_freeze_verifies_and_source_drift_stops) ... ok
+test_four_cells_are_seeded_matched_blinded_and_distinct (test_mechanism_plan.MechanismPlanTests.test_four_cells_are_seeded_matched_blinded_and_distinct) ... ok
+test_invalid_seed_or_reassigned_rows_rejected (test_mechanism_plan.MechanismPlanTests.test_invalid_seed_or_reassigned_rows_rejected) ... ok
+test_account_counter_failure_precedes_reservation_and_paid_call (test_mechanism_remote.MechanismRemoteGuardTests.test_account_counter_failure_precedes_reservation_and_paid_call) ... ok
+test_auditor_proof_must_match_provider_funded_escrow (test_mechanism_remote.MechanismRemoteGuardTests.test_auditor_proof_must_match_provider_funded_escrow) ... ok
+test_blocked_ledger_and_source_drift_never_reach_paid_boundary (test_mechanism_remote.MechanismRemoteGuardTests.test_blocked_ledger_and_source_drift_never_reach_paid_boundary) ... ok
+test_full_four_cell_headroom_and_duplicate_run_stop_without_model (test_mechanism_remote.MechanismRemoteGuardTests.test_full_four_cell_headroom_and_duplicate_run_stop_without_model) ... ok
+test_post_request_exception_keeps_partial_eval_and_blocks_ledger (test_mechanism_remote.MechanismRemoteGuardTests.test_post_request_exception_keeps_partial_eval_and_blocks_ledger) ... ok
+test_price_refresh_rejects_later_higher_full_block_cost (test_mechanism_remote.MechanismRemoteGuardTests.test_price_refresh_rejects_later_higher_full_block_cost) ... ok
+test_completed_fresh_pairs_reject_reused_wallets_or_chain (test_mechanism_reporting.MechanismReportingTests.test_completed_fresh_pairs_reject_reused_wallets_or_chain) ... ok
+test_extra_posts_are_observed_nonadherence_not_spontaneous_offer (test_mechanism_reporting.MechanismReportingTests.test_extra_posts_are_observed_nonadherence_not_spontaneous_offer) ... ok
+test_forged_funding_and_unread_offer_do_not_count (test_mechanism_reporting.MechanismReportingTests.test_forged_funding_and_unread_offer_do_not_count) ... ok
+test_ledger_binding_requires_correct_episode_and_archive (test_mechanism_reporting.MechanismReportingTests.test_ledger_binding_requires_correct_episode_and_archive) ... ok
+test_missing_itt_result_is_bounded_not_counted_as_zero (test_mechanism_reporting.MechanismReportingTests.test_missing_itt_result_is_bounded_not_counted_as_zero) ... ok
+test_raw_proposal_requires_provider_and_exact_model_amount (test_mechanism_reporting.MechanismReportingTests.test_raw_proposal_requires_provider_and_exact_model_amount) ... ok
+test_seeded_four_cells_and_private_oracle_are_rederived (test_mechanism_reporting.MechanismReportingTests.test_seeded_four_cells_and_private_oracle_are_rederived) ... ok
+test_source_pin_and_ledger_ancestor_rechecked_even_if_current_charge_unknown (test_mechanism_reporting.MechanismReportingTests.test_source_pin_and_ledger_ancestor_rechecked_even_if_current_charge_unknown) ... ok
+test_stopped_row_preserves_partial_trace_without_inventing_an_outcome (test_mechanism_reporting.MechanismReportingTests.test_stopped_row_preserves_partial_trace_without_inventing_an_outcome) ... ok
+test_submission_must_be_model_triggered_before_auditor_and_match_raw_receipt (test_mechanism_reporting.MechanismReportingTests.test_submission_must_be_model_triggered_before_auditor_and_match_raw_receipt) ... ok
+test_trusted_bonus_proof_requires_native_receipt_and_preverdict_model_input (test_mechanism_reporting.MechanismReportingTests.test_trusted_bonus_proof_requires_native_receipt_and_preverdict_model_input) ... ok
+test_unread_or_extra_post_stops_later_results_but_stays_complete_itt (test_mechanism_reporting.MechanismReportingTests.test_unread_or_extra_post_stops_later_results_but_stays_complete_itt) ... ok
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f08007cb260>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f07fefcefc0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f07febb4c80>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f07fe84efc0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+test_four_scripted_cells_have_matched_facts_and_actual_read (test_mechanism_task.MechanismTaskTests.test_four_scripted_cells_have_matched_facts_and_actual_read) ... ok
+test_frozen_submission_rejects_wrong_claim_before_callback (test_mechanism_task.MechanismTaskTests.test_frozen_submission_rejects_wrong_claim_before_callback) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f07fe568080>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_invalid_bonus_amount_and_native_receipt_mismatch (test_mechanism_task.MechanismTaskTests.test_invalid_bonus_amount_and_native_receipt_mismatch) ... ok
+test_missing_or_forged_trusted_view_proof_is_detected (test_mechanism_task.MechanismTaskTests.test_missing_or_forged_trusted_view_proof_is_detected) ... ok
+test_missing_read_is_exposure_failure_retained_in_assigned_arm (test_mechanism_task.MechanismTaskTests.test_missing_read_is_exposure_failure_retained_in_assigned_arm) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f07fe45efc0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_multiple_native_posts_are_recorded_as_nonadherence (test_mechanism_task.MechanismTaskTests.test_multiple_native_posts_are_recorded_as_nonadherence) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f0801f902c0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_neutral_cannot_receive_funding_callback_or_proposal_capability (test_mechanism_task.MechanismTaskTests.test_neutral_cannot_receive_funding_callback_or_proposal_capability) ... ok
+test_neutral_improvised_offer_retained_as_contamination (test_mechanism_task.MechanismTaskTests.test_neutral_improvised_offer_retained_as_contamination) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f07fc338530>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_offer_capability_can_be_declined_and_amount_cap_blocks_funding (test_mechanism_task.MechanismTaskTests.test_offer_capability_can_be_declined_and_amount_cap_blocks_funding) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f07fc1c2b70>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f07fc001580>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_read_visible_only_after_verdict_is_not_exposure (test_mechanism_task.MechanismTaskTests.test_read_visible_only_after_verdict_is_not_exposure) ... ok
+test_synthetic_native_receipt_proof_reaches_auditor_input (test_mechanism_task.MechanismTaskTests.test_synthetic_native_receipt_proof_reaches_auditor_input) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f07feabbf80>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_truth_leak_and_forged_or_missing_read_fail_closed (test_mechanism_task.MechanismTaskTests.test_truth_leak_and_forged_or_missing_read_fail_closed) ... ok
+
+----------------------------------------------------------------------
+Ran 41 tests in 27.961s
+
+OK

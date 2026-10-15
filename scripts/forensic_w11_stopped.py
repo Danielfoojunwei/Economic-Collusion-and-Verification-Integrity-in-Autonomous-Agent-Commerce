@@ -49,6 +49,8 @@ from agent_economic_trust.w11_market_task import (  # noqa: E402
 
 
 EXPECTED_PRIOR_SOURCE = "src/agent_economic_trust/w11_market_remote.py"
+EXPECTED_FREEZER_SOURCE = "scripts/freeze_w11_market.py"
+EXPECTED_PREIMAGE_SOURCES = (EXPECTED_PRIOR_SOURCE, EXPECTED_FREEZER_SOURCE)
 EXPECTED_PUBLIC_MODEL_SHA = "71e95fa7cf157390232d6e13a44bf61ea6b9b6a7961ced6c8f37a684b51b499a"
 EXPECTED_STOPPED_USAGE_ESTIMATE = Decimal("0.132870")
 MAX_ARCHIVE_BYTES = 128 * 1024 * 1024
@@ -94,6 +96,24 @@ def _freeze_module():
     return module
 
 
+def verify_historical_source_seal(source_sha256: dict[str, str],
+                                  preimage_root: Path) -> list[str]:
+    """Permit only the two exact archived source preimages for assignment-006."""
+    drift = []
+    for name in EXPECTED_PREIMAGE_SOURCES:
+        archived = preimage_root / name
+        if (name not in source_sha256 or not archived.is_file()
+                or _sha(archived) != source_sha256[name]):
+            raise ValueError(f"historical source preimage missing or changed: {name}")
+    for name, expected_sha in source_sha256.items():
+        current = ROOT / name
+        if not current.is_file() or _sha(current) != expected_sha:
+            if name not in EXPECTED_PREIMAGE_SOURCES:
+                raise ValueError(f"historical source preimage missing or changed: {name}")
+            drift.append(name)
+    return drift
+
+
 def forensic_preflight(plan_dir: Path, runs_dir: Path, preimage_root: Path,
                        *, market_id: str, episode_id: str) -> dict:
     """Independently examine the archived native run and original source seal."""
@@ -115,15 +135,8 @@ def forensic_preflight(plan_dir: Path, runs_dir: Path, preimage_root: Path,
     if (frozen["upstream_pins"] != freezer.upstream_pins()
             or frozen["g4_aggregate_manifest_sha256"] != _sha(freezer.G4_AGGREGATE)):
         raise ValueError("historical upstream or G4 prerequisite seal differs")
-    active_source_drift = []
-    for name, expected_sha in frozen["source_sha256"].items():
-        current_path = ROOT / name
-        if _sha(current_path) != expected_sha:
-            if name != EXPECTED_PRIOR_SOURCE or _sha(preimage_root / name) != expected_sha:
-                raise ValueError(f"historical source preimage missing or changed: {name}")
-            active_source_drift.append(name)
-    if _sha(preimage_root / EXPECTED_PRIOR_SOURCE) != frozen["source_sha256"][EXPECTED_PRIOR_SOURCE]:
-        raise ValueError("archived assignment-006 runner is not its original preimage")
+    active_source_drift = verify_historical_source_seal(
+        frozen["source_sha256"], preimage_root)
     if market_id not in frozen["market_execution_order"]:
         raise ValueError("stopped market is outside frozen execution order")
     market = _market_rows(rows, market_id)
@@ -277,8 +290,9 @@ def forensic_preflight(plan_dir: Path, runs_dir: Path, preimage_root: Path,
         "mutation_count": 0, "paid_model_calls": 0,
         "assignment_manifest_sha256": assignment_sha,
         "historical_source_preimage_sha256": frozen["source_sha256"][EXPECTED_PRIOR_SOURCE],
+        "historical_freezer_preimage_sha256": frozen["source_sha256"][EXPECTED_FREEZER_SOURCE],
         "active_source_drift": active_source_drift,
-        "source_seal_interpretation": "historical preimage verified; current runner is a prospective amendment",
+        "source_seal_interpretation": "historical runner and freezer preimages verified; current versions are prospective amendments",
         "exact_credential_scan": exact_credential_scan,
         "generic_candidate_scan": generic_credential_scan,
         "completed_prior_markets_reverified": complete_prior_markets,

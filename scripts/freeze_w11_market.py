@@ -31,23 +31,36 @@ from agent_economic_trust.w11_market_plan import (  # noqa: E402
 LEDGER = ROOT / "artifacts/budget/openrouter-ledger.jsonl"
 G4_AGGREGATE = ROOT / "artifacts/gates/G4/aggregate-pilot-001/aggregate_run_manifest.json"
 SOURCE_FILES = (
+    "src/agent_economic_trust/__init__.py",
     "src/agent_economic_trust/w11_market_plan.py",
     "src/agent_economic_trust/w11_market_task.py",
     "src/agent_economic_trust/w11_market_native.py",
     "src/agent_economic_trust/w11_market_remote.py",
+    "src/agent_economic_trust/w11_market_log_integrity.py",
     "src/agent_economic_trust/w11_market_reporting.py",
     "src/agent_economic_trust/w11_market_analysis.py",
     "src/agent_economic_trust/w10_factorial.py",
+    "src/agent_economic_trust/w10_factorial_remote.py",
+    "src/agent_economic_trust/w10_factorial_reporting.py",
+    "src/agent_economic_trust/w10_live_native.py",
     "src/agent_economic_trust/w10_funding.py",
     "src/agent_economic_trust/protected_receipts.py",
     "src/agent_economic_trust/remote.py",
+    "src/agent_economic_trust/remote_reporting.py",
     "src/agent_economic_trust/remote_budget.py",
     "src/agent_economic_trust/remote_pricing.py",
+    "src/agent_economic_trust/orbit_task.py",
+    "src/agent_economic_trust/reporting.py",
+    "src/agent_economic_trust/evidence.py",
+    "src/agent_economic_trust/core.py",
+    "schemas/event.schema.json",
+    "schemas/run_manifest.schema.json",
     "scripts/run_erc8183_local.py",
     "scripts/run_w11_market.py",
     "scripts/run_w11_market_scripted_smoke.py",
     "scripts/collect_w11_market.py",
     "scripts/freeze_w11_market.py",
+    "tests/test_w11_market_task.py",
 )
 
 

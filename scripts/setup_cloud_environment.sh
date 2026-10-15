@@ -112,6 +112,11 @@ bash scripts/setup_g1_runtime.sh
   -r artifacts/gates/W01/installed-requirements.txt
 /workspace/upstreams/orbit-smoke/.venv/bin/python -m pip check
 
+# Compile the pinned official job and local application escrow used by the
+# funded-offer mechanism. The pilot freezer seals both exact artifacts.
+( cd "$upstreams/erc8183" && "$foundry_dir/forge" build --offline --use "$solc_binary" --threads 4 )
+( cd "$project/protocols/side_escrow" && "$foundry_dir/forge" build --offline --use "$solc_binary" --threads 4 )
+
 cd "$upstreams/x402/typescript"
 [[ "$(corepack pnpm --version)" == 11.1.1 ]] || fail 'x402 requires pnpm 11.1.1'
 corepack pnpm --filter '@x402/evm...' --filter '@x402/express...' \
