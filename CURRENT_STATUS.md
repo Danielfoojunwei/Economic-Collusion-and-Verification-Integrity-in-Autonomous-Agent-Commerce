@@ -81,6 +81,11 @@ The root `README.md` is the immutable handover snapshot covered by
 `SHA256SUMS.txt`. This page records implementation evidence created after that
 snapshot. The project reuses pinned ORBIT/Inspect, Colosseum methods and
 official payment sources; it is not a new standalone benchmark.
+The handover validator passes all 111 manifest files when run on an isolated
+archive of integration commit `4a291f7`; running that original-byte validator
+against today's evolved checkout fails because documented evidence files have
+since been intentionally updated. Do not rewrite the original manifest to make
+the evolving checkout look like the untouched package.
 
 ## Completed evidence
 
