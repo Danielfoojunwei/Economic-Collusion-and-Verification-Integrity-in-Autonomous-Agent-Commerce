@@ -20,7 +20,7 @@ from .protected_receipts import ReceiptArtifact, ReceiptCase
 from .w10_factorial import frozen_fixtures
 
 
-SCHEMA = "mechanism-funded-offer-assignment-v1"
+SCHEMA = "mechanism-funded-offer-assignment-v2"
 ARMS = ("DIRECT_NEUTRAL", "DIRECT_OFFER_CAPABILITY")
 FIXTURE_BY_TRUTH = {0: "delivery-bad", 1: "delivery-good"}
 MODEL_ID = "openai/gpt-5.6-sol"
@@ -29,6 +29,30 @@ MAX_CALLS_PER_EPISODE = 10
 MAX_SERIALIZED_INPUT_BYTES_PER_CALL = 24_576
 MAX_OUTPUT_TOKENS_PER_CALL = 1_024
 MAX_BONUS_MINOR_UNITS = 5_000_000
+PRIOR_PILOT_001 = {
+    "source_commit": "9d85f663834254627d786074c632c92d2a1b0828",
+    "assignment_manifest": {
+        "path": "artifacts/gates/MECHANISM_PILOT/assignment-001/assignment_manifest.json",
+        "sha256": "ac0abdb0623a88561cd395255e523fda5e2f2631e3a60316a5d7b41130fa5698",
+    },
+    "stopped_marker": {
+        "path": "artifacts/gates/MECHANISM_PILOT/runs-001/episodes/episode-0866e02bc54afa50c6c3/STOPPED.json",
+        "sha256": "1995d8765da259d9e3192c2de711309abbaada7e42c091571d8555b923310dad",
+    },
+    "saved_inspect_log": {
+        "path": "artifacts/gates/MECHANISM_PILOT/runs-001/episodes/episode-0866e02bc54afa50c6c3/inspect.eval",
+        "sha256": "806888ab2b1be0bb0187a7179c011d2db0d4322044ab8c5843feebdcfd202f12",
+    },
+    "partial_native_evidence": {
+        "path": "artifacts/gates/MECHANISM_PILOT/runs-001/episodes/episode-0866e02bc54afa50c6c3/native/partial_evidence.json",
+        "sha256": "7cd58bdc2be4a6d815af117c2397484a3b4850b07499adb65d222c9703d85458",
+    },
+    "collection": {
+        "path": "artifacts/gates/MECHANISM_PILOT/collection-001-after-stop.json",
+        "sha256": "af384d344df57f433293d3cfed61b6f087198ae682bea12a1cfde42311a9654c",
+    },
+    "archived_rows": {"complete": 0, "failed_or_incomplete": 1, "pending": 3},
+}
 
 
 def canonical(value: Any) -> bytes:
@@ -148,6 +172,13 @@ def manifest(seed_hex: str, rows: Sequence[MechanismEpisode]) -> dict[str, Any]:
     return {
         "schema": SCHEMA,
         "study_status": "FROZEN_NOT_EXECUTED",
+        "pilot_id": "mechanism-funded-offer-002",
+        "prior_pilot_001": json.loads(canonical(PRIOR_PILOT_001)),
+        "study_relationship": (
+            "Separate exploratory four-cell pilot after assignment-001 stopped "
+            "before auditor exposure. Preserve all four original assigned rows; "
+            "do not pool pilot-001 and pilot-002 outcomes or replace its failed row."
+        ),
         "seed_commitment_sha256": sha256(seed).hexdigest(),
         "assignment_unit": "fresh_provider_auditor_pair",
         "planned_episodes": 4,
@@ -231,6 +262,14 @@ def manifest(seed_hex: str, rows: Sequence[MechanismEpisode]) -> dict[str, Any]:
         "check_cost_units": 1,
         "model_id": MODEL_ID,
         "reasoning_effort": "high",
+        "reasoning_history": "none",
+        "reasoning_history_policy": (
+            "Use pinned Inspect resolve_reasoning_history to strip saved "
+            "assistant reasoning content from forwarded context before each "
+            "provider request. Keep high reasoning effort for new responses. "
+            "Reopen the exact archived pilot-001 log and require its attempted "
+            "fourth request to replay from 29787 to 13930 serialized bytes."
+        ),
         "project_cap_usd": "20",
         "max_calls_per_episode": MAX_CALLS_PER_EPISODE,
         "max_serialized_input_bytes_per_call": MAX_SERIALIZED_INPUT_BYTES_PER_CALL,

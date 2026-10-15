@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from decimal import Decimal
 import json
 from pathlib import Path
@@ -9,6 +10,9 @@ from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
+
+from inspect_ai.model import (ChatMessageAssistant, ChatMessageUser,
+                              ContentReasoning, GenerateConfig)
 
 from agent_economic_trust.mechanism_plan import make_schedule
 from agent_economic_trust import mechanism_remote as remote
@@ -66,6 +70,7 @@ class MechanismRemoteGuardTests(unittest.TestCase):
         self.frozen = {
             "execution_order": [row.episode_id for row in self.rows],
             "worst_case_reserve_usd_per_episode": "4",
+            "reasoning_effort": "high", "reasoning_history": "none",
             "source_sha256": {},
         }
         self.assignment_sha = "b" * 64
@@ -151,6 +156,7 @@ class MechanismRemoteGuardTests(unittest.TestCase):
              patch.object(remote, "guard_model_api",
                           return_value={"attempted": 1, "max_input_bytes_seen": 100}), \
              patch.object(remote, "guard_high_reasoning"), \
+             patch.object(remote, "_capture_model_boundary", return_value=[]), \
              patch.object(remote, "_fresh_budget_boundary",
                           return_value=({}, Decimal("4"), _Ledger.snapshot_value)), \
              patch.object(remote, "inspect_eval", side_effect=interrupted_eval):
@@ -159,6 +165,8 @@ class MechanismRemoteGuardTests(unittest.TestCase):
         directory = self.plan.runs_dir / "episodes" / row.episode_id
         stop = json.loads((directory / "STOPPED.json").read_bytes())
         self.assertEqual(stop["budget_state"], "UNKNOWN")
+        self.assertEqual(stop["schema"], "mechanism-paid-episode-stop-v2")
+        self.assertEqual(stop["model_request_boundary_observed"], [])
         self.assertEqual(stop["model_calls_attempted"], 1)
         self.assertIs(stop["complete_payment_claim"], False)
         self.assertTrue(stop["partial_inspect_archives"])
@@ -230,6 +238,76 @@ class MechanismRemoteGuardTests(unittest.TestCase):
         audit["trusted_bonus_proof_seen_before_verdict"] = False
         with self.assertRaisesRegex(remote.RemoteBoundaryError, "did not reach"):
             remote._require_auditor_native_bonus_proof(audit, native)
+
+    def test_api_boundary_strips_reasoning_and_enforces_history_and_bytes(self) -> None:
+        forwarded = []
+
+        async def fake_generate(input, tools, tool_choice, config):
+            forwarded.append((input, tools, config))
+            return object()
+
+        model = SimpleNamespace(api=SimpleNamespace(generate=fake_generate))
+        observed = remote._capture_model_boundary(model, self.plan)
+        allowed = GenerateConfig(reasoning_effort="high", reasoning_history="none",
+                                 max_tokens=1024, max_retries=0)
+        input = [ChatMessageUser(content="frozen claim")]
+        asyncio.run(model.api.generate(input, [], "auto", allowed))
+        self.assertEqual(len(forwarded), 1)
+        self.assertTrue(observed[0]["local_boundary_passed"])
+        self.assertEqual(observed[0]["serialized_input_bytes"],
+                         remote._safe_model_input_size(input, []))
+
+        with self.assertRaisesRegex(remote.RemoteBoundaryError, "reasoning policy"):
+            asyncio.run(model.api.generate(input, [], "auto", allowed.model_copy(
+                update={"reasoning_history": "all"})))
+        with self.assertRaisesRegex(remote.RemoteBoundaryError, "prior reasoning block"):
+            asyncio.run(model.api.generate([
+                ChatMessageAssistant(content=[ContentReasoning(reasoning="opaque")])
+            ], [], "auto", allowed))
+        with self.assertRaisesRegex(remote.RemoteBoundaryError, "byte cap"):
+            asyncio.run(model.api.generate([
+                ChatMessageUser(content="X" * 24_576)
+            ], [], "auto", allowed))
+        self.assertEqual(len(forwarded), 1)
+        self.assertEqual([record["local_boundary_passed"] for record in observed],
+                         [True, False, False, False])
+
+    def test_saved_event_must_match_actual_bounded_input_and_config(self) -> None:
+        input = [ChatMessageUser(content="claim facts")]
+        event = SimpleNamespace(
+            event="model", model=f"openrouter/{self.plan.model_id}",
+            config=GenerateConfig(reasoning_effort="high", reasoning_history="none",
+                                  max_tokens=1024, max_retries=0),
+            input=input, tools=[], error=None, cache=None, retries=None,
+            uuid="saved-event-1",
+        )
+        log = SimpleNamespace(
+            eval=SimpleNamespace(model=event.model,
+                                 model_generate_config=event.config),
+            samples=[SimpleNamespace(events=[event])],
+        )
+        size = remote._safe_model_input_size(input, [])
+        attempts = {"attempted": 1, "max_input_bytes_seen": size}
+        observed = [{"call_index": 1, "serialized_input_bytes": size,
+                     "local_boundary_passed": True}]
+        inspected = remote._verify_saved_model_boundary(
+            log, self.plan, attempts, observed)
+        self.assertEqual(inspected["event_requests"], [{
+            "call_index": 1, "model_event_uuid": "saved-event-1",
+            "serialized_input_bytes": size,
+        }])
+        log.eval.model_generate_config = event.config.model_copy(
+            update={"reasoning_history": "all"})
+        with self.assertRaisesRegex(remote.RemoteBoundaryError, "saved model route"):
+            remote._verify_saved_model_boundary(log, self.plan, attempts, observed)
+        log.eval.model_generate_config = event.config
+        event.config = event.config.model_copy(update={"reasoning_history": "all"})
+        with self.assertRaisesRegex(remote.RemoteBoundaryError, "saved model event"):
+            remote._verify_saved_model_boundary(log, self.plan, attempts, observed)
+        event.config = event.config.model_copy(update={"reasoning_history": "none"})
+        event.input = [ChatMessageAssistant(content=[ContentReasoning(reasoning="opaque")])]
+        with self.assertRaisesRegex(remote.RemoteBoundaryError, "saved model event"):
+            remote._verify_saved_model_boundary(log, self.plan, attempts, observed)
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from inspect_ai.log import read_eval_log
+from inspect_ai.model import ContentReasoning
 
 from .mechanism_plan import (
     ARMS, MechanismEpisode, case_for_episode, digest, make_schedule, manifest,
@@ -28,6 +29,10 @@ from .mechanism_task import (
 from .protected_receipts import receipt_oracle
 from .remote_budget import BudgetLedger
 from .w11_market_log_integrity import audit_saved_attachment_resolution
+
+
+PILOT_002_REASONING_EFFORT = "high"
+PILOT_002_REASONING_HISTORY = "none"
 
 
 class MechanismEvidenceError(ValueError):
@@ -45,6 +50,70 @@ def _json(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise MechanismEvidenceError(f"expected object in {path.name}")
     return value
+
+
+def _pilot_version(frozen: dict[str, Any]) -> int:
+    schema = frozen.get("schema")
+    if schema == "mechanism-funded-offer-assignment-v1":
+        return 1
+    if schema == "mechanism-funded-offer-assignment-v2":
+        return 2
+    raise MechanismEvidenceError("unrecognized frozen mechanism pilot schema")
+
+
+def _verify_prior_pilot_001(frozen: dict[str, Any], root: Path) -> dict[str, Any]:
+    """Bind the technical follow-up to preserved v1 evidence, without pooling it."""
+    prior = frozen.get("prior_pilot_001")
+    if not isinstance(prior, dict):
+        raise MechanismEvidenceError("pilot 002 lacks frozen pilot 001 provenance")
+    expected_names = {
+        "assignment_manifest": "artifacts/gates/MECHANISM_PILOT/assignment-001/assignment_manifest.json",
+        "stopped_marker": (
+            "artifacts/gates/MECHANISM_PILOT/runs-001/episodes/"
+            "episode-0866e02bc54afa50c6c3/STOPPED.json"
+        ),
+        "saved_inspect_log": (
+            "artifacts/gates/MECHANISM_PILOT/runs-001/episodes/"
+            "episode-0866e02bc54afa50c6c3/inspect.eval"
+        ),
+        "partial_native_evidence": (
+            "artifacts/gates/MECHANISM_PILOT/runs-001/episodes/"
+            "episode-0866e02bc54afa50c6c3/native/partial_evidence.json"
+        ),
+        "collection": "artifacts/gates/MECHANISM_PILOT/collection-001-after-stop.json",
+    }
+    for name, expected_path in expected_names.items():
+        reference = prior.get(name)
+        if (not isinstance(reference, dict)
+                or reference.get("path") != expected_path
+                or reference.get("sha256") != _sha(root / expected_path)):
+            raise MechanismEvidenceError(f"pilot 001 {name} reference changed")
+    stopped = _json(root / expected_names["stopped_marker"])
+    report = _json(root / expected_names["collection"])
+    if (prior.get("source_commit") != "9d85f663834254627d786074c632c92d2a1b0828"
+            or prior.get("archived_rows") != {
+                "complete": 0, "failed_or_incomplete": 1, "pending": 3,
+            }
+            or stopped.get("complete_payment_claim") is not False
+            or stopped.get("no_retry_or_substitution") is not True
+            or stopped.get("assignment_manifest_sha256")
+                != prior["assignment_manifest"]["sha256"]
+            or stopped.get("inspect_eval_sha256")
+                != prior["saved_inspect_log"]["sha256"]
+            or stopped.get("partial_native_sha256")
+                != prior["partial_native_evidence"]["sha256"]
+            or report.get("schema") != "mechanism-pilot-itt-descriptive-v1"
+            or report.get("assignment_manifest_sha256")
+                != prior["assignment_manifest"]["sha256"]
+            or report.get("planned_episodes") != 4
+            or report.get("completed_episodes") != 0
+            or len(report.get("rows", [])) != 4
+            or sum(item.get("status") == "FAILED_OR_INCOMPLETE"
+                   for item in report["rows"]) != 1
+            or sum(item.get("status") == "PENDING"
+                   for item in report["rows"]) != 3):
+        raise MechanismEvidenceError("pilot 001 stopped status or four assigned rows changed")
+    return prior
 
 
 def load_assignment(directory: Path) -> tuple[dict[str, Any], str, tuple[MechanismEpisode, ...]]:
@@ -81,12 +150,21 @@ def _verify_frozen_envelope(
             or Path(ledger_path).resolve() != freezer.LEDGER.resolve()):
         raise MechanismEvidenceError("collector requires canonical frozen assignment and ledger")
     lock = _json(freezer.FREEZE_LOCK)
+    pilot_version = _pilot_version(frozen)
     if lock != {
-        "schema": "mechanism-one-time-freeze-lock-v1",
+        "schema": f"mechanism-one-time-freeze-lock-v{pilot_version}",
         "assignment": str(freezer.ASSIGNMENT_DIR.relative_to(freezer.ROOT)),
         "seed_commitment_sha256": frozen["seed_commitment_sha256"],
     }:
         raise MechanismEvidenceError("one-time assignment lock changed")
+    if pilot_version == 2:
+        if (frozen.get("reasoning_effort") != PILOT_002_REASONING_EFFORT
+                or frozen.get("reasoning_history") != PILOT_002_REASONING_HISTORY):
+            raise MechanismEvidenceError("pilot 002 frozen reasoning settings changed")
+        _verify_prior_pilot_001(frozen, freezer.ROOT)
+        if (frozen.get("v1_preservation") != freezer.v1_preservation()
+                or frozen.get("archived_v1_replay") != freezer.archived_v1_replay()):
+            raise MechanismEvidenceError("pilot 001 preservation or replay gate changed")
     if (frozen.get("source_sha256") != freezer.source_inventory()
             or frozen.get("upstream_pins") != freezer.upstream_pins()):
         raise MechanismEvidenceError("frozen pilot source or upstream pin changed")
@@ -100,6 +178,96 @@ def _verify_frozen_envelope(
         raise MechanismEvidenceError("frozen budget ledger head is not a current ancestor")
     if assignment_sha != _sha(Path(assignment_dir) / "assignment_manifest.json"):
         raise MechanismEvidenceError("assignment manifest changed during collection")
+
+
+def _serialized_model_input_bytes(event: Any) -> int:
+    """Recalculate the archived message/tool serialization without runner state."""
+    def plain(item: Any) -> Any:
+        return item.model_dump(mode="json") if hasattr(item, "model_dump") else item
+
+    return len(json.dumps(
+        {"input": [plain(item) for item in event.input],
+         "tools": [plain(item) for item in event.tools]},
+        default=str, ensure_ascii=False, separators=(",", ":"),
+    ).encode("utf-8"))
+
+
+def _saved_input_has_reasoning(event: Any) -> bool:
+    return any(
+        isinstance(part, ContentReasoning)
+        for message in event.input
+        for part in (message.content if isinstance(message.content, list) else ())
+    )
+
+
+def _verify_model_request_boundary(
+    log: Any, sample: Any, record: dict[str, Any], frozen: dict[str, Any],
+) -> dict[str, Any]:
+    """Prove the v2 high-reasoning/no-history setting in every saved call."""
+    if (frozen.get("reasoning_effort") != PILOT_002_REASONING_EFFORT
+            or frozen.get("reasoning_history") != PILOT_002_REASONING_HISTORY
+            or record.get("reasoning_effort") != PILOT_002_REASONING_EFFORT
+            or record.get("reasoning_history") != PILOT_002_REASONING_HISTORY):
+        raise MechanismEvidenceError("frozen and recorded reasoning settings differ")
+    eval_config = getattr(log.eval, "model_generate_config", None)
+    if (eval_config is None
+            or getattr(eval_config, "reasoning_effort", None) != PILOT_002_REASONING_EFFORT
+            or getattr(eval_config, "reasoning_history", None) != PILOT_002_REASONING_HISTORY):
+        raise MechanismEvidenceError("saved eval header lacks pilot 002 reasoning settings")
+    model_events = [event for event in sample.events if event.event == "model"]
+    boundary = record.get("model_request_boundary")
+    if not isinstance(boundary, dict):
+        raise MechanismEvidenceError("episode lacks saved request boundary record")
+    limits = {
+        "max_calls": frozen.get("max_calls_per_episode"),
+        "max_serialized_input_bytes_per_call": frozen.get("max_serialized_input_bytes_per_call"),
+        "max_output_tokens_per_call": frozen.get("max_output_tokens_per_call"),
+    }
+    if any(boundary.get(key) != value or type(value) is not int or value <= 0
+           for key, value in limits.items()):
+        raise MechanismEvidenceError("recorded model request limits differ from frozen limits")
+    captured = boundary.get("event_requests")
+    if (not isinstance(captured, list) or not model_events
+            or len(model_events) != len(captured)
+            or len(model_events) != record.get("model_calls")
+            or len(model_events) > limits["max_calls"]):
+        raise MechanismEvidenceError("saved model events differ from attempted requests")
+    seen_uuids: set[str] = set()
+    sizes: list[int] = []
+    for call_index, (event, captured_call) in enumerate(zip(model_events, captured), start=1):
+        config = getattr(event, "config", None)
+        if (event.model != "openrouter/openai/gpt-5.6-sol"
+                or config is None
+                or getattr(config, "reasoning_effort", None) != PILOT_002_REASONING_EFFORT
+                or getattr(config, "reasoning_history", None) != PILOT_002_REASONING_HISTORY
+                or getattr(config, "max_tokens", None) != limits["max_output_tokens_per_call"]
+                or getattr(config, "max_retries", None) != 0
+                or getattr(event, "error", None) is not None
+                or getattr(event, "retries", None) not in (None, 0)
+                or getattr(event, "cache", None) is not None
+                or _saved_input_has_reasoning(event)):
+            raise MechanismEvidenceError("saved model event differs from frozen high reasoning and no-history route")
+        uuid = getattr(event, "uuid", None)
+        size = _serialized_model_input_bytes(event)
+        if (not isinstance(uuid, str) or not uuid or uuid in seen_uuids
+                or not isinstance(captured_call, dict)
+                or captured_call != {
+                    "call_index": call_index, "model_event_uuid": uuid,
+                    "serialized_input_bytes": size,
+                }
+                or size <= 0 or size > limits["max_serialized_input_bytes_per_call"]):
+            raise MechanismEvidenceError("archived model request differs from recorded byte boundary")
+        seen_uuids.add(uuid)
+        sizes.append(size)
+    if record.get("max_input_bytes_seen") != max(sizes):
+        raise MechanismEvidenceError("recorded maximum input size differs from saved calls")
+    return {
+        "reasoning_effort": PILOT_002_REASONING_EFFORT,
+        "reasoning_history": PILOT_002_REASONING_HISTORY,
+        "saved_model_calls": len(model_events),
+        "max_serialized_input_bytes_observed": max(sizes),
+        "request_boundary_verified": True,
+    }
 
 
 def _actor(sample: Any, event: Any) -> str | None:
@@ -413,12 +581,16 @@ def verify_episode(
     sample = log.samples[0] if log.samples and len(log.samples) == 1 else None
     if sample is None:
         raise MechanismEvidenceError("native Inspect archive has wrong sample count")
-    for event in sample.events:
-        if event.event == "model" and (
-            event.model != "openrouter/openai/gpt-5.6-sol"
-            or getattr(event.config, "reasoning_effort", None) != "high"
-        ):
-            raise MechanismEvidenceError("model event differs from approved high-reasoning route")
+    if _pilot_version(frozen) == 2:
+        model_boundary = _verify_model_request_boundary(log, sample, record, frozen)
+    else:
+        for event in sample.events:
+            if event.event == "model" and (
+                event.model != "openrouter/openai/gpt-5.6-sol"
+                or getattr(event.config, "reasoning_effort", None) != "high"
+            ):
+                raise MechanismEvidenceError("model event differs from approved high-reasoning route")
+        model_boundary = {}
     case, artifact = case_for_episode(row)
     audit = audit_saved_mechanism_log(
         log, case, artifact, episode_id=row.episode_id, arm=row.arm,
@@ -530,6 +702,7 @@ def verify_episode(
         "block_id": row.block_id, "arm": row.arm, "truth": score["truth"],
         "status": "COMPLETE", "inspect_eval_sha256": inspect_sha,
         "native_evidence_sha256": native_sha, "ledger": ledger_entry,
+        **model_boundary,
         "provider_wallet_address": native["provider_address"].lower(),
         "auditor_wallet_address": native["auditor_address"].lower(),
         "chain_genesis_block_hash": chain["genesis_block_hash"].lower(),
@@ -576,13 +749,85 @@ def _cell_bounds(rows: list[dict[str, Any]], key: str) -> list[float]:
     return [observed / len(rows), (observed + missing) / len(rows)]
 
 
+def _verify_stopped_model_trace(
+    marker: dict[str, Any], archive_path: Path | None, frozen: dict[str, Any],
+) -> dict[str, Any]:
+    """Inspect any saved v2 calls while retaining a stopped row as missing outcome."""
+    captures = marker.get("model_request_boundary_observed")
+    attempted = marker.get("model_calls_attempted")
+    max_calls = frozen.get("max_calls_per_episode")
+    max_bytes = frozen.get("max_serialized_input_bytes_per_call")
+    max_output = frozen.get("max_output_tokens_per_call")
+    if (not isinstance(captures, list) or type(attempted) is not int
+            or type(max_calls) is not int or type(max_bytes) is not int
+            or type(max_output) is not int or not 0 <= attempted <= max_calls
+            or attempted > len(captures)):
+        raise MechanismEvidenceError("stopped request counter or frozen limits are invalid")
+    for index, capture in enumerate(captures, start=1):
+        if (not isinstance(capture, dict)
+                or capture.keys() != {
+                    "call_index", "serialized_input_bytes", "local_boundary_passed",
+                }
+                or capture["call_index"] != index
+                or type(capture["serialized_input_bytes"]) is not int
+                or capture["serialized_input_bytes"] <= 0
+                or type(capture["local_boundary_passed"]) is not bool
+                or (capture["local_boundary_passed"]
+                    and (index > max_calls
+                         or capture["serialized_input_bytes"] > max_bytes))):
+            raise MechanismEvidenceError("stopped request boundary capture is inconsistent")
+    if archive_path is None:
+        return {
+            "saved_model_event_count": 0,
+            "saved_reasoning_policy_verified": None,
+            "saved_request_boundary_verified": None,
+            "recorded_model_request_count": len(captures),
+            "model_calls_attempted": attempted,
+            "partial_model_trace_status": "NO_SAVED_INSPECT_ARCHIVE",
+        }
+    log = read_eval_log(str(archive_path), resolve_attachments=True)
+    if log.eval.model != "openrouter/openai/gpt-5.6-sol" or len(log.samples or []) != 1:
+        raise MechanismEvidenceError("stopped Inspect archive has wrong model route or sample")
+    events = [event for event in log.samples[0].events if event.event == "model"]
+    if len(events) > len(captures):
+        raise MechanismEvidenceError("stopped Inspect has unrecorded model requests")
+    for index, event in enumerate(events):
+        if (_serialized_model_input_bytes(event)
+                != captures[index]["serialized_input_bytes"]):
+            raise MechanismEvidenceError("stopped saved model input differs from boundary capture")
+    head = getattr(log.eval, "model_generate_config", None)
+    policy_verified = bool(
+        head is not None
+        and getattr(head, "reasoning_effort", None) == PILOT_002_REASONING_EFFORT
+        and getattr(head, "reasoning_history", None) == PILOT_002_REASONING_HISTORY
+        and all(
+            event.model == "openrouter/openai/gpt-5.6-sol"
+            and getattr(event.config, "reasoning_effort", None) == PILOT_002_REASONING_EFFORT
+            and getattr(event.config, "reasoning_history", None) == PILOT_002_REASONING_HISTORY
+            and getattr(event.config, "max_tokens", None) == max_output
+            and getattr(event.config, "max_retries", None) == 0
+            and not _saved_input_has_reasoning(event)
+            for event in events
+        )
+    )
+    return {
+        "saved_model_event_count": len(events),
+        "saved_reasoning_policy_verified": policy_verified,
+        "saved_request_boundary_verified": True,
+        "recorded_model_request_count": len(captures),
+        "model_calls_attempted": attempted,
+        "partial_model_trace_status": "SAVED_INCOMPLETE_TRACE",
+    }
+
+
 def _stopped_row(
     row: MechanismEpisode, episode_dir: Path, *, assignment_sha: str,
-    ledger: dict[str, Any],
+    ledger: dict[str, Any], frozen: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     stop_path = episode_dir / "STOPPED.json"
     marker = _json(stop_path)
-    if (marker.get("schema") != "mechanism-paid-episode-stop-v1"
+    pilot_version = _pilot_version(frozen) if frozen is not None else 1
+    if (marker.get("schema") != f"mechanism-paid-episode-stop-v{pilot_version}"
             or marker.get("episode_id") != row.episode_id
             or marker.get("assignment_manifest_sha256") != assignment_sha
             or marker.get("complete_payment_claim") is not False
@@ -604,6 +849,15 @@ def _stopped_row(
             raise MechanismEvidenceError("stopped primary archive hash differs")
     run_id = f"mechanism-{assignment_sha[:12]}-{row.episode_id}"
     run = ledger["runs"].get(run_id)
+    if pilot_version == 2:
+        archive_path = episode_dir / "inspect.eval"
+        if not archive_path.is_file():
+            archive_path = episode_dir / partial[0]["path"] if len(partial) == 1 else None
+        if archive_path is not None and not archive_path.is_file():
+            archive_path = None
+        trace = _verify_stopped_model_trace(marker, archive_path, frozen)
+    else:
+        trace = {}
     return {
         "episode_id": row.episode_id, "pair_id": row.pair_id,
         "block_id": row.block_id, "arm": row.arm, "truth": row.truth,
@@ -615,6 +869,7 @@ def _stopped_row(
         "partial_saved_inspect_sha256": marker["inspect_eval_sha256"],
         "ledger_run_id": run_id if run is not None else None,
         "ledger_run_status": run["status"] if run is not None else None,
+        **trace,
     }
 
 
@@ -623,6 +878,12 @@ def collect_mechanism_pilot(
 ) -> dict[str, Any]:
     """Keep the prospective four-cell ITT even after a stop or nonadherence."""
     frozen, assignment_sha, rows = load_assignment(assignment_dir)
+    pilot_version = _pilot_version(frozen)
+    from scripts import freeze_mechanism_pilot as freezer
+    if (pilot_version == 2
+            and Path(assignment_dir).resolve() == freezer.ASSIGNMENT_DIR.resolve()
+            and Path(runs_dir).resolve() != (freezer.PILOT_ROOT / "runs-002").resolve()):
+        raise MechanismEvidenceError("pilot 002 collector requires canonical runs-002 evidence")
     ledger = BudgetLedger(ledger_path).snapshot()
     _verify_frozen_envelope(assignment_dir, ledger_path, frozen, assignment_sha, ledger)
     ordered = {row.episode_id: row for row in rows}
@@ -661,6 +922,7 @@ def collect_mechanism_pilot(
                 any_stop = True
             result = _stopped_row(
                 row, episode_dir, assignment_sha=assignment_sha, ledger=ledger,
+                frozen=frozen,
             ) if status != "PENDING" else {
                 "episode_id": row.episode_id, "pair_id": row.pair_id,
                 "block_id": row.block_id, "arm": row.arm, "truth": row.truth,
@@ -737,7 +999,10 @@ def collect_mechanism_pilot(
         if bad_offer["status"] == bad_neutral["status"] == "COMPLETE" else None
     )
     return {
-        "schema": "mechanism-pilot-itt-descriptive-v1",
+        "schema": f"mechanism-pilot-itt-descriptive-v{pilot_version}",
+        "pilot_sequence": pilot_version,
+        "prior_pilot_001": frozen.get("prior_pilot_001") if pilot_version == 2 else None,
+        "prior_pilot_001_outcomes_pooled": False,
         "assignment_manifest_sha256": assignment_sha,
         "planned_episodes": 4,
         "completed_episodes": sum(item["status"] == "COMPLETE" for item in results),

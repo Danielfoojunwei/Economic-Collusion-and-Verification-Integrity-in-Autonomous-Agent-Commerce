@@ -15,7 +15,8 @@ from agent_economic_trust.mechanism_plan import case_for_episode, digest, make_s
 from agent_economic_trust.mechanism_reporting import (
     MechanismEvidenceError, _cell_bounds, _communication_flags, _proposal, _verify_ledger,
     _stopped_row, _verify_auditor_bonus_proof, _verify_frozen_envelope,
-    _verify_proposal_native, _verify_submission,
+    _verify_model_request_boundary, _verify_proposal_native, _verify_stopped_model_trace,
+    _verify_submission,
     collect_mechanism_pilot, load_assignment,
 )
 from agent_economic_trust.remote_budget import BudgetLedger, create_ledger
@@ -37,6 +38,76 @@ def _assignment(root: Path) -> tuple[Path, tuple]:
 
 
 class MechanismReportingTests(unittest.TestCase):
+    def test_v2_saved_model_boundary_requires_high_and_no_reasoning_history(self):
+        from inspect_ai.model import ChatMessageAssistant, ContentReasoning
+        from agent_economic_trust.mechanism_reporting import _serialized_model_input_bytes
+
+        config = SimpleNamespace(reasoning_effort="high", reasoning_history="none",
+                                 max_tokens=1024, max_retries=0)
+        event = SimpleNamespace(
+            event="model", model="openrouter/openai/gpt-5.6-sol",
+            uuid="saved-model-1", config=config, input=[], tools=[], error=None,
+            retries=None, cache=None,
+        )
+        eval_config = SimpleNamespace(reasoning_effort="high", reasoning_history="none")
+        log = SimpleNamespace(eval=SimpleNamespace(model_generate_config=eval_config))
+        sample = SimpleNamespace(events=[event])
+        size = _serialized_model_input_bytes(event)
+        frozen = {"schema": "mechanism-funded-offer-assignment-v2",
+                  "reasoning_effort": "high", "reasoning_history": "none",
+                  "max_calls_per_episode": 10,
+                  "max_serialized_input_bytes_per_call": 24576,
+                  "max_output_tokens_per_call": 1024}
+        record = {"reasoning_effort": "high", "reasoning_history": "none",
+                  "model_calls": 1, "max_input_bytes_seen": size,
+                  "model_request_boundary": {
+                      "max_calls": 10, "max_serialized_input_bytes_per_call": 24576,
+                      "max_output_tokens_per_call": 1024,
+                      "event_requests": [{"call_index": 1,
+                                          "model_event_uuid": "saved-model-1",
+                                          "serialized_input_bytes": size}],
+                  }}
+        self.assertTrue(_verify_model_request_boundary(
+            log, sample, record, frozen)["request_boundary_verified"])
+        config.reasoning_history = None
+        with self.assertRaisesRegex(MechanismEvidenceError, "saved model event"):
+            _verify_model_request_boundary(log, sample, record, frozen)
+        config.reasoning_history = "none"
+        config.reasoning_effort = "medium"
+        with self.assertRaisesRegex(MechanismEvidenceError, "saved model event"):
+            _verify_model_request_boundary(log, sample, record, frozen)
+        config.reasoning_effort = "high"
+        eval_config.reasoning_history = None
+        with self.assertRaisesRegex(MechanismEvidenceError, "saved eval header"):
+            _verify_model_request_boundary(log, sample, record, frozen)
+        eval_config.reasoning_history = "none"
+        record["model_request_boundary"]["event_requests"][0]["serialized_input_bytes"] += 1
+        with self.assertRaisesRegex(MechanismEvidenceError, "byte boundary"):
+            _verify_model_request_boundary(log, sample, record, frozen)
+        event.input = [ChatMessageAssistant(
+            content=[ContentReasoning(reasoning="opaque prior reasoning")])]
+        size_with_reasoning = _serialized_model_input_bytes(event)
+        record["model_request_boundary"]["event_requests"][0]["serialized_input_bytes"] = size_with_reasoning
+        record["max_input_bytes_seen"] = size_with_reasoning
+        with self.assertRaisesRegex(MechanismEvidenceError, "saved model event"):
+            _verify_model_request_boundary(log, sample, record, frozen)
+
+    def test_v2_stopped_trace_checks_partial_settings_without_outcome(self):
+        frozen = {"max_calls_per_episode": 10,
+                  "max_serialized_input_bytes_per_call": 24576,
+                  "max_output_tokens_per_call": 1024}
+        marker = {"model_calls_attempted": 1,
+                  "model_request_boundary_observed": [
+                      {"call_index": 1, "serialized_input_bytes": 100,
+                       "local_boundary_passed": True},
+                  ]}
+        no_archive = _verify_stopped_model_trace(marker, None, frozen)
+        self.assertIsNone(no_archive["saved_reasoning_policy_verified"])
+        self.assertEqual(no_archive["partial_model_trace_status"], "NO_SAVED_INSPECT_ARCHIVE")
+        marker["model_request_boundary_observed"][0]["serialized_input_bytes"] = 30000
+        with self.assertRaisesRegex(MechanismEvidenceError, "capture is inconsistent"):
+            _verify_stopped_model_trace(marker, None, frozen)
+
     def test_seeded_four_cells_and_private_oracle_are_rederived(self):
         with tempfile.TemporaryDirectory() as name:
             directory, rows = _assignment(Path(name))
@@ -332,16 +403,21 @@ class MechanismReportingTests(unittest.TestCase):
             book.mark_unknown("later-unresolved", "provider_charge_unknown")
             blocked = BudgetLedger(ledger_path).snapshot()
             self.assertTrue(blocked["blocked"])
-            lock = root / "first-freeze.lock.json"
+            lock = root / "second-freeze.lock.json"
             lock.write_text(json.dumps({
-                "schema": "mechanism-one-time-freeze-lock-v1",
+                "schema": "mechanism-one-time-freeze-lock-v2",
                 "assignment": "assignment",
                 "seed_commitment_sha256": frozen["seed_commitment_sha256"],
             }))
+            frozen["v1_preservation"] = {"status": "PASS"}
+            frozen["archived_v1_replay"] = {"status": "PASS"}
             with (patch.object(freezer, "ASSIGNMENT_DIR", assignment),
                   patch.object(freezer, "LEDGER", ledger_path),
                   patch.object(freezer, "FREEZE_LOCK", lock),
                   patch.object(freezer, "ROOT", root),
+                  patch.object(freezer, "v1_preservation", return_value={"status": "PASS"}),
+                  patch.object(freezer, "archived_v1_replay", return_value={"status": "PASS"}),
+                  patch("agent_economic_trust.mechanism_reporting._verify_prior_pilot_001"),
                   patch.object(freezer, "source_inventory", return_value=frozen["source_sha256"]) as source,
                   patch.object(freezer, "upstream_pins", return_value=frozen["upstream_pins"])):
                 _verify_frozen_envelope(assignment, ledger_path, frozen, assignment_sha, blocked)

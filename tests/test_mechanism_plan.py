@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import patch
 
 from agent_economic_trust.mechanism_plan import (
-    ARMS, case_for_episode, digest, make_schedule, manifest,
+    ARMS, PRIOR_PILOT_001, SCHEMA, case_for_episode, digest, make_schedule, manifest,
 )
 from agent_economic_trust.remote_budget import create_ledger
 from scripts import freeze_mechanism_pilot as freezer
@@ -28,6 +28,16 @@ FAKE_PRICING = {
     "input_framing_tokens_per_call": 8192,
 }
 REAL_OFFLINE_READINESS = freezer.offline_readiness
+REAL_V1_PRESERVATION = freezer.v1_preservation
+REAL_ARCHIVED_V1_REPLAY = freezer.archived_v1_replay
+FAKE_REPLAY = {
+    "status": "PASS", "saved_inspect_sha256": "806888ab2b1be0bb0187a7179c011d2db0d4322044ab8c5843feebdcfd202f12",
+    "model_id": "openai/gpt-5.6-sol", "reasoning_effort": "high",
+    "reasoning_history": "none", "inspect_version": "0.3.263",
+    "original_input_bytes": [8834, 15473, 20506, 29787],
+    "no_history_input_bytes": [8834, 10870, 12068, 13930],
+    "max_input_bytes": 24576,
+}
 
 
 class MechanismPlanTests(unittest.TestCase):
@@ -58,6 +68,12 @@ class MechanismPlanTests(unittest.TestCase):
         self.assertEqual(set(plan["execution_order"]), {row.episode_id for row in rows})
         self.assertEqual(plan["planned_episodes"], 4)
         self.assertEqual(plan["max_retries"], 0)
+        self.assertEqual(plan["schema"], SCHEMA)
+        self.assertEqual(plan["pilot_id"], "mechanism-funded-offer-002")
+        self.assertEqual(plan["prior_pilot_001"], PRIOR_PILOT_001)
+        self.assertIn("do not pool", plan["study_relationship"])
+        self.assertEqual(plan["reasoning_effort"], "high")
+        self.assertEqual(plan["reasoning_history"], "none")
         self.assertNotEqual(plan["private_rows_hmac_sha256"],
                             digest([vars(row) for row in rows]))
         self.assertNotIn("private_rows_sha256", plan)
@@ -90,9 +106,9 @@ class MechanismFreezeTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.pilot = self.root / "artifacts/gates/MECHANISM_PILOT"
-        self.assignment = self.pilot / "assignment-001"
-        self.lock = self.pilot / "first-freeze.lock.json"
-        self.offline_report = self.pilot / "offline-smoke-001/report.json"
+        self.assignment = self.pilot / "assignment-002"
+        self.lock = self.pilot / "second-freeze.lock.json"
+        self.offline_report = self.pilot / "offline-smoke-002/report.json"
         self.ledger = self.root / "ledger.jsonl"
         self.source = self.root / "pilot_runtime.py"
         self.source.write_text("VERSION = 1\n", encoding="utf-8")
@@ -110,6 +126,14 @@ class MechanismFreezeTests(unittest.TestCase):
             freezer, "offline_readiness", return_value={"report_sha256": "d" * 64,
                                                        "native_cells_verified": 4}))
         self.stack.enter_context(patch.object(
+            freezer, "v1_preservation", return_value={
+                "status": "PASS", "source_commit": PRIOR_PILOT_001["source_commit"],
+                "archive_file_count": 48,
+                "archive_tree_sha256": freezer.V1_ARCHIVE_TREE_SHA256,
+            }))
+        self.stack.enter_context(patch.object(
+            freezer, "archived_v1_replay", return_value=FAKE_REPLAY))
+        self.stack.enter_context(patch.object(
             freezer, "upstream_pins", return_value={"test_pin": "a" * 64}))
         self.artifacts = {"test_artifact": {"sha256": "b" * 64}}
         self.stack.enter_context(patch.object(
@@ -121,6 +145,11 @@ class MechanismFreezeTests(unittest.TestCase):
         result = freezer.freeze(seed_hex=SEED)
         self.assertEqual(result["planned_episodes"], 4)
         self.assertEqual(result["model_calls"], 0)
+        frozen = json.loads((self.assignment / "assignment_manifest.json").read_bytes())
+        self.assertEqual(frozen["prior_pilot_001"], PRIOR_PILOT_001)
+        self.assertEqual(frozen["archived_v1_replay"], FAKE_REPLAY)
+        self.assertEqual(json.loads(self.lock.read_bytes())["schema"],
+                         freezer.FREEZE_LOCK_SCHEMA)
         self.assertEqual(freezer.verify()["source_pin_status"], "PASS")
         with self.assertRaisesRegex(FileExistsError, "no reroll"):
             freezer.freeze(seed_hex="8a" * 32)
@@ -154,6 +183,16 @@ class MechanismFreezeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "compiled artifact"):
             freezer.verify()
 
+    def test_prior_archive_or_replay_drift_stops_before_new_lock(self):
+        with patch.object(freezer, "v1_preservation", side_effect=ValueError("prior archive changed")):
+            with self.assertRaisesRegex(ValueError, "prior archive changed"):
+                freezer.freeze(seed_hex=SEED)
+        self.assertFalse(self.lock.exists())
+        with patch.object(freezer, "archived_v1_replay", side_effect=ValueError("replay differs")):
+            with self.assertRaisesRegex(ValueError, "replay differs"):
+                freezer.freeze(seed_hex=SEED)
+        self.assertFalse(self.lock.exists())
+
     def test_offline_gate_reopens_four_cells_and_rejects_tampered_raw_receipt(self):
         self.offline_report.parent.mkdir(parents=True)
         scripted_path = self.offline_report.parent / "scripted_inspect_report.json"
@@ -178,9 +217,10 @@ class MechanismFreezeTests(unittest.TestCase):
                                "path": name, "sha256": freezer.sha(path),
                                "verified": "PASS"})
         report = {
-            "schema": "mechanism-offline-readiness-v1", "status": "PASS",
+            "schema": freezer.OFFLINE_REPORT_SCHEMA, "status": "PASS",
             "independent_verifier": "PASS",
             "paid_model_calls": 0,
+            "archived_v1_replay": FAKE_REPLAY,
             "execution_tiers": {"agent_behavior": "SCRIPTED_SIMULATION",
                                 "payment": "NATIVE_LOCAL_PROTOCOL"},
             "source_inventory_sha256": freezer.digest(sources),
@@ -215,6 +255,15 @@ class MechanismFreezeTests(unittest.TestCase):
                     "native_controls_verified": 4, "scripted_inspect_cells_verified": 4,
                     "paid_model_calls": 0}):
             self.assertEqual(REAL_OFFLINE_READINESS(sources)["native_cells_verified"], 4)
+            report["archived_v1_replay"] = {
+                **FAKE_REPLAY,
+                "no_history_input_bytes": [8834, 10870, 12068, 13931],
+            }
+            self.offline_report.write_bytes(freezer.canonical(report) + b"\n")
+            with self.assertRaisesRegex(ValueError, "offline readiness report"):
+                REAL_OFFLINE_READINESS(sources)
+            report["archived_v1_replay"] = FAKE_REPLAY
+            self.offline_report.write_bytes(freezer.canonical(report) + b"\n")
             duplicate = self.offline_report.parent / native[1]["path"]
             altered = json.loads(duplicate.read_bytes())
             first = json.loads((self.offline_report.parent / native[0]["path"]).read_bytes())
@@ -227,6 +276,19 @@ class MechanismFreezeTests(unittest.TestCase):
             (self.offline_report.parent / native[0]["path"]).write_text("{}\n", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "raw receipt hash changed"):
                 REAL_OFFLINE_READINESS(sources)
+
+
+class MechanismArchivedReplayTests(unittest.TestCase):
+    def test_preserved_v1_denominator_and_real_no_history_replay(self):
+        archive = REAL_V1_PRESERVATION()
+        self.assertEqual(archive["archive_file_count"], 48)
+        self.assertEqual(archive["archive_tree_sha256"], freezer.V1_ARCHIVE_TREE_SHA256)
+        self.assertEqual(REAL_ARCHIVED_V1_REPLAY(), FAKE_REPLAY)
+
+    def test_wrong_archive_fingerprint_fails_closed(self):
+        with patch.object(freezer, "V1_ARCHIVE_TREE_SHA256", "0" * 64):
+            with self.assertRaisesRegex(ValueError, "archived evidence changed"):
+                REAL_V1_PRESERVATION()
 
 
 if __name__ == "__main__":

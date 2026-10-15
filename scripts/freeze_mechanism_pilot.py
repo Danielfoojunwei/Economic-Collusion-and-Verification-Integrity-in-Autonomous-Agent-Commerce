@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Freeze or revalidate one prospective funded-offer pilot; never call a model.
+"""Freeze or revalidate separate funded-offer pilot 002; never call a model.
 
 The single fixed output and permanent one-time lock prevent post-outcome seed
-rerolls by this entry point. A new experiment needs a reviewed new design and
-new freezer, not another invocation with a different seed.
+rerolls by this entry point. Pilot 001 remains archived with its failed and
+pending rows; this new assignment cannot overwrite or replace it.
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ sys.path.insert(0, str(ROOT))
 
 from agent_economic_trust.mechanism_plan import (  # noqa: E402
     MAX_CALLS_PER_EPISODE, MAX_OUTPUT_TOKENS_PER_CALL,
-    MAX_SERIALIZED_INPUT_BYTES_PER_CALL, SCHEMA, canonical, digest,
+    MAX_SERIALIZED_INPUT_BYTES_PER_CALL, PRIOR_PILOT_001, SCHEMA, canonical, digest,
     make_schedule, manifest, private_rows_commitment,
 )
 from agent_economic_trust.remote_budget import BudgetLedger  # noqa: E402
@@ -41,11 +41,24 @@ from agent_economic_trust.remote_pricing import pricing_snapshot, reserve_worst_
 
 
 PILOT_ROOT = ROOT / "artifacts/gates/MECHANISM_PILOT"
-ASSIGNMENT_DIR = PILOT_ROOT / "assignment-001"
-FREEZE_LOCK = PILOT_ROOT / "first-freeze.lock.json"
+ASSIGNMENT_DIR = PILOT_ROOT / "assignment-002"
+FREEZE_LOCK = PILOT_ROOT / "second-freeze.lock.json"
 LEDGER = ROOT / "artifacts/budget/openrouter-ledger.jsonl"
 PIN_MANIFEST = ROOT / "UPSTREAM_PINNED.json"
-OFFLINE_REPORT = PILOT_ROOT / "offline-smoke-001/report.json"
+OFFLINE_REPORT = PILOT_ROOT / "offline-smoke-002/report.json"
+FREEZE_LOCK_SCHEMA = "mechanism-one-time-freeze-lock-v2"
+OFFLINE_REPORT_SCHEMA = "mechanism-offline-readiness-v2"
+V1_ARCHIVE_TREE_SHA256 = "bf646b223e492f541d29ab80c33916edead9adfdc9248f0a370731b3c9f4faca"
+V1_ARCHIVE_FILE_COUNT = 48
+V1_ARCHIVE_DIRECTORIES = (
+    "assignment-001", "runs-001", "offline-smoke-001",
+    "invalidated-offline-smoke-pre-genesis-001",
+)
+V1_ARCHIVE_SINGLE_FILES = (
+    "artifacts/gates/MECHANISM_PILOT/first-freeze.lock.json",
+    "artifacts/gates/MECHANISM_PILOT/collection-001-after-stop.json",
+    "docs/PILOT_001_STOPPED_INTERPRETATION.md",
+)
 ERC8183_COMMIT = "142e669c1fd318486a4628395b629f033654dd06"
 ERC8183_SUBMODULES = {
     "lib/forge-std": "620536fa5277db4e3fd46772d5cbc1ea0696fb43",
@@ -74,6 +87,7 @@ MANDATORY_SOURCE_FILES = (
     "tests/test_mechanism_plan.py",
     "tests/test_mechanism_task.py",
     "docs/PROSPECTIVE_FUNDED_OFFER_PILOT.md",
+    "docs/PROSPECTIVE_FUNDED_OFFER_PILOT_002.md",
     "schemas/event.schema.json",
     "schemas/run_manifest.schema.json",
     "UPSTREAM_PINNED.json",
@@ -84,6 +98,127 @@ def sha(path: Path) -> str:
     if path.is_symlink() or not path.is_file():
         raise ValueError(f"freeze source missing or not a regular file: {path}")
     return sha256(path.read_bytes()).hexdigest()
+
+
+def v1_preservation() -> dict[str, Any]:
+    """Require the entire committed pilot-001 archive to remain byte-for-byte.
+
+    The fixed archive digest covers original and invalidated smoke, the frozen
+    assignment, partial native/Inspect evidence, collection, lock and stopped
+    interpretation. Unknown additions beneath these archival paths also fail.
+    """
+    archive: dict[str, str] = {}
+    for name in V1_ARCHIVE_DIRECTORIES:
+        directory = PILOT_ROOT / name
+        if not directory.is_dir() or directory.is_symlink():
+            raise ValueError("pilot-001 archive directory is missing or unsafe")
+        for path in sorted(directory.rglob("*")):
+            if path.is_file() or path.is_symlink():
+                archive[str(path.relative_to(ROOT))] = sha(path)
+    for name in V1_ARCHIVE_SINGLE_FILES:
+        archive[name] = sha(ROOT / name)
+    if len(archive) != V1_ARCHIVE_FILE_COUNT or digest(archive) != V1_ARCHIVE_TREE_SHA256:
+        raise ValueError("pilot-001 archived evidence changed or was added to")
+    for name in ("assignment_manifest", "stopped_marker", "saved_inspect_log",
+                 "partial_native_evidence", "collection"):
+        ref = PRIOR_PILOT_001[name]
+        if archive.get(ref["path"]) != ref["sha256"]:
+            raise ValueError("pilot-001 primary evidence hash changed")
+    prior_assignment = json.loads((PILOT_ROOT / "assignment-001/assignment_manifest.json").read_bytes())
+    prior_lock = json.loads((PILOT_ROOT / "first-freeze.lock.json").read_bytes())
+    stopped = json.loads((ROOT / PRIOR_PILOT_001["stopped_marker"]["path"]).read_bytes())
+    collection = json.loads((ROOT / PRIOR_PILOT_001["collection"]["path"]).read_bytes())
+    statuses = [row.get("status") for row in collection.get("rows", [])]
+    if (prior_assignment.get("schema") != "mechanism-funded-offer-assignment-v1"
+            or prior_assignment.get("planned_episodes") != 4
+            or prior_lock != {
+                "schema": "mechanism-one-time-freeze-lock-v1",
+                "assignment": "artifacts/gates/MECHANISM_PILOT/assignment-001",
+                "seed_commitment_sha256": prior_assignment.get("seed_commitment_sha256"),
+            }
+            or stopped.get("assignment_manifest_sha256")
+            != PRIOR_PILOT_001["assignment_manifest"]["sha256"]
+            or stopped.get("inspect_eval_sha256")
+            != PRIOR_PILOT_001["saved_inspect_log"]["sha256"]
+            or stopped.get("partial_native_sha256")
+            != PRIOR_PILOT_001["partial_native_evidence"]["sha256"]
+            or stopped.get("no_retry_or_substitution") is not True
+            or collection.get("planned_episodes") != 4
+            or collection.get("completed_episodes") != 0
+            or collection.get("assignment_manifest_sha256")
+            != PRIOR_PILOT_001["assignment_manifest"]["sha256"]
+            or statuses.count("FAILED_OR_INCOMPLETE") != 1
+            or statuses.count("PENDING") != 3):
+        raise ValueError("pilot-001 one-time lock or four-row denominator changed")
+    commit = subprocess.run(
+        ["git", "cat-file", "-t", PRIOR_PILOT_001["source_commit"]],
+        cwd=ROOT, capture_output=True, text=True, check=True, timeout=20,
+    ).stdout.strip()
+    if commit != "commit":
+        raise ValueError("pilot-001 source commit is missing")
+    return {
+        "status": "PASS", "source_commit": PRIOR_PILOT_001["source_commit"],
+        "archive_file_count": len(archive), "archive_tree_sha256": digest(archive),
+    }
+
+
+def archived_v1_replay() -> dict[str, Any]:
+    """Replay four archived model boundaries through pinned Inspect, offline.
+
+    Input and tool definitions are from the immutable stopped .eval. Inspect's
+    actual reasoning-history resolver transforms the saved messages before the
+    same byte counter used by the paid request guard. No inference is issued.
+    """
+    from inspect_ai.log import read_eval_log
+    from inspect_ai.model import GenerateConfig, get_model
+    from inspect_ai.model._model import resolve_reasoning_history
+    from agent_economic_trust.remote import _safe_model_input_size
+
+    if version("inspect_ai") != "0.3.263":
+        raise ValueError("archived replay requires pinned Inspect 0.3.263")
+    ref = PRIOR_PILOT_001["saved_inspect_log"]
+    path = ROOT / ref["path"]
+    if sha(path) != ref["sha256"]:
+        raise ValueError("pilot-001 stopped Inspect log hash changed")
+    log = read_eval_log(str(path), resolve_attachments=True)
+    if (len(log.samples or []) != 1
+            or log.eval.model != "openrouter/openai/gpt-5.6-sol"):
+        raise ValueError("pilot-001 archived model route or sample changed")
+    events = [event for event in log.samples[0].events if event.event == "model"]
+    if (len(events) != 4
+            or any(event.model != "openrouter/openai/gpt-5.6-sol"
+                   or getattr(event.config, "reasoning_effort", None) != "high"
+                   or getattr(event.config, "reasoning_history", None) is not None
+                   for event in events)):
+        raise ValueError("pilot-001 archived model events changed")
+    config = GenerateConfig(reasoning_effort="high", reasoning_history="none",
+                            max_tokens=MAX_OUTPUT_TOKENS_PER_CALL,
+                            max_retries=0)
+    model = get_model(
+        "openrouter/openai/gpt-5.6-sol", config=config, memoize=False,
+        base_url="https://openrouter.ai/api/v1", max_retries=0,
+        stream=False, responses_api=False,
+    )
+    if model.api.force_reasoning_history() is not None:
+        raise ValueError("provider overrides requested no-history replay")
+    original = [_safe_model_input_size(event.input, event.tools) for event in events]
+    no_history = [
+        _safe_model_input_size(
+            resolve_reasoning_history(event.input, config, model.api), event.tools,
+        ) for event in events
+    ]
+    if (original != [8_834, 15_473, 20_506, 29_787]
+            or no_history != [8_834, 10_870, 12_068, 13_930]
+            or original[-1] <= MAX_SERIALIZED_INPUT_BYTES_PER_CALL
+            or any(size >= MAX_SERIALIZED_INPUT_BYTES_PER_CALL for size in no_history)):
+        raise ValueError("archived no-history replay no longer fits frozen byte cap")
+    return {
+        "status": "PASS", "saved_inspect_sha256": ref["sha256"],
+        "model_id": "openai/gpt-5.6-sol", "reasoning_effort": "high",
+        "reasoning_history": "none", "inspect_version": "0.3.263",
+        "original_input_bytes": original, "no_history_input_bytes": no_history,
+        "max_input_bytes": MAX_SERIALIZED_INPUT_BYTES_PER_CALL,
+    }
 
 
 def source_inventory() -> dict[str, str]:
@@ -257,11 +392,13 @@ def offline_readiness(sources: dict[str, str]) -> dict[str, Any]:
     """Independently reopen all scripted and native local controls before freeze."""
     raw = OFFLINE_REPORT.read_bytes()
     report = json.loads(raw)
+    replay = archived_v1_replay()
     if (raw != canonical(report) + b"\n"
-            or report.get("schema") != "mechanism-offline-readiness-v1"
+            or report.get("schema") != OFFLINE_REPORT_SCHEMA
             or report.get("status") != "PASS"
             or report.get("independent_verifier") != "PASS"
             or report.get("paid_model_calls") != 0
+            or report.get("archived_v1_replay") != replay
             or report.get("execution_tiers") != {
                 "agent_behavior": "SCRIPTED_SIMULATION", "payment": "NATIVE_LOCAL_PROTOCOL"}
             or report.get("source_inventory_sha256") != digest(sources)):
@@ -339,6 +476,7 @@ def offline_readiness(sources: dict[str, str]) -> dict[str, Any]:
         raise ValueError("offline runner independent re-verification differs")
     return {"report_sha256": sha(OFFLINE_REPORT),
             "scripted_inspect_report_sha256": scripted_ref["sha256"],
+            "archived_v1_replay": replay,
             "native_cells_verified": len(seen),
             "tests_passed": {key: tests[key] for key in ("python", "foundry")}}
 
@@ -393,6 +531,8 @@ def freeze(*, seed_hex: str | None = None) -> dict[str, Any]:
     payload, private = _core(seed_hex)
     if private_rows_commitment(seed_hex, private) != payload["private_rows_hmac_sha256"]:
         raise AssertionError("private pilot row digest differs")
+    preservation = v1_preservation()
+    replay = archived_v1_replay()
     sources = source_inventory()  # fails until all prospective runtime files exist
     readiness = offline_readiness(sources)  # reopens four scripted and native controls
     runtime_contract = runtime_protocol_contract()
@@ -408,6 +548,8 @@ def freeze(*, seed_hex: str | None = None) -> dict[str, Any]:
         raise ValueError("full four-episode worst-case reserve exceeds shared USD 20 headroom")
     payload.update({
         "source_sha256": sources,
+        "v1_preservation": preservation,
+        "archived_v1_replay": replay,
         "offline_readiness": readiness,
         "runtime_protocol_contract": runtime_contract,
         "upstream_pins": pins,
@@ -426,7 +568,7 @@ def freeze(*, seed_hex: str | None = None) -> dict[str, Any]:
     })
     PILOT_ROOT.mkdir(parents=True, exist_ok=True)
     _new_file(FREEZE_LOCK, canonical({
-        "schema": "mechanism-one-time-freeze-lock-v1",
+        "schema": FREEZE_LOCK_SCHEMA,
         "assignment": str(ASSIGNMENT_DIR.relative_to(ROOT)),
         "seed_commitment_sha256": payload["seed_commitment_sha256"],
     }) + b"\n")
@@ -456,11 +598,15 @@ def verify() -> dict[str, Any]:
             or any(payload.get(key) != value for key, value in expected.items())
             or payload.get("private_rows_hmac_sha256") != private_rows_commitment(seed_hex, saved_private)
             or lock != {
-                "schema": "mechanism-one-time-freeze-lock-v1",
+                "schema": FREEZE_LOCK_SCHEMA,
                 "assignment": str(ASSIGNMENT_DIR.relative_to(ROOT)),
                 "seed_commitment_sha256": expected["seed_commitment_sha256"],
             }):
         raise ValueError("pilot seed, assignment, or one-time lock changed")
+    if payload.get("v1_preservation") != v1_preservation():
+        raise ValueError("pilot-001 archived evidence changed")
+    if payload.get("archived_v1_replay") != archived_v1_replay():
+        raise ValueError("pilot-001 no-history replay changed")
     sources = source_inventory()
     if payload.get("source_sha256") != sources:
         raise ValueError("pilot first-party source/data changed")

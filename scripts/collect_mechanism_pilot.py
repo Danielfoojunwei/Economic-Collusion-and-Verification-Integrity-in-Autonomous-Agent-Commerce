@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only, independent four-cell funded-offer pilot evidence collection."""
+"""Read-only, independent pilot 002 collection; link but do not pool pilot 001."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--assignment", type=Path,
-        default=ROOT / "artifacts/gates/MECHANISM_PILOT/assignment-001",
+        default=ROOT / "artifacts/gates/MECHANISM_PILOT/assignment-002",
     )
     parser.add_argument("--runs", type=Path, required=True)
     parser.add_argument(
@@ -47,6 +47,7 @@ def main() -> None:
         print(f"mechanism pilot collection stopped: {type(exc).__name__}", file=sys.stderr)
         raise SystemExit(1) from None
     print(json.dumps({
+        "pilot_sequence": result["pilot_sequence"],
         "planned_episodes": result["planned_episodes"],
         "completed_episodes": result["completed_episodes"],
         "inference_tier": result["inference_tier"],

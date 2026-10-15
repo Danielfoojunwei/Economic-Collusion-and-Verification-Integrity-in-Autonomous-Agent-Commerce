@@ -18,7 +18,7 @@ from typing import Any
 
 from inspect_ai import eval as inspect_eval
 from inspect_ai.log import read_eval_log
-from inspect_ai.model import GenerateConfig, get_model
+from inspect_ai.model import ContentReasoning, GenerateConfig, get_model
 
 from .mechanism_native import MechanismNative, verify_mechanism_native_evidence
 from .mechanism_plan import (
@@ -33,7 +33,8 @@ from .mechanism_task import (
 from .remote import (
     APPROVED_MODEL_ID, PROJECT_CAP_USD, PROJECT_LEDGER_PATH,
     REQUEST_TIMEOUT_SECONDS, RemoteBoundaryError, _execution_enabled, _sha256,
-    _usage_for, account_usage_delta_usd, account_usage_usd, guard_model_api,
+    _safe_model_input_size, _usage_for, account_usage_delta_usd,
+    account_usage_usd, guard_model_api,
 )
 from .remote_budget import BudgetLedger
 from .remote_pricing import estimate_usage, pricing_snapshot, reserve_worst_case
@@ -43,9 +44,10 @@ from .w11_market_log_integrity import compare_market_native_log
 
 ROOT = Path(__file__).resolve().parents[2]
 PILOT_ROOT = ROOT / "artifacts" / "gates" / "MECHANISM_PILOT"
-ASSIGNMENT_DIR = PILOT_ROOT / "assignment-001"
-RUNS_DIR = PILOT_ROOT / "runs-001"
+ASSIGNMENT_DIR = PILOT_ROOT / "assignment-002"
+RUNS_DIR = PILOT_ROOT / "runs-002"
 SCHEDULER_SECONDS = 240
+REASONING_HISTORY = "none"
 
 
 def _freeze_verify() -> None:
@@ -102,6 +104,7 @@ class MechanismPilotPlan:
     max_calls: int = MAX_CALLS_PER_EPISODE
     max_input_bytes: int = MAX_SERIALIZED_INPUT_BYTES_PER_CALL
     max_output_tokens: int = MAX_OUTPUT_TOKENS_PER_CALL
+    reasoning_history: str = REASONING_HISTORY
 
     def validate(self) -> tuple[dict[str, Any], str, tuple[MechanismEpisode, ...]]:
         if (self.assignment_dir.resolve() != ASSIGNMENT_DIR.resolve()
@@ -112,10 +115,15 @@ class MechanismPilotPlan:
             raise RemoteBoundaryError("pilot model or USD 20 cap differs from approval")
         if (self.max_calls != MAX_CALLS_PER_EPISODE
                 or self.max_input_bytes != MAX_SERIALIZED_INPUT_BYTES_PER_CALL
-                or self.max_output_tokens != MAX_OUTPUT_TOKENS_PER_CALL):
+                or self.max_output_tokens != MAX_OUTPUT_TOKENS_PER_CALL
+                or self.reasoning_history != REASONING_HISTORY):
             raise RemoteBoundaryError("pilot model limits differ from prospective freeze")
         _freeze_verify()
-        return load_assignment(self.assignment_dir)
+        frozen, assignment_sha, rows = load_assignment(self.assignment_dir)
+        if (frozen.get("reasoning_effort") != "high"
+                or frozen.get("reasoning_history") != REASONING_HISTORY):
+            raise RemoteBoundaryError("frozen reasoning configuration differs from follow-up")
+        return frozen, assignment_sha, rows
 
 
 def preflight(plan: MechanismPilotPlan) -> dict[str, Any]:
@@ -164,6 +172,7 @@ def preflight(plan: MechanismPilotPlan) -> dict[str, Any]:
         "next_episode_id": row.episode_id, "next_arm": row.arm,
         "next_index": next_index, "remaining_episodes": remaining,
         "model_id": plan.model_id, "reasoning_effort": "high",
+        "reasoning_history": plan.reasoning_history,
         "max_calls": plan.max_calls,
         "max_serialized_input_bytes": plan.max_input_bytes,
         "max_output_tokens_per_call": plan.max_output_tokens,
@@ -243,6 +252,97 @@ def _require_auditor_native_bonus_proof(audit: dict[str, Any],
         raise RemoteBoundaryError("auditor trusted bonus proof differs from funded native receipt")
 
 
+def _has_reasoning_block(messages: Any) -> bool:
+    """Inspect must strip prior opaque reasoning before its API boundary."""
+    return any(
+        isinstance(part, ContentReasoning)
+        for message in messages
+        for part in (message.content if isinstance(message.content, list) else ())
+    )
+
+
+def _capture_model_boundary(model: Any, plan: MechanismPilotPlan) -> list[dict[str, Any]]:
+    """Enforce the v2 history policy at the actual forwarded API input."""
+    observed: list[dict[str, Any]] = []
+    original = model.api.generate
+
+    async def bounded_generate(input: Any, tools: Any, tool_choice: Any,
+                               config: GenerateConfig) -> Any:
+        size = _safe_model_input_size(input, tools)
+        record = {
+            "call_index": len(observed) + 1,
+            "serialized_input_bytes": size,
+            "local_boundary_passed": False,
+        }
+        observed.append(record)
+        if (config.reasoning_effort != "high"
+                or config.reasoning_history != REASONING_HISTORY):
+            raise RemoteBoundaryError("provider call differs from frozen reasoning policy")
+        if _has_reasoning_block(input):
+            raise RemoteBoundaryError("prior reasoning block reached provider API boundary")
+        if size > plan.max_input_bytes or len(observed) > plan.max_calls:
+            raise RemoteBoundaryError("provider request exceeds frozen call or byte cap")
+        if (config.max_tokens != plan.max_output_tokens
+                or config.max_retries != 0):
+            raise RemoteBoundaryError("provider call differs from frozen output or retry limit")
+        record["local_boundary_passed"] = True
+        return await original(input, tools, tool_choice, config)
+
+    model.api.generate = bounded_generate
+    return observed
+
+
+def _verify_saved_model_boundary(
+    log: Any, plan: MechanismPilotPlan, attempts: dict[str, int],
+    observed: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Match every archived model event to an actual bounded API invocation."""
+    head_config = log.eval.model_generate_config
+    if (log.eval.model != f"openrouter/{plan.model_id}"
+            or head_config is None
+            or head_config.reasoning_effort != "high"
+            or head_config.reasoning_history != REASONING_HISTORY
+            or head_config.max_tokens != plan.max_output_tokens
+            or head_config.max_retries != 0
+            or len(log.samples) != 1):
+        raise RemoteBoundaryError("saved model route or sample count differs from approval")
+    events = [event for event in log.samples[0].events if event.event == "model"]
+    if (not events or len(events) != attempts["attempted"]
+            or len(events) != len(observed) or len(events) > plan.max_calls
+            or any(record.get("local_boundary_passed") is not True
+                   for record in observed)):
+        raise RemoteBoundaryError("saved model events differ from bounded API calls")
+    event_requests: list[dict[str, Any]] = []
+    for call_index, (event, boundary) in enumerate(zip(events, observed), start=1):
+        config = event.config
+        size = _safe_model_input_size(event.input, event.tools)
+        if (event.model != f"openrouter/{plan.model_id}"
+                or config.reasoning_effort != "high"
+                or config.reasoning_history != REASONING_HISTORY
+                or config.max_tokens != plan.max_output_tokens
+                or config.max_retries != 0
+                or _has_reasoning_block(event.input)
+                or event.error is not None or event.cache is not None
+                or event.retries not in (None, 0)
+                or size > plan.max_input_bytes
+                or boundary["call_index"] != call_index
+                or boundary["serialized_input_bytes"] != size):
+            raise RemoteBoundaryError("saved model event differs from actual bounded request")
+        event_requests.append({
+            "call_index": call_index, "model_event_uuid": event.uuid,
+            "serialized_input_bytes": size,
+        })
+    if attempts["max_input_bytes_seen"] != max(
+            request["serialized_input_bytes"] for request in event_requests):
+        raise RemoteBoundaryError("saved request maximum differs from API guard")
+    return {
+        "max_calls": plan.max_calls,
+        "max_serialized_input_bytes_per_call": plan.max_input_bytes,
+        "max_output_tokens_per_call": plan.max_output_tokens,
+        "event_requests": event_requests,
+    }
+
+
 def execute_one(plan: MechanismPilotPlan) -> dict[str, Any]:
     """Spend at most one assigned episode; no loop, retry or seed substitution."""
     preview = preflight(plan)
@@ -258,6 +358,7 @@ def execute_one(plan: MechanismPilotPlan) -> dict[str, Any]:
     ledger = BudgetLedger(plan.ledger_path)
     run_id = _run_id(assignment_sha, row.episode_id)
     attempts: dict[str, int] = {"attempted": 0, "max_input_bytes_seen": 0}
+    observed_requests: list[dict[str, Any]] = []
     reserved = False
     settled = False
     stage = "native_setup"
@@ -277,7 +378,8 @@ def execute_one(plan: MechanismPilotPlan) -> dict[str, Any]:
             stage = "model_boundary_setup"
             usage_before = account_usage_usd()
             config = GenerateConfig(
-                reasoning_effort="high", max_tokens=plan.max_output_tokens,
+                reasoning_effort="high", reasoning_history=plan.reasoning_history,
+                max_tokens=plan.max_output_tokens,
                 max_retries=0, timeout=REQUEST_TIMEOUT_SECONDS,
                 max_connections=1, cache=False,
             )
@@ -292,6 +394,7 @@ def execute_one(plan: MechanismPilotPlan) -> dict[str, Any]:
                 max_output_tokens=plan.max_output_tokens,
             )
             guard_high_reasoning(model)
+            observed_requests = _capture_model_boundary(model, plan)
             work = directory / "inspect_work"
             work.mkdir(mode=0o700)
             fresh_rates, current_reserve, _ = _fresh_budget_boundary(
@@ -340,14 +443,8 @@ def execute_one(plan: MechanismPilotPlan) -> dict[str, Any]:
             ledger.settle(run_id, cost, "sha256:" + _sha256(inspect_path))
             settled = True
             stage = "saved_log_and_native_audit"
-            if saved.eval.model != f"openrouter/{plan.model_id}":
-                raise RemoteBoundaryError("saved model route differs from approval")
-            for event in saved.samples[0].events:
-                if event.event == "model" and (
-                    event.model != f"openrouter/{plan.model_id}"
-                    or getattr(event.config, "reasoning_effort", None) != "high"
-                ):
-                    raise RemoteBoundaryError("saved model event differs from approved high reasoning")
+            request_boundary = _verify_saved_model_boundary(
+                saved, plan, attempts, observed_requests)
             audit = audit_saved_mechanism_log(
                 saved, case, artifact, episode_id=row.episode_id, arm=row.arm,
                 require_delivery=False,
@@ -380,6 +477,8 @@ def execute_one(plan: MechanismPilotPlan) -> dict[str, Any]:
                 "model_tier": "REAL_LLM_REMOTE_APPROVED",
                 "payment_tier": "NATIVE_LOCAL_PROTOCOL",
                 "model_id": plan.model_id, "reasoning_effort": "high",
+                "reasoning_history": plan.reasoning_history,
+                "model_request_boundary": request_boundary,
                 "native_inspect_sha256": _sha256(inspect_path),
                 "native_payment_sha256": _sha256(native_path),
                 "native_archive_integrity": archive_audit,
@@ -432,13 +531,14 @@ def execute_one(plan: MechanismPilotPlan) -> dict[str, Any]:
                 return None
 
         stop = {
-            "schema": "mechanism-paid-episode-stop-v1",
+            "schema": "mechanism-paid-episode-stop-v2",
             "episode_id": row.episode_id, "assignment_manifest_sha256": assignment_sha,
             "stage": stage, "error_type": type(exc).__name__,
             "budget_state": "SETTLED" if settled else
                             "UNKNOWN" if unknown_confirmed else
                             "UNRESOLVED" if reserved else "UNRESERVED",
             "model_calls_attempted": attempts["attempted"],
+            "model_request_boundary_observed": observed_requests,
             "partial_inspect_archives": partial_logs,
             "inspect_eval_sha256": safe_digest(inspect_path),
             "partial_native_sha256": safe_digest(partial_native),

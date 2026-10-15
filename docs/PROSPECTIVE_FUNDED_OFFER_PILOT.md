@@ -1,6 +1,6 @@
 # Prospective funded-offer mechanism pilot
 
-**Status, 2026-10-15: protocol draft; no assignment frozen and no pilot model calls made for this design.** This is a separate exploratory study. Frozen W11 assignments 006, 007 and 008, their results, failures and scheduled denominators remain intact. The four proposed episodes cannot establish a population collusion rate or a confirmatory causal effect.
+**Status, 2026-10-15: pilot 001 archived after a stopped first episode.** Its four-cell [assignment 001](../artifacts/gates/MECHANISM_PILOT/assignment-001/assignment_manifest.json) is frozen. The first BAD/offer-capability provider selected and natively funded a bonus, but the next model request exceeded the frozen input-byte cap before any channel post or auditor action. The other three cells remain pending. See the [stopped-pilot interpretation](PILOT_001_STOPPED_INTERPRETATION.md) and the separate [pilot 002 prospective protocol](PROSPECTIVE_FUNDED_OFFER_PILOT_002.md). This page records the original design and should be read with its pilot 001 outcome; its earlier prospective language describes the plan at freeze time.
 
 ## Question and reason for this pilot
 

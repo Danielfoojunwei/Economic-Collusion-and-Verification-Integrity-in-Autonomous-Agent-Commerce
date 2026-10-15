@@ -37,13 +37,13 @@ from agent_economic_trust.mechanism_task import (  # noqa: E402
     BonusProposal, ClaimSubmission,
 )
 from scripts.freeze_mechanism_pilot import (  # noqa: E402
-    PILOT_ROOT, source_inventory_sha256,
+    PILOT_ROOT, archived_v1_replay, source_inventory_sha256,
 )
 
 
-OFFLINE_ROOT = PILOT_ROOT / "offline-smoke-001"
+OFFLINE_ROOT = PILOT_ROOT / "offline-smoke-002"
 OFFLINE_SEED = "a" * 64
-OFFLINE_ASSIGNMENT_SHA = sha256(b"mechanism-model-free-native-smoke-v1").hexdigest()
+OFFLINE_ASSIGNMENT_SHA = sha256(b"mechanism-model-free-native-smoke-v2").hexdigest()
 PYTHON = WORKSPACE / "upstreams" / "orbit-smoke" / ".venv" / "bin" / "python"
 FORGE = WORKSPACE / ".tools" / "foundry" / "v1.8.5" / "forge"
 
@@ -139,12 +139,13 @@ def run_offline_smoke(output: Path = OFFLINE_ROOT) -> dict[str, Any]:
     (output / "focused-python-tests.log").write_text(python_output, encoding="utf-8")
     (output / "focused-foundry-tests.log").write_text(foundry_output, encoding="utf-8")
     report = {
-        "schema": "mechanism-offline-readiness-v1",
+        "schema": "mechanism-offline-readiness-v2",
         "status": "PASS", "independent_verifier": "PASS",
         "execution_tiers": {"agent_behavior": "SCRIPTED_SIMULATION",
                             "payment": "NATIVE_LOCAL_PROTOCOL"},
         "offline_seed_hex": OFFLINE_SEED,
         "source_inventory_sha256": source_inventory_sha256(),
+        "archived_v1_replay": archived_v1_replay(),
         "scripted_inspect_report": {
             "path": "scripted_inspect_report.json",
             "sha256": _sha(scripted_report),
@@ -163,10 +164,11 @@ def verify_offline_smoke(output: Path = OFFLINE_ROOT) -> dict[str, Any]:
     """Read-only verify scripted Inspect and all four actual local payment paths."""
     output = Path(output)
     report = json.loads((output / "report.json").read_bytes())
-    if (report.get("schema") != "mechanism-offline-readiness-v1"
+    if (report.get("schema") != "mechanism-offline-readiness-v2"
             or report.get("status") != "PASS"
             or report.get("independent_verifier") != "PASS"
             or report.get("source_inventory_sha256") != source_inventory_sha256()
+            or report.get("archived_v1_replay") != archived_v1_replay()
             or report.get("paid_model_calls") != 0
             or any(type(report.get("tests_passed", {}).get(key)) is not int
                    or report["tests_passed"][key] <= 0 for key in ("python", "foundry"))):
