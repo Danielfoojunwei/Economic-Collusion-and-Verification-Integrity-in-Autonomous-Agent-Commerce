@@ -47,7 +47,7 @@ separately shows that a valid paid report from obligation A can trigger a BAD
 job B payout under an intentionally permissive application adapter, while an
 obligation-bound adapter rejects it; this is authored adapter behavior, not a
 model collusion result or a flaw in x402. The proposed [x402 live handoff](artifacts/prospective/X402_HANDOFF_LIVE013/independent-source-review-001.json)
-and [Sol auditor high versus extra-high study](artifacts/prospective/ERC8183_XHIGH018/source-review-002.json)
+and [Sol auditor high versus extra-high study](artifacts/prospective/ERC8183_XHIGH018/source-review-003.json)
 remain source-only and blocked by source/budget gates. A separate
 [two-role adversarial MPP calendar design](docs/MPP013_TWO_ROLE_ADVERSARIAL_CALENDAR_SOURCE.md)
 adds an explicitly instructed auditor stress arm but has no live result.
