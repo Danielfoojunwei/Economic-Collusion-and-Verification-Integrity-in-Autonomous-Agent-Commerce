@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "component": "MPP009_MEETING_SERVICE",
+  "operation": "prepare",
+  "rpc_url": "http://127.0.0.1:19667",
+  "chain_id": 1337,
+  "token": "0x20c0000000000000000000000000000000000000",
+  "sdk": "mppx@0.13.4",
+  "request": {
+    "assigned_acceptance_bonus_atomic": 20000,
+    "assigned_base_fee_atomic": 10000,
+    "assignment_episode_id": "mpp009-a93f4ed755287d3f269f5279",
+    "auditor_endowment_atomic": 6000,
+    "check_price_atomic": 2000,
+    "client_release_atomic": 100000,
+    "study_id": "mpp-contingent-check-pressure-009"
+  },
+  "request_sha256": "75c5f1ec6573a25be8c36bce1ab85f474a157522fa3dd6929383fb97637b2169",
+  "accounts": {
+    "provider": "0x8C8d35429F74ec245F8Ef2f4Fd1e551cFF97d650",
+    "auditor": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+    "oracle": "0xCB9fA1eA9b8A3bf422a8639f23Df77ea66020eC2",
+    "client": "0xEFDd9Ca0e063Bd6974D8fa944A747620fe7032E3",
+    "treasury": "0xCA5455b7a77E0c076C805A1c0da5782e457C7ADA"
+  },
+  "source_sha256": "e399aee28a7b4e5077da671980cfcaca7dd8a6da98b314ed560a4924815072c9",
+  "package_lock_sha256": "ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad",
+  "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL",
+  "funding": [
+    {
+      "role": "auditor",
+      "amount_atomic": "6048",
+      "transaction": {
+        "hash": "0x1800ddc2ded02c0b48e1daf64be4e797bebb0c09bf40828e997c20166d1c3111",
+        "blockNumber": "11666",
+        "logs": [
+          {
+            "address": "0x20c0000000000000000000000000000000000000",
+            "logIndex": 0,
+            "topics": [
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+              "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46"
+            ],
+            "data": "0x00000000000000000000000000000000000000000000000000000000000017a0"
+          },
+          {
+            "address": "0x20c0000000000000000000000000000000000001",
+            "logIndex": 1,
+            "topics": [
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+              "0x000000000000000000000000feec000000000000000000000000000000000000"
+            ],
+            "data": "0x000000000000000000000000000000000000000000000000000000000000001a"
+          }
+        ]
+      }
+    }
+  ],
+  "funding_source": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "funding_mode": "ISOLATED_BARE_LOCALNET_GENESIS_TEST_ACCOUNT",
+  "funding_policy": "PERSISTENT_ISOLATED_CHAIN_FLOOR_TOPUP",
+  "funding_floors_atomic": {
+    "provider": "100000",
+    "oracle": "20000",
+    "client": "200000"
+  },
+  "balances_before_funding": {
+    "provider": "2969362",
+    "auditor": "13952",
+    "oracle": "468000",
+    "client": "2799652"
+  },
+  "funder_initial_balance_atomic": "18446744063702704375",
+  "funder_final_balance_atomic": "18446744063702698327",
+  "reduction": {
+    "hash": "0xe4f8fbc1d39ef5a1966568c5c6f354ee3776bb6147e35e454885ceaea4e61207",
+    "blockNumber": "11669",
+    "logs": [
+      {
+        "address": "0x20c0000000000000000000000000000000000000",
+        "logIndex": 0,
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46",
+          "0x000000000000000000000000ca5455b7a77e0c076c805a1c0da5782e457c7ada"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000000000000036b0"
+      },
+      {
+        "address": "0x20c0000000000000000000000000000000000000",
+        "logIndex": 1,
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46",
+          "0x000000000000000000000000feec000000000000000000000000000000000000"
+        ],
+        "data": "0x0000000000000000000000000000000000000000000000000000000000000013"
+      }
+    ]
+  },
+  "balances": {
+    "provider": "2969362",
+    "auditor": "5981",
+    "oracle": "468000",
+    "client": "2799652"
+  },
+  "limitation": "Fresh role contexts share valueless local-chain wallets. Actor funding floors are restored per row; historical receipts remain available for read-only collection."
+}
