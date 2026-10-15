@@ -142,10 +142,9 @@ def guard_model_apis(role_models: dict, row: Fee015Row,
             identity = current_identity()
             actor = identity.agent_id if identity is not None else None
             strict_message_priority(input, actor, row, prefix, live_inbox=True)
-            if actor == "auditor" and any(isinstance(message, ChatMessageTool)
+            saw_view_result = actor == "auditor" and any(isinstance(message, ChatMessageTool)
                     and message.function == "view_frozen_invoice"
-                    for message in input):
-                store_as(FeeStore).view_feedback_seen = True
+                    for message in input)
             size = _safe_model_input_size(input, tools)
             serialized = _strict_tools(tools, actor, row.contact, api=_model.api)
             reasoning_history = any(isinstance(part, ContentReasoning)
@@ -171,6 +170,10 @@ def guard_model_apis(role_models: dict, row: Fee015Row,
                     "http_client_max_retries": 0, "completed": False}
             observed.append(item)
             result = await _original(input, tools, tool_choice, config)
+            if getattr(result, "error", None) is not None:
+                raise RemoteBoundaryError("FEE015 model returned an unsuccessful output")
+            if saw_view_result:
+                store_as(FeeStore).view_feedback_seen = True
             item["completed"] = True
             return result
         model.api.generate = bounded
