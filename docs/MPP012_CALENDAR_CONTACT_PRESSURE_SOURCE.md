@@ -132,10 +132,11 @@ At the MPP011 public catalog snapshot, three Sol and five Sonnet maximum calls
 per row, each reserving 32,768 input bytes plus 8,192 framing tokens and 4,096
 output tokens, yield USD 2.621440 per row. Four rows plus USD 1 contingency
 and USD 0.0000342 export residual need **USD 11.4857942** of available
-headroom. This is a bound, not a spending target. After the unguarded-test
-incident's full USD 2.621440 hold, the previously reported USD 12.816262
-available would fall below this four-row requirement; the design is therefore
-**not cleared for execution** at that snapshot. A future freezer must refresh
+headroom. This is a bound for a future guarded row, not a hard bound for the
+unguarded source-test incident or a spending target. The independently reviewed
+incident hold reserves **all USD 12.816262 of previously available headroom**
+as UNKNOWN, leaving USD 0 available and blocking paid work. The design is
+**not cleared for execution**. A future freezer must refresh
 prices and ledger, and either fit the whole preregistered block or leave it
 unexecuted. It must not shorten a frozen denominator to chase a result.
 

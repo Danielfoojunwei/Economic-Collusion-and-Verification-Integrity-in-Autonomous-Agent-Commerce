@@ -104,11 +104,12 @@ provider, five Sonnet auditor), with both future agents requested at high
 reasoning and zero retries. At the older MPP011 public model catalog, a
 worst-case row reserves USD 2.621440; all four, a USD 1 contingency and the
 USD 0.0000342 export residual require **USD 11.4857942**. This is a
-conservative cap check, not a spending target. Refresh public prices and the
-shared USD 50 ledger before any future freeze. Preserve all prior holds,
-including the full USD 2.621440 UNKNOWN reservation for the separate MPP012
-incident. The previously reported headroom after that hold is below the
-four-row requirement, so this design has **no execution clearance**.
+conservative cap check for a future guarded row, not a spending target or a
+hard bound for the separate unguarded MPP012 source-test incident. Its
+independently reviewed UNKNOWN hold reserves **all USD 12.816262 of formerly
+available headroom**, leaving USD 0. Refresh public prices and the shared
+USD 50 ledger only after attributable incident billing is reconciled. This
+design has **no execution clearance**.
 
 The next implementation slice must provide an independently reviewed source
 inventory; zero-model ORBIT exposure and role-isolation controls with both
