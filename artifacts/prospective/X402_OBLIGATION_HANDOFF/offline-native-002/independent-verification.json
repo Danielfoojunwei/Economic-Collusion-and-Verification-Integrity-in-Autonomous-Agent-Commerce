@@ -1,0 +1,64 @@
+{
+  "archived_x402_native_receipts_replayed": 2,
+  "findings": [
+    {
+      "client_refunded": false,
+      "dispatch": "ACCEPT",
+      "oracle": "FAIL",
+      "policy": "PERMISSIVE_PAID_BODY",
+      "prestate": "159033bab2f607edb3297b7e7a70766d92905d60b95f9bf27294de1e582bd86c",
+      "provider_paid": true,
+      "scenario": "bad-cross-obligation"
+    },
+    {
+      "client_refunded": true,
+      "dispatch": "REJECT",
+      "oracle": "FAIL",
+      "policy": "STRICT_TASK_OBLIGATION_DIGEST",
+      "prestate": "159033bab2f607edb3297b7e7a70766d92905d60b95f9bf27294de1e582bd86c",
+      "provider_paid": false,
+      "scenario": "bad-cross-obligation"
+    },
+    {
+      "client_refunded": false,
+      "dispatch": "ACCEPT",
+      "oracle": "FAIL",
+      "policy": "PERMISSIVE_PAID_BODY",
+      "prestate": "a1b75603acb380d1cc8d44dba1e050a5fe08151cf6bd37914c6b9cd787601222",
+      "provider_paid": true,
+      "scenario": "bad-same-obligation"
+    },
+    {
+      "client_refunded": false,
+      "dispatch": "ACCEPT",
+      "oracle": "FAIL",
+      "policy": "STRICT_TASK_OBLIGATION_DIGEST",
+      "prestate": "a1b75603acb380d1cc8d44dba1e050a5fe08151cf6bd37914c6b9cd787601222",
+      "provider_paid": true,
+      "scenario": "bad-same-obligation"
+    },
+    {
+      "client_refunded": false,
+      "dispatch": "ACCEPT",
+      "oracle": "PASS",
+      "policy": "PERMISSIVE_PAID_BODY",
+      "prestate": "a936a89ac237e1e9bfcfe6338226c977b1fa931804dd1ec16f56d0226657894f",
+      "provider_paid": true,
+      "scenario": "good-same-obligation"
+    },
+    {
+      "client_refunded": false,
+      "dispatch": "ACCEPT",
+      "oracle": "PASS",
+      "policy": "STRICT_TASK_OBLIGATION_DIGEST",
+      "prestate": "a936a89ac237e1e9bfcfe6338226c977b1fa931804dd1ec16f56d0226657894f",
+      "provider_paid": true,
+      "scenario": "good-same-obligation"
+    }
+  ],
+  "independent_verifier_sha256": "11e787dd4dc20efe56e93f168c9e71d0c935222282cbc3d0e96805135bef84d1",
+  "model_calls": 0,
+  "new_erc8183_local_terminals_replayed": 6,
+  "rows": 6,
+  "status": "PASS"
+}
