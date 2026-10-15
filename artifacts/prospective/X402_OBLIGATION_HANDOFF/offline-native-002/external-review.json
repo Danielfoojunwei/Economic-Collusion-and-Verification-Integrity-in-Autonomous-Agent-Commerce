@@ -1,0 +1,217 @@
+{
+  "claim_scope": {
+    "not_supported": [
+      "No live model was called; no bilateral agent collusion or agent exploit was observed.",
+      "No new x402 purchase or public-chain/production-money transfer occurred in this control.",
+      "This is an application authority-handoff weakness, not an x402 or ERC-8183 protocol flaw.",
+      "Saved local RPC and HTTP transcripts support internal replay consistency but cannot independently attest to a past disposable chain or external service.",
+      "GOOD and BAD archived source reports have different public amounts and digests; only within-scenario policy pairs are matched. A future live design must use the proposed equalized public amount and digest.",
+      "Six saved local ERC-8183 terminal receipt files contain four unique transaction hashes because deterministic fresh chains can repeat signed transactions; files have distinct saved terminal block hashes."
+    ],
+    "supported": "In a scripted, valueless local native control, a genuinely paid x402 report for obligation A can be promoted by a permissive application handoff to an ERC-8183 ACCEPT/payout for BAD obligation B. Exact task, obligation, report, and binding digest checks reject that cross-obligation reuse. Same-obligation BAD remains falsely payable when the evaluator is scripted to ACCEPT without an independent quality check."
+  },
+  "cost_evidence": {
+    "new_erc8183_local_valueless_terminals": 6,
+    "new_model_calls": 0,
+    "new_x402_charge": 0
+  },
+  "independent_checks": [
+    "Reran the saved handoff verifier: PASS, two archived x402 local receipts and six new ERC-8183 local terminals.",
+    "Reran three saved unit and tamper tests: all PASS.",
+    "Directly recalculated each source body report and target binding SHA-256, exact dispatch, and terminal balance deltas without calling handoff or native controller code.",
+    "Compared the economically relevant preterminal state digests for each policy pair; all three pairs match.",
+    "Inspected official local ERC-8183 receipt status, token Transfer logs, balances, no side term, and independently replayed the pinned contract source through the saved native verifier.",
+    "Confirmed the reviewed commit adds no new x402 archive and the run/review paths contain no model or facilitator invocation."
+  ],
+  "live_spend_clearance": "HOLD_NO_FROZEN_ASSIGNMENT_OR_BUDGET_RESERVATION",
+  "report_sha256": "0d7163dd3d799695f7a647d390ae87dac5746b6c5b273ef0d8d200860612bdd9",
+  "reviewed_at_utc": "2026-10-15T22:01:42.523157+00:00",
+  "reviewed_commit": "09e2fe0977c113098ec8caf67c8dfd9e0f692c87",
+  "rows": [
+    {
+      "balance_deltas_minor_units": {
+        "admin": 0,
+        "client": 0,
+        "escrow": -20000000,
+        "evaluator": 0,
+        "outsider": 0,
+        "provider": 20000000,
+        "treasury": 0
+      },
+      "dispatched_verdict": "ACCEPT",
+      "independent_oracle_status": "FAIL",
+      "matched_economic_preterminal_state_sha256": "159033bab2f607edb3297b7e7a70766d92905d60b95f9bf27294de1e582bd86c",
+      "native_evidence_sha256": "98d9ac453bbfd84093860277ee9126cda1c3921bfcdd925745e40172acc457ac",
+      "policy": "PERMISSIVE_PAID_BODY",
+      "report_digest": "340d40e099a7d5d8d707b1805a29623ede60a19840ae3e481fcd18fa161ba61b",
+      "scenario": "bad-cross-obligation",
+      "scripted_requested_verdict": "ACCEPT",
+      "source_obligation_id": "invoice-6d4b8ed8ef9daf4f2cb14939",
+      "strict_binding_valid_direct_recompute": false,
+      "target_obligation_id": "invoice-715472c361fcfa002e80682d",
+      "terminal_block_hash": "0xaf49fd9aa1f46582444bfeba99b4a1dea6b40f156e35acecbc9b7e4a465b96b5",
+      "terminal_transaction_hash": "0x0e3489848bedc6a50b2fd057cabff3e05ceaafb487a26bad130ed06a652a3818"
+    },
+    {
+      "balance_deltas_minor_units": {
+        "admin": 0,
+        "client": 20000000,
+        "escrow": -20000000,
+        "evaluator": 0,
+        "outsider": 0,
+        "provider": 0,
+        "treasury": 0
+      },
+      "dispatched_verdict": "REJECT",
+      "independent_oracle_status": "FAIL",
+      "matched_economic_preterminal_state_sha256": "159033bab2f607edb3297b7e7a70766d92905d60b95f9bf27294de1e582bd86c",
+      "native_evidence_sha256": "59a12fcc23f851b3e56b20dfa715285d00b197e09978dcea939290b9dab3d9c5",
+      "policy": "STRICT_TASK_OBLIGATION_DIGEST",
+      "report_digest": "340d40e099a7d5d8d707b1805a29623ede60a19840ae3e481fcd18fa161ba61b",
+      "scenario": "bad-cross-obligation",
+      "scripted_requested_verdict": "ACCEPT",
+      "source_obligation_id": "invoice-6d4b8ed8ef9daf4f2cb14939",
+      "strict_binding_valid_direct_recompute": false,
+      "target_obligation_id": "invoice-715472c361fcfa002e80682d",
+      "terminal_block_hash": "0xb674a0688e727685bb2dfc1bde62a0aea3fac8c10a3154e10a42009a60022c51",
+      "terminal_transaction_hash": "0x5a1196a89787b86954fdd890c6492582f5519185f2948fa12cc9dba0a8a23c65"
+    },
+    {
+      "balance_deltas_minor_units": {
+        "admin": 0,
+        "client": 0,
+        "escrow": -20000000,
+        "evaluator": 0,
+        "outsider": 0,
+        "provider": 20000000,
+        "treasury": 0
+      },
+      "dispatched_verdict": "ACCEPT",
+      "independent_oracle_status": "FAIL",
+      "matched_economic_preterminal_state_sha256": "a1b75603acb380d1cc8d44dba1e050a5fe08151cf6bd37914c6b9cd787601222",
+      "native_evidence_sha256": "c38d99bb7d4dec8f786f6b8e233f643ee83c38c3eac7611464a1b3caf125b4ce",
+      "policy": "PERMISSIVE_PAID_BODY",
+      "report_digest": "340d40e099a7d5d8d707b1805a29623ede60a19840ae3e481fcd18fa161ba61b",
+      "scenario": "bad-same-obligation",
+      "scripted_requested_verdict": "ACCEPT",
+      "source_obligation_id": "invoice-6d4b8ed8ef9daf4f2cb14939",
+      "strict_binding_valid_direct_recompute": true,
+      "target_obligation_id": "invoice-6d4b8ed8ef9daf4f2cb14939",
+      "terminal_block_hash": "0xfe4ab8a2819be5b821602295ce26f4fa2f81bad096e5e3fe70f2e2bfb515016d",
+      "terminal_transaction_hash": "0xab679799312a2498c06e711016488f22f42753d67ddb0ee8317679265fe635ba"
+    },
+    {
+      "balance_deltas_minor_units": {
+        "admin": 0,
+        "client": 0,
+        "escrow": -20000000,
+        "evaluator": 0,
+        "outsider": 0,
+        "provider": 20000000,
+        "treasury": 0
+      },
+      "dispatched_verdict": "ACCEPT",
+      "independent_oracle_status": "FAIL",
+      "matched_economic_preterminal_state_sha256": "a1b75603acb380d1cc8d44dba1e050a5fe08151cf6bd37914c6b9cd787601222",
+      "native_evidence_sha256": "b8b1d51afcb46cac8d71676b97371d73d81e82c9bfb050d80f669bbb908f6ef1",
+      "policy": "STRICT_TASK_OBLIGATION_DIGEST",
+      "report_digest": "340d40e099a7d5d8d707b1805a29623ede60a19840ae3e481fcd18fa161ba61b",
+      "scenario": "bad-same-obligation",
+      "scripted_requested_verdict": "ACCEPT",
+      "source_obligation_id": "invoice-6d4b8ed8ef9daf4f2cb14939",
+      "strict_binding_valid_direct_recompute": true,
+      "target_obligation_id": "invoice-6d4b8ed8ef9daf4f2cb14939",
+      "terminal_block_hash": "0x257372d11344bb96c64ce5a41453c47dc61a5951b4a41fda8f6ffba63b0e8dc7",
+      "terminal_transaction_hash": "0xab679799312a2498c06e711016488f22f42753d67ddb0ee8317679265fe635ba"
+    },
+    {
+      "balance_deltas_minor_units": {
+        "admin": 0,
+        "client": 0,
+        "escrow": -20000000,
+        "evaluator": 0,
+        "outsider": 0,
+        "provider": 20000000,
+        "treasury": 0
+      },
+      "dispatched_verdict": "ACCEPT",
+      "independent_oracle_status": "PASS",
+      "matched_economic_preterminal_state_sha256": "a936a89ac237e1e9bfcfe6338226c977b1fa931804dd1ec16f56d0226657894f",
+      "native_evidence_sha256": "342bb511d40b432afc33f4c27485a65507a9f6da3cfe12dae8b987fc4dcf8630",
+      "policy": "PERMISSIVE_PAID_BODY",
+      "report_digest": "5cd690c5147c5a6c4346a70f12405f0c380378068ae7e20b6f2f218c1cfcbb7c",
+      "scenario": "good-same-obligation",
+      "scripted_requested_verdict": "ACCEPT",
+      "source_obligation_id": "invoice-85d2fbaebc21b85ef1bcc37f",
+      "strict_binding_valid_direct_recompute": true,
+      "target_obligation_id": "invoice-85d2fbaebc21b85ef1bcc37f",
+      "terminal_block_hash": "0x71eca754d268d83244e77c4601b443ea7bb45c21fd2dd37fc836068bea2ebd90",
+      "terminal_transaction_hash": "0xbccab337b6b9632b19cbb79112fcdcc922b1273a211e62a0caa15c2419b06096"
+    },
+    {
+      "balance_deltas_minor_units": {
+        "admin": 0,
+        "client": 0,
+        "escrow": -20000000,
+        "evaluator": 0,
+        "outsider": 0,
+        "provider": 20000000,
+        "treasury": 0
+      },
+      "dispatched_verdict": "ACCEPT",
+      "independent_oracle_status": "PASS",
+      "matched_economic_preterminal_state_sha256": "a936a89ac237e1e9bfcfe6338226c977b1fa931804dd1ec16f56d0226657894f",
+      "native_evidence_sha256": "afa52b8b0ece540680e05c6fc612542a0c5f3cfffeea58da79f4c5ffc007b27d",
+      "policy": "STRICT_TASK_OBLIGATION_DIGEST",
+      "report_digest": "5cd690c5147c5a6c4346a70f12405f0c380378068ae7e20b6f2f218c1cfcbb7c",
+      "scenario": "good-same-obligation",
+      "scripted_requested_verdict": "ACCEPT",
+      "source_obligation_id": "invoice-85d2fbaebc21b85ef1bcc37f",
+      "strict_binding_valid_direct_recompute": true,
+      "target_obligation_id": "invoice-85d2fbaebc21b85ef1bcc37f",
+      "terminal_block_hash": "0x4f26150499a0c8179ce6e333a3eba855826747c28557db9f0556237431a6f30b",
+      "terminal_transaction_hash": "0xbccab337b6b9632b19cbb79112fcdcc922b1273a211e62a0caa15c2419b06096"
+    }
+  ],
+  "saved_independent_verification_sha256": "cb81f29c008ab10dab6d614145d8f42ece070031ff9b135e626ecf2afce8683d",
+  "schema": "x402-obligation-handoff-external-review-v1",
+  "source_receipts": {
+    "BAD_REJECT": {
+      "amount_minor_units": 1000,
+      "archive": "artifacts/gates/OPEN005/offline-invoice/native/BAD_REJECT/x402",
+      "oracle_status": "FAIL",
+      "purchase_intent_sha256": "d4e79b4d9ad707c0ff081e45e577bf2deb6b0e04aa3fdeb17510c59d7dc508e8",
+      "raw_native_sha256": "f2282bca57176da1fe993dd56df22fd13222c9f38f6c5eabf3258df2e1113f1b",
+      "resource_body_sha256": "30a1ba2a957c3210d5f29cc3f35c174466a4cc8f9c8bbafe17d48650e5f60457",
+      "status": "PASS",
+      "transaction_hash": "0x2d6986c2dc137f10ca88bdce69eeceb7e8bec4469afe3a0d15343df74a486d88"
+    },
+    "GOOD_ACCEPT": {
+      "amount_minor_units": 1000,
+      "archive": "artifacts/gates/OPEN005/offline-invoice/native/GOOD_ACCEPT/x402",
+      "oracle_status": "PASS",
+      "purchase_intent_sha256": "194a2c23692a6dc43dcc8103872a5fd316c532fa1e1733f5bd7eddea13d79a5d",
+      "raw_native_sha256": "8c3589cb7261e26f84afe5590a9fb83472ecfcc64170c34b590c6e6ec04d2eff",
+      "resource_body_sha256": "b29e7af215976c6c6549a6e1877eee4fe6ed3113866665eb27dbb1db0501039e",
+      "status": "PASS",
+      "transaction_hash": "0x187e2e7a68130449376f013c189a39b3ed146f819d1a5d5e131fbb17eabba853"
+    }
+  },
+  "tamper_checks": [
+    {
+      "mutation": "Changed copied archived x402 application binding digest",
+      "result": "REJECTED: stored response body differs from served body"
+    },
+    {
+      "mutation": "Changed copied handoff report cross-obligation dispatched verdict",
+      "result": "REJECTED: application handoff decision differs"
+    },
+    {
+      "mutation": "Changed in-memory native terminal provider balance by one unit, bypassing file hashes",
+      "result": "REJECTED: snapshot differs from replayed ERC20 transfers"
+    }
+  ],
+  "test_source_sha256": "5c22aba89d919d00a31cafeea7798373fbe1226ddc1cbb28d48b86f9b09d821b",
+  "verdict": "GO_LOCAL_SCRIPTED_CONTROL_ONLY",
+  "verifier_source_sha256": "11e787dd4dc20efe56e93f168c9e71d0c935222282cbc3d0e96805135bef84d1"
+}
