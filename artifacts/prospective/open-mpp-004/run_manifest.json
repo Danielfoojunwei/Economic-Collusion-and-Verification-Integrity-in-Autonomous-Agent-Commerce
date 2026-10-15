@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "base_commit": "992e738fea635db6a231f332b3b11ef00e8658e4",
+  "branch": "exp-mpp-004",
+  "model_execution_tier": "SCRIPTED_SIMULATION",
+  "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL",
+  "external_model_calls": 0,
+  "real_spend": 0,
+  "seed": 73,
+  "assignment": "fixed scripted controls, not randomized",
+  "orbit_commit": "588b3035f92450ec4f0496bb8b629daa205e84c7",
+  "orbit_source_sha256": {
+    "dataset_builder.py": "2579c1a96a3e800fed861fa3714a519c346aecc985eb4bd1c638ac74878230dc",
+    "scorer.py": "e30e060f3ff978b1a96fac1e79a11652efa95abd662e9da5305b5060295b5e8d",
+    "task.py": "ab10d0da4d31c256a3ede46b9260b879c04a3ea40b1139f26f4cc9e3986092c2"
+  },
+  "native_sdk": "mppx@0.13.4",
+  "container": "open-mpp-004",
+  "rpc_url": "http://127.0.0.1:19547",
+  "external_client_payout": "NOT_EXECUTED",
+  "tests": {
+    "new_unit": {
+      "pass": 6,
+      "fail": 0
+    },
+    "existing_w18": {
+      "pass": 4,
+      "fail": 0
+    },
+    "native_flows": {
+      "pass": 5,
+      "fail": 0
+    },
+    "live_native_verifications": {
+      "pass": 5,
+      "transactions": 9
+    },
+    "oracle_assignments": 36,
+    "deterministic_repeat": "PASS",
+    "modified_decision_denial": "PASS",
+    "live_models": "NOT_EXECUTED"
+  },
+  "source_and_artifact_sha256": {
+    "src/agent_economic_trust/open_mpp_meeting.py": "9cf5cd78d5e3462eb8e458306edce51456d9e1ad9b88110895fee791869bf9ce",
+    "tests/test_open_mpp_meeting.py": "f81cf934d4a0f04371a57f5a3871e95bda3d7a272627a2963fdd451644c74ebb",
+    "scripts/run_open_mpp_meeting_smoke.py": "5016cecdaa83d6c3b100697e2b64b184158b529cdea5919d2761c56e88548118",
+    "protocols/mpp/meeting-local.mjs": "5c82e3750e5c31df4e4cbc75f52b34763c8da3fd648f95bb5c267d9c8ef66343",
+    "protocols/mpp/verify-meeting-evidence.mjs": "2c4ecc1b4aea391c7ba20825b7a9e61acaa85418b40d917c3a3e5b7e99d2f816",
+    "protocols/mpp/package-lock.json": "ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad",
+    "artifacts/prospective/open-mpp-004/decisions/bad-check.json": "4ac34051aa379ca01dedcc9644b8d83c5e61d5c44c8469a600d55a222b797e4b",
+    "artifacts/prospective/open-mpp-004/decisions/bad-skip_accept.json": "0638920196781be5a444b29ef6c67d2341da0a00c28a9b7cfe97cc9a4ac625df",
+    "artifacts/prospective/open-mpp-004/decisions/coercive-stress.json": "91e661c87098c8187534f7f1df2339fa0061f185bd90b5f97317aa964292c711",
+    "artifacts/prospective/open-mpp-004/decisions/good-check.json": "7d15c71db75230f0d12aadb876c6066e5ac0f60ae78da46d2503f396f88af435",
+    "artifacts/prospective/open-mpp-004/decisions/good-skip_accept.json": "847ec605adb3f8785412c63955f398e1532adf63ae01cf5fca9831ef70e13538",
+    "artifacts/prospective/open-mpp-004/decisions/summary.json": "e805f6d4cb3fc6b3c0ec768765ce49cef5ccefe4d96814886f28c18615416061",
+    "artifacts/prospective/open-mpp-004/native/bad-check-charge.json": "3af086cb9fad5b1692d86a1d27417353436e493b35b9b2e1f283508a0ff324ae",
+    "artifacts/prospective/open-mpp-004/native/bad-skip_accept-charge.json": "b8b37d43502e0aad845b26bd6209eebdb85a3a19c9f7776c04e02adff5f256ab",
+    "artifacts/prospective/open-mpp-004/native/bad-skip_accept-session.json": "9932a86a85573f78d2c9fe887293737106b7cdefab18228824ff031e2ef658ec",
+    "artifacts/prospective/open-mpp-004/native/good-skip_accept-charge.json": "82c8671c4ab75d87f03a8dc301174cc510be03e8a9dfd14c60becf7688717b3e",
+    "artifacts/prospective/open-mpp-004/native/good-skip_accept-session.json": "2d629241e7b334821131a2b0431ba567c504ccea41242acfefa4392d8dca5f84"
+  }
+}
