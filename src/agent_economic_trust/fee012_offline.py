@@ -17,6 +17,7 @@ from tempfile import TemporaryDirectory
 from .erc8183_fee_native import FeeNativeController
 from .erc8183_fee_native_verifier import verify_complete, verify_prefix
 from .fee012_plan import Fee012Row, make_schedule
+from scripts import verify_erc8183_fee_control as controls
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -36,11 +37,33 @@ class OfflineFeeNativeController(FeeNativeController):
 
 
 def replay_scripted_receipt(path: Path, row: Fee012Row) -> dict:
-    """Check original tier; apply old native verifier to an in-memory view."""
+    """Replay immutable raw receipt across the known isolated-build path.
+
+    The archived control was compiled at /tmp/upstreams/erc8183. A canonical
+    checkout builds the *same pinned artifacts* under /workspace/upstreams.
+    The inherited verifier compares absolute artifact_path strings as well as
+    hashes. Validate each historical path and current SHA before changing only
+    the in-memory compatibility view. Never read a historical alias or rewrite
+    a saved receipt, so a fresh setup needs no /tmp/upstreams symlink.
+    """
     evidence = json.loads(path.read_text())
     if evidence.get("model_behavior_tier") != "SCRIPTED_SIMULATION":
         raise ValueError("FEE012 offline receipt is mislabeled as a remote model")
+    contracts = evidence.get("contracts")
+    names = {"MockUSDC", "ERC8183", "ERC1967Proxy"}
+    if not isinstance(contracts, dict) or set(contracts) != names:
+        raise ValueError("FEE012 offline compiled artifact set differs")
     compatibility = copy.deepcopy(evidence)
+    for name in sorted(names):
+        saved = contracts[name]
+        historical = Path("/tmp/upstreams/erc8183/out") / f"{name}.sol" / f"{name}.json"
+        current = controls.UPSTREAM / "out" / f"{name}.sol" / f"{name}.json"
+        if (not isinstance(saved, dict)
+                or saved.get("artifact_path") != str(historical)
+                or not current.is_file() or current.is_symlink()
+                or saved.get("artifact_sha256") != _sha(current)):
+            raise ValueError(f"FEE012 offline {name} artifact path or digest differs")
+        compatibility["contracts"][name]["artifact_path"] = str(current)
     compatibility["model_behavior_tier"] = "REAL_LLM_REMOTE_APPROVED"
     result = (verify_complete(compatibility, row) if path.name == "native-evidence.json"
               else verify_prefix(compatibility, row))
