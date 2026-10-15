@@ -28,7 +28,10 @@ AUDITOR_CALLS = 5
 CALL_SCHEDULE = ("provider", "provider", "auditor", "auditor",
                  "provider", "auditor", "auditor", "auditor")
 MAX_CALLS_PER_EPISODE = len(CALL_SCHEDULE)
-MAX_INPUT_BYTES = 24_576
+# MPP008's first paid row attempted a 28,345-byte auditor input and stopped at
+# its 24,576-byte boundary. Reserve the larger prospective limit for every
+# MPP009 call, including turns whose actual input is shorter.
+MAX_INPUT_BYTES = 32_768
 MAX_OUTPUT_TOKENS = 4_096
 INPUT_FRAMING_TOKENS_PER_CALL = 8_192
 TASK_TOKEN_LIMIT = 50_000
@@ -157,6 +160,11 @@ def reserve_pair(snapshots: Mapping[str, Mapping[str, Any]], provider: str, audi
         item = snapshots[model_id]
         if item.get("model_id") != model_id:
             raise ValueError("model price identity differs")
+        if (type(item.get("context_length")) is not int
+                or item["context_length"] < MAX_INPUT_BYTES + INPUT_FRAMING_TOKENS_PER_CALL + MAX_OUTPUT_TOKENS
+                or type(item.get("max_completion_tokens")) is not int
+                or item["max_completion_tokens"] < MAX_OUTPUT_TOKENS):
+            raise ValueError("model published context cannot support MPP009 input and output limits")
         total += calls * ((MAX_INPUT_BYTES + INPUT_FRAMING_TOKENS_PER_CALL)
             * Decimal(item["input_usd_per_token"])
             + MAX_OUTPUT_TOKENS * Decimal(item["output_usd_per_token"])

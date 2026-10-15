@@ -28,12 +28,45 @@ assert.equal(String(receipt.blockNumber), saved.blockNumber)
 assert.deepEqual(receipt.logs.map(({ address, logIndex, topics, data }) => ({ address, logIndex, topics, data })), saved.logs)
 const balanceAt = (address, blockNumber) => readContract(rpc, { abi: Abis.tip20, address: evidence.token, functionName: 'balanceOf', args: [address], blockNumber })
 if (evidence.operation === 'prepare') {
+  const funder = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+  assert.equal(evidence.funding_mode, 'ISOLATED_BARE_LOCALNET_GENESIS_TEST_ACCOUNT')
+  assert.equal(evidence.funding_source, funder)
+  const expectedFunding = [['provider', 100000n], ['auditor', 20000n],
+    ['oracle', 20000n], ['client', 200000n]]
+  assert.equal(evidence.funding.length, expectedFunding.length)
+  for (const [index, [role, amount]] of expectedFunding.entries()) {
+    const item = evidence.funding[index]
+    assert.equal(item.role, role)
+    assert.equal(BigInt(item.amount_atomic), amount)
+    const funded = await getTransactionReceipt(rpc, { hash: item.transaction.hash })
+    assert.equal(funded.status, 'success')
+    assert.equal(String(funded.blockNumber), item.transaction.blockNumber)
+    assert.deepEqual(funded.logs.map(({ address, logIndex, topics, data }) =>
+      ({ address, logIndex, topics, data })), item.transaction.logs)
+    const transfers = parseEventLogs({ abi: Abis.tip20, logs: funded.logs,
+      eventName: 'Transfer', strict: false }).filter(event =>
+      event.address.toLowerCase() === evidence.token.toLowerCase() &&
+      event.args.from.toLowerCase() === funder.toLowerCase() &&
+      event.args.to.toLowerCase() === expected[role].toLowerCase())
+    assert.equal(transfers.length, 1)
+    assert.equal(transfers[0].args.amount, amount)
+  }
+  const funderInitial = await balanceAt(funder, BigInt(evidence.funding[0].transaction.blockNumber) - 1n)
+  const funderFinal = await balanceAt(funder, receipt.blockNumber)
+  assert.equal(funderInitial, BigInt(evidence.funder_initial_balance_atomic))
+  assert.equal(funderFinal, BigInt(evidence.funder_final_balance_atomic))
+  assert.ok(funderInitial - funderFinal >= 340000n)
   const actual = await balanceAt(expected.auditor, receipt.blockNumber)
   assert.equal(actual, BigInt(evidence.balances.auditor))
   assert.ok(actual <= 6000n && actual >= 3000n)
   const providerFunds = await balanceAt(expected.provider, receipt.blockNumber)
   assert.equal(providerFunds, BigInt(evidence.balances.provider))
   assert.ok(providerFunds >= 30000n, 'native provider wallet must fund full guaranteed fee and conditional bonus')
+  for (const role of ['provider', 'auditor', 'oracle', 'client'])
+    assert.equal(await balanceAt(expected[role], receipt.blockNumber),
+      BigInt(evidence.balances[role]))
+  assert.ok(BigInt(evidence.balances.oracle) >= 20000n)
+  assert.ok(BigInt(evidence.balances.client) >= 200000n)
   assert.equal(evidence.request.study_id, 'mpp-contingent-check-pressure-009')
   assert.deepEqual(Object.keys(evidence.request).sort(), ['assigned_acceptance_bonus_atomic',
     'assigned_base_fee_atomic', 'assignment_episode_id', 'auditor_endowment_atomic', 'check_price_atomic',

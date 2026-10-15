@@ -16,7 +16,7 @@ from agent_economic_trust.mpp008_budget import (CONDITIONAL_EVIDENCE_REF,
 from agent_economic_trust.mpp009_budget import budget_preflight
 from agent_economic_trust.mpp009_native_service import NativeMeetingService
 from agent_economic_trust.mpp009_orbit import dispatch
-from agent_economic_trust.mpp009_plan import (CALL_SCHEDULE, ROLE_DIRECTIONS,
+from agent_economic_trust.mpp009_plan import (CALL_SCHEDULE, MAX_INPUT_BYTES, ROLE_DIRECTIONS,
     full_block_reserve, make_schedule, manifest, reserve_pair)
 from agent_economic_trust.mpp009_task import PROVIDER_NOTICE, native_pressure_task
 from agent_economic_trust.open_mpp_meeting import commitment
@@ -57,10 +57,26 @@ class AssignmentTests(unittest.TestCase):
         self.assertNotEqual(ROWS, make_schedule("cd" * 32))
         prices = {model: {"model_id": model, "input_usd_per_token": "0",
                           "output_usd_per_token": "0",
-                          "request_usd": cost}
+                          "request_usd": cost, "context_length": 200000,
+                          "max_completion_tokens": 8192}
                   for model, cost in zip((ROLE_DIRECTIONS[0][0], ROLE_DIRECTIONS[0][1]),
                                          ("0.450560", "0.172032"), strict=True)}
         self.assertEqual(str(full_block_reserve(prices, ROWS)), "24.903680")
+        self.assertEqual(MAX_INPUT_BYTES, 32768)
+        catalog_rates = {
+            ROLE_DIRECTIONS[0][0]: {"model_id": ROLE_DIRECTIONS[0][0],
+                "input_usd_per_token": "0.00001", "output_usd_per_token": "0.00003",
+                "request_usd": "0", "context_length": 200000,
+                "max_completion_tokens": 8192},
+            ROLE_DIRECTIONS[0][1]: {"model_id": ROLE_DIRECTIONS[0][1],
+                "input_usd_per_token": "0.000004", "output_usd_per_token": "0.00001",
+                "request_usd": "0", "context_length": 200000,
+                "max_completion_tokens": 8192}}
+        self.assertEqual(str(full_block_reserve(catalog_rates, ROWS)), "29.491200")
+        with self.assertRaisesRegex(ValueError, "context"):
+            reserve_pair({**catalog_rates, ROLE_DIRECTIONS[0][0]: {
+                **catalog_rates[ROLE_DIRECTIONS[0][0]], "context_length": 45055}},
+                *ROLE_DIRECTIONS[0])
 
     def test_invalid_seed_or_cell_rejected(self):
         with self.assertRaises(ValueError):
@@ -68,14 +84,16 @@ class AssignmentTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             manifest("cd" * 32, ROWS)
         prices = {model: {"model_id": model, "input_usd_per_token": "0",
-                          "output_usd_per_token": "0", "request_usd": "0.1"}
+                          "output_usd_per_token": "0", "request_usd": "0.1",
+                          "context_length": 200000, "max_completion_tokens": 8192}
                   for model in {r.provider_model_id for r in ROWS}}
         with self.assertRaises(ValueError):
             full_block_reserve(prices, ROWS[:-1])
 
     def test_first_class_contingent_hold_is_subtracted_only_once(self):
         prices = {model: {"model_id": model, "input_usd_per_token": "0",
-                          "output_usd_per_token": "0", "request_usd": cost}
+                          "output_usd_per_token": "0", "request_usd": cost,
+                          "context_length": 200000, "max_completion_tokens": 8192}
                   for model, cost in zip((ROLE_DIRECTIONS[0][0], ROLE_DIRECTIONS[0][1]),
                                          ("0.450560", "0.172032"), strict=True)}
         reserves = {r.episode_id: reserve_pair(prices, r.provider_model_id,

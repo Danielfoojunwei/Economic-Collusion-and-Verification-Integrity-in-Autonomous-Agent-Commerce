@@ -26,7 +26,10 @@ const chain = defineChain({ id: 1337, name: 'Tempo Localnet', nativeCurrency: { 
 const token = '0x20c0000000000000000000000000000000000000'
 const mnemonic = 'test test test test test test test test test test test junk'
 const accounts = Object.fromEntries(['provider', 'auditor', 'oracle', 'client', 'treasury'].map((role, i) => [role, mnemonicToAccount(mnemonic, { accountIndex: i + 1 })]))
+const funder = mnemonicToAccount(mnemonic, { accountIndex: 0 })
 const clientFor = role => createClient({ account: accounts[role], chain, transport: rpcHttp(rpcUrl, { retryCount: 0, timeout: 20000 }), pollingInterval: 100 })
+const funderClient = createClient({ account: funder, chain,
+  transport: rpcHttp(rpcUrl, { retryCount: 0, timeout: 20000 }), pollingInterval: 100 })
 const rpc = clientFor('client')
 assert.equal(await rpc.request({ method: 'eth_chainId' }), '0x539')
 const balance = role => readContract(rpc, { abi: Abis.tip20, address: token, functionName: 'balanceOf', args: [accounts[role].address] })
@@ -55,18 +58,30 @@ if (operation === 'prepare') {
   assert.equal(request.assigned_base_fee_atomic, 10000)
   assert.ok([0, 20000].includes(request.assigned_acceptance_bonus_atomic))
   const funding = []
-  for (const role of ['provider', 'auditor', 'oracle', 'client']) {
-    for (const hash of await rpc.request({ method: 'tempo_fundAddress', params: [accounts[role].address] })) funding.push(await transaction(hash))
+  const localFunding = { provider: 100000n, auditor: 20000n,
+    oracle: 20000n, client: 200000n }
+  const funderBalance = await readContract(rpc, { abi: Abis.tip20,
+    address: token, functionName: 'balanceOf', args: [funder.address] })
+  assert.ok(funderBalance >= 500000n, 'isolated bare localnet needs its funded test genesis account')
+  for (const [role, amount] of Object.entries(localFunding)) {
+    const tx = await transaction(await writeContract(funderClient, { abi: Abis.tip20,
+      address: token, functionName: 'transfer', args: [accounts[role].address, amount] }))
+    funding.push({ role, amount_atomic: amount, transaction: tx })
   }
   const excess = await balance('auditor') - BigInt(request.auditor_endowment_atomic)
   assert.ok(excess > 0n)
   const reduction = await transaction(await writeContract(clientFor('auditor'), { abi: Abis.tip20, address: token, functionName: 'transfer', args: [accounts.treasury.address, excess] }))
   const balances = Object.fromEntries(await Promise.all(['provider', 'auditor', 'oracle', 'client'].map(async role => [role, await balance(role)])))
+  const funderAfter = await readContract(rpc, { abi: Abis.tip20,
+    address: token, functionName: 'balanceOf', args: [funder.address] })
   assert.ok(balances.auditor >= BigInt(request.check_price_atomic) + 1000n)
   assert.ok(balances.auditor <= BigInt(request.auditor_endowment_atomic))
   assert.ok(balances.provider >= 30000n, 'provider fee and conditional bonus must be pre-funded')
-  await write({ ...header, funding, reduction, balances,
-    limitation: 'All actors funded with valueless local faucet assets; auditor endowment capped before the trial.' })
+  await write({ ...header, funding, funding_source: funder.address,
+    funding_mode: 'ISOLATED_BARE_LOCALNET_GENESIS_TEST_ACCOUNT',
+    funder_initial_balance_atomic: funderBalance,
+    funder_final_balance_atomic: funderAfter, reduction, balances,
+    limitation: 'All actors funded from an isolated bare localnet test genesis account using valueless TIP-20; auditor endowment capped before the trial.' })
   console.log(JSON.stringify({ status: 'PASS', operation, auditor_balance_atomic: String(balances.auditor) }))
   process.exit(0)
 }

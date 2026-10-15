@@ -123,7 +123,7 @@ class NativeMeetingService:
             'release_policy': 'APPLICATION_ACCEPT_TRIGGER_NOT_NATIVE_ESCROW',
             'compensation_flow': 'provider-selected charge pays assigned base and conditional bonus; trusted application controls condition',
             'check_and_client_flow': 'native MPP charge on separate service paths',
-            'external_client_meaning': 'distinct local actor outside provider/auditor coalition, faucet-funded; no real external funds'}
+            'external_client_meaning': 'distinct local actor outside provider/auditor coalition, funded from the isolated test genesis account; no real external funds'}
 
     async def _command(self, *arguments):
         # No credential bindings or remote model environment reach the signer.
