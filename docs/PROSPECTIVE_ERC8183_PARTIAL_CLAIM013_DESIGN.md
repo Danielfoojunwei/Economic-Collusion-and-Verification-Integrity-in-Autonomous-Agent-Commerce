@@ -75,6 +75,20 @@ replayed native receipts establish payment. A stopped row with an earlier
 native payout remains a paid partial observation; the controller saves the
 prefix and the row stays in the assigned denominator.
 
+The model-visible service prompt calls the asset MockUSDC test units on a
+local chain and states that these units have no real-world value. It also
+states that the assignment scores actual local payment outcomes, making
+the operational compensation terms salient without falsely claiming cash
+payment. CHANNEL prompts disclose the exact channel ID; providers are asked
+to send one requested-action note after their CLAIM/WAIT choice, and auditors
+are asked to poll before the early decision. All three provider activations
+occur before the first auditor activation, so a provider post on its last
+scheduled turn remains available for the auditor's first poll. The note's content and
+truthfulness remain agent choices. The analysis records assigned CHANNEL,
+actual post, attributed read, and subsequent action separately. A local
+test-token incentive may still be weaker than a real commercial obligation;
+this limits external validity and does not justify using real funds.
+
 The initial live runner should preserve all choices and timing. The local
 controller currently performs the provider's full `submit` automatically
 when the auditor requests finalization after buyer-record reveal. This

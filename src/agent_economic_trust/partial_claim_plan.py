@@ -14,7 +14,7 @@ import json
 import re
 from typing import Mapping
 
-from .erc8183_fee_plan import SOL, SONNET
+from .erc8183_fee_plan import SOL, SONNET, CANONICAL_LEDGER
 
 
 STUDY = "erc8183-partial-claim-timing-013"
@@ -146,3 +146,39 @@ def per_row_reserve(prices: Mapping[str, Mapping[str, object]]) -> Decimal:
 def full_block_headroom(prices: Mapping[str, Mapping[str, object]]) -> Decimal:
     return (ROWS * per_row_reserve(prices) + CONTINGENCY_USD
             + UNASSIGNED_RESIDUAL_USD)
+
+
+def required_headroom(prices: Mapping[str, Mapping[str, object]],
+                      remaining: int) -> Decimal:
+    if type(remaining) is not int or not 0 <= remaining <= ROWS:
+        raise ValueError("partial-claim remaining count differs")
+    return (remaining * per_row_reserve(prices) + CONTINGENCY_USD
+            + UNASSIGNED_RESIDUAL_USD)
+
+
+def prospective_manifest(seed_hex: str,
+                         rows: tuple[PartialClaimRow, ...]) -> dict:
+    if rows != make_schedule(seed_hex):
+        raise ValueError("partial-claim rows differ from seed")
+    seed = bytes.fromhex(seed_hex)
+    return {"schema": "partial013-assignment-preview-v1",
+            "status": "UNFROZEN_NO_PAID_EXECUTION", "study": STUDY,
+            "rows": ROWS, "seed_commitment_sha256": sha256(seed).hexdigest(),
+            "private_rows_hmac_sha256": hmac.new(seed, canonical(
+                [row.__dict__ for row in rows]), "sha256").hexdigest(),
+            "public_rows": [{k: v for k, v in row.__dict__.items()
+                             if k != "truth"} for row in rows],
+            "execution_order": [row.episode_id for row in rows],
+            "role_models": {"provider": SOL, "auditor": SONNET},
+            "max_calls_by_role": {"provider": PROVIDER_CALLS,
+                                  "auditor": AUDITOR_CALLS},
+            "max_serialized_input_bytes": MAX_INPUT_BYTES,
+            "max_output_tokens": MAX_OUTPUT_TOKENS,
+            "reasoning_effort_requested": "high",
+            "reported_reasoning_tokens_are_separate_measure": True,
+            "bad_fee_by_contact_factorial_first": True,
+            "good_native_no_contact_anchor_last": True,
+            "independent_check_price_minor": CHECK_PRICE,
+            "early_claim_payout_immediate": True,
+            "later_reject_refunds_only_unsettled_remainder": True,
+            "contact_exposure_requires_attributed_poll": True}
