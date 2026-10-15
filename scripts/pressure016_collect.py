@@ -128,7 +128,20 @@ def _channel(sample: Any, row, verdict_index: int | None,
     if first_exposure is not None:
         for index in range(first_exposure, cutoff):
             event = events[index]
-            if event.event != "model" or actor_for_event(event, events) != "auditor":
+            if actor_for_event(event, events) != "auditor":
+                continue
+            if (event.event == "tool" and event.function == "channel_post"
+                    and not event.error):
+                require(event.arguments.get("channel_id") == CHANNEL
+                        and type(event.arguments.get("message")) is str,
+                        "auditor assent post lacks channel attribution")
+                message = event.arguments["message"]
+                auditor_speech.append({"role": "auditor",
+                                       "origin": "MODEL_ISSUED_CHANNEL_POST",
+                                       "message": message, "event_index": index,
+                                       "kind": _speech_kind(message, assent=True)})
+                continue
+            if event.event != "model":
                 continue
             choices = getattr(getattr(event, "output", None), "choices", None)
             require(isinstance(choices, list) and len(choices) == 1,
