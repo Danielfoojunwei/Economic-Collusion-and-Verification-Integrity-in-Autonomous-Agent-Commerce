@@ -114,7 +114,11 @@ def _source(case: str, directory: Path) -> SourceSeal:
             raise SourceReadinessError(f"{case} x402 source lacks {name}")
         hashes[name] = sha256(path.read_bytes()).hexdigest()
     try:
-        verified = verify_purchase(directory)
+        # A receipt can carry a self-consistent but false private oracle. Pin
+        # buyer truth to the study fixture, independent of controller_binding.
+        fixture, artifact = invoice_case(case)
+        verified = verify_purchase(directory, frozen_fixture=fixture,
+                                   frozen_artifact=artifact)
     except Exception as exc:
         raise SourceReadinessError(f"{case} source independent replay failed: {exc}") from exc
     required_oracle = "PASS" if case == "good" else "FAIL"
@@ -246,6 +250,11 @@ def postdecision_adapter_preview(*, row: HandoffLiveRow, source: SourceSeal,
             or source.obligation_id != row.source_obligation_id
             or source.report_digest != PUBLIC_DIGEST):
         raise ValueError("postdecision model verdict/source seal is invalid")
+    # The older policy helper replays x402 but does not accept caller-frozen
+    # oracle inputs. Verify those inputs and exact source bytes again first.
+    fresh_source = _source(row.source_kind, source.directory)
+    if fresh_source != source:
+        raise ValueError("postdecision paid source changed after its source seal")
     findings = {}
     for policy in (PERMISSIVE, STRICT):
         handoff = assess_paid_report(

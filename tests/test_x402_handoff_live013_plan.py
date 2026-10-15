@@ -6,6 +6,8 @@ from dataclasses import replace
 from decimal import Decimal
 import json
 from pathlib import Path
+import shutil
+import tempfile
 import unittest
 
 from agent_economic_trust.x402_handoff_live013_plan import (
@@ -14,6 +16,7 @@ from agent_economic_trust.x402_handoff_live013_plan import (
     prospective_manifest, public_intake, verified_sources,
 )
 from agent_economic_trust.x402_obligation_handoff import PERMISSIVE, STRICT
+from agent_economic_trust.x402_invoice_verifier import verify_purchase
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,11 +42,37 @@ class X402HandoffLive013PlanTest(unittest.TestCase):
         self.assertEqual(self.bad.report_digest, PUBLIC_DIGEST)
         self.assertEqual(self.bad.oracle_status, "FAIL")
         self.assertEqual(self.bad.amount_minor_units, 1_000)
-        with self.assertRaisesRegex(SourceReadinessError, "350-cent"):
+        self.assertEqual(json.loads((OLD_GOOD / "resource-body.json").read_text())
+                         ["report"]["submitted_amount_cents"], 300)
+        with self.assertRaisesRegex(SourceReadinessError, "caller-frozen oracle inputs differ"):
             verified_sources(good=OLD_GOOD)
         if not GOOD_SOURCE.exists():
             with self.assertRaisesRegex(SourceReadinessError, "good local x402 source directory missing"):
                 verified_sources()
+
+    def test_self_consistent_receipt_cannot_choose_its_own_private_oracle(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="x402013-oracle-tamper-", dir="/tmp") as temp:
+            copied = Path(temp) / "x402"
+            shutil.copytree(BAD_SOURCE, copied)
+            intent_path = copied / "purchase-intent.json"
+            intent = json.loads(intent_path.read_text())
+            intent["controller_binding"]["oracle_fixture"]["expected_amount_cents"] = 250
+            intent_path.write_text(json.dumps(intent))
+            # This counterfeit remains internally consistent and BAD, so a
+            # replay using only its own stored fixture would accept it.
+            unbound = verify_purchase(copied)
+            self.assertEqual((unbound.status, unbound.oracle_status), ("PASS", "FAIL"))
+            (copied / "independent-verification.json").write_text(
+                json.dumps(unbound.to_dict()))
+            with self.assertRaisesRegex(SourceReadinessError, "caller-frozen oracle inputs differ"):
+                _source("bad", copied)
+            stale_seal = replace(self.bad, directory=copied)
+            same = next(row for row in make_schedule(SEED, self.sources)
+                        if row.truth == "bad" and row.relation == "same")
+            with self.assertRaisesRegex(SourceReadinessError, "caller-frozen oracle inputs differ"):
+                postdecision_adapter_preview(
+                    row=same, source=stale_seal, auditor_verdict="ACCEPT",
+                    decision_evidence_sha256="d" * 64)
 
     def test_four_cell_denominator_and_private_oracle_boundary(self) -> None:
         rows = make_schedule(SEED, self.sources)
