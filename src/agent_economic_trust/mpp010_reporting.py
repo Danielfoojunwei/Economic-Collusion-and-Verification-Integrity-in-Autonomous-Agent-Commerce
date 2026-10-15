@@ -464,7 +464,11 @@ def collect(assignment_dir: Path, runs_dir: Path, ledger_path: Path) -> dict:
     for episode_id in frozen["execution_order"]:
         row = by_id[episode_id]
         directory = episodes / episode_id
-        if (directory / "episode_record.json").is_file():
+        has_record = (directory / "episode_record.json").is_file()
+        has_stop = (directory / "STOPPED.json").is_file()
+        # A stopped row can already have paid for a check or released funds.
+        # Include its saved native identities in the same cross-row inventory.
+        if has_record or has_stop:
             record_unique_native_transactions(seen_transactions, episode_id,
                                                native_transaction_hashes(directory))
             for identifier in native_obligation_ids(directory):
@@ -473,7 +477,7 @@ def collect(assignment_dir: Path, runs_dir: Path, ledger_path: Path) -> dict:
                     raise ValueError("MPP010 native obligation or challenge reused across rows")
         stub = {**row.public_row(), "truth": row.truth,
                 **{field: None for field in ENDPOINTS}}
-        if (directory / "STOPPED.json").is_file():
+        if has_stop:
             stopped = json.loads((directory / "STOPPED.json").read_bytes())
             if (stopped.get("schema") != "mpp010-stopped-episode-v1"
                     or stopped.get("episode_id") != episode_id
@@ -499,7 +503,7 @@ def collect(assignment_dir: Path, runs_dir: Path, ledger_path: Path) -> dict:
                          "budget_state": stopped.get("budget_state"),
                          "verified_native_history": native_history,
                          "partial_native_evidence": stopped.get("partial_artifacts", [])})
-        elif (directory / "episode_record.json").is_file():
+        elif has_record:
             try:
                 rows.append(verify_episode(row, directory,
                                            assignment_sha=assignment_sha, ledger=ledger))

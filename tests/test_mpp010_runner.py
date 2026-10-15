@@ -13,10 +13,11 @@ from unittest.mock import patch
 
 from inspect_ai.model import ChatMessageUser
 
-from agent_economic_trust.mpp010_plan import digest
+from agent_economic_trust.mpp010_plan import digest, make_schedule
 from agent_economic_trust.mpp010_remote import (
     RemoteBoundaryError, dedicated_chain_preflight, remaining_headroom,
 )
+from agent_economic_trust import mpp010_reporting as reporting
 from agent_economic_trust.mpp010_reporting import (
     mpp010_action_linkage, request_exposure_provenance, verify_billing,
 )
@@ -30,6 +31,86 @@ def _git(root: Path, *args: str) -> str:
 
 
 class RunnerTests(unittest.TestCase):
+    def test_stopped_rows_join_cross_row_native_uniqueness_inventory(self):
+        """Stopped paid history must not reuse a transaction or 402 challenge."""
+        assigned = make_schedule("fa" * 32)[:2]
+        assignment_sha = "b" * 64
+        for reused in ("transaction", "challenge"):
+            with self.subTest(reused=reused), TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                assignment = root / "assignment"
+                runs = root / "runs"
+                ledger = root / "ledger.jsonl"
+                assignment.mkdir()
+                for index, row in enumerate(assigned):
+                    directory = runs / "episodes" / row.episode_id
+                    native = directory / "native"
+                    native.mkdir(parents=True)
+                    prepare = {
+                        "funding": [{"transaction": {"hash":
+                            "0x" + f"{index + 11:064x}"}}],
+                        "reduction": {"hash": "0x" + f"{index + 21:064x}"},
+                        "request": {"assignment_episode_id": row.episode_id},
+                        "request_sha256": f"{index + 1:064x}",
+                        "events": [{"challenge": {"id": f"prepare-{index}",
+                                                  "opaque": f"prepare-nonce-{index}"}}],
+                    }
+                    check = {
+                        "transaction": {"hash": "0x" + f"{index + 31:064x}"},
+                        "request_sha256": f"{index + 3:064x}",
+                        "events": [{"challenge": {"id": f"check-{index}",
+                                                  "opaque": f"check-nonce-{index}"}}],
+                    }
+                    for name, evidence in (("prepare", prepare), ("check", check)):
+                        (native / f"{name}-evidence.json").write_text(json.dumps(evidence))
+                    partial = [{"path": f"native/{name}-evidence.json",
+                                "sha256": sha256((native / f"{name}-evidence.json").read_bytes()).hexdigest()}
+                               for name in ("prepare", "check")]
+                    (directory / "STOPPED.json").write_text(json.dumps({
+                        "schema": "mpp010-stopped-episode-v1",
+                        "episode_id": row.episode_id,
+                        "assignment_manifest_sha256": assignment_sha,
+                        "no_retry_or_substitution": True,
+                        "budget_state": "NOT_RESERVED",
+                        "partial_artifacts": partial,
+                    }))
+                frozen = {"source_sha256": {"source": "hash"},
+                          "execution_order": [row.episode_id for row in assigned]}
+                with patch.object(gate, "ASSIGNMENT", assignment), \
+                     patch.object(gate, "RUNS", runs), \
+                     patch.object(gate, "CANONICAL_LEDGER_PATH", ledger), \
+                     patch.object(gate, "load_assignment",
+                                  return_value=(frozen, assignment_sha, assigned)), \
+                     patch.object(gate, "source_inventory",
+                                  return_value=frozen["source_sha256"]), \
+                     patch.object(reporting, "BudgetLedger") as budget, \
+                     patch.object(reporting, "verify_stopped_native", return_value=[]):
+                    budget.return_value.snapshot.return_value = {"runs": {}}
+                    original = reporting.collect(assignment, runs, ledger)
+                    self.assertEqual([row["status"] for row in original["rows"]],
+                                     ["STOPPED", "STOPPED"])
+                    self.assertEqual(original["unique_native_transaction_count"], 6)
+                    self.assertEqual(original["unique_native_obligation_count"], 14)
+                    second = runs / "episodes" / assigned[1].episode_id
+                    name = "prepare" if reused == "transaction" else "check"
+                    path = second / "native" / f"{name}-evidence.json"
+                    evidence = json.loads(path.read_text())
+                    if reused == "transaction":
+                        evidence["reduction"]["hash"] = "0x" + f"{21:064x}"
+                    else:
+                        evidence["events"][0]["challenge"]["id"] = "check-0"
+                    path.write_text(json.dumps(evidence))
+                    stop_path = second / "STOPPED.json"
+                    stop = json.loads(stop_path.read_text())
+                    next(item for item in stop["partial_artifacts"]
+                         if item["path"] == f"native/{name}-evidence.json")["sha256"] = (
+                             sha256(path.read_bytes()).hexdigest())
+                    stop_path.write_text(json.dumps(stop))
+                    with self.assertRaisesRegex(ValueError,
+                            "transaction reused" if reused == "transaction" else
+                            "obligation or challenge reused"):
+                        reporting.collect(assignment, runs, ledger)
+
     def test_decimal_billing_scale_and_unequal_amount(self):
         ident = "mpp010-" + "a" * 12 + "-mpp010-" + "b" * 24
         raw_sha = "c" * 64
