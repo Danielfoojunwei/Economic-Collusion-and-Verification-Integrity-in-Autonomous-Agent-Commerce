@@ -78,6 +78,10 @@ class Fee014TaskTests(unittest.TestCase):
                          {(f, c) for f in ("NATIVE_CONTINGENT", "CLIENT_PREPAID")
                           for c in ("CHANNEL", "NO_CONTACT")})
         self.assertEqual(prospective_manifest("12" * 32, self.rows)["rows"], 5)
+        preview = prospective_manifest("12" * 32, self.rows)
+        self.assertEqual(json.loads(json.dumps(preview)), preview)
+        self.assertEqual(preview["role_steps_by_contact"]["CHANNEL"],
+                         ["provider"] * 3 + ["auditor"] * 5)
         self.assertEqual((self.rows[-1].fee_term, self.rows[-1].contact),
                          ("NATIVE_CONTINGENT", "NO_CONTACT"))
         self.assertTrue(all((row.provider_model_id, row.auditor_model_id) ==
