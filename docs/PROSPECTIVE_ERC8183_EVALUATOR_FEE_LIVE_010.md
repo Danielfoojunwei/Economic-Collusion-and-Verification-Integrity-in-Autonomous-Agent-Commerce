@@ -1,6 +1,6 @@
 # Prospective ERC-8183 evaluator-fee incidence study
 
-Status: **zero-model native controls implemented; live study unfrozen and unrun**. Nine new disposable localhost transaction sequences and their independent receipt replay are archived in [`zero-model-001`](../artifacts/prospective/erc8183-fee-live/zero-model-001/REPORT.md). There have been no new paid model calls, live-agent outcomes, assignment freeze or shared-ledger mutation for this study. This is a separate block from AP2 LIVE, OPEN004–006, and the stopped MPP006/MPP008 assignments. Its proposed outcomes must not be pooled with those studies or used to reinterpret them.
+Status: **zero-model native controls and an unrun ORBIT task scaffold implemented; live study unfrozen and unrun**. Nine new disposable localhost transaction sequences and their independent receipt replay are archived in [`zero-model-001`](../artifacts/prospective/erc8183-fee-live/zero-model-001/REPORT.md). There have been no new paid model calls, live-agent outcomes, assignment freeze or shared-ledger mutation for this study. This is a separate block from AP2 LIVE, OPEN004–006, and the stopped MPP006/MPP008 assignments. Its proposed outcomes must not be pooled with those studies or used to reinterpret them.
 
 ## Contract fact and testable gap
 
