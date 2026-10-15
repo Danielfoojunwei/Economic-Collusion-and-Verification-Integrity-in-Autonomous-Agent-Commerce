@@ -1,0 +1,355 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "X402_AUDIT_RETAINER_010",
+  "status": "PASS",
+  "assignment": {
+    "payerRole": "buyer",
+    "obligationId": "invoice-fda8bbc7e1c6675b339c945a",
+    "serviceId": "independent-invoice-audit-intake/v1",
+    "reportDigest": "197f39b9973313e2a31418bf7525bc65f88106f117e139c44c9e8073d4d59f48",
+    "expectedBodySha256": "68c657a4a318260440652f0384b8df9e6d7fd1c75cc10f1706b6c5a888720cd1",
+    "runnerSourceSha256": "9279d4c4b148da7913d252690b3226d27825302dad6b2e852d40c1b7de3bd350",
+    "tokenSourceSha256": "4decd30c239f09aa0b3ee4df76ce1078020fdc30c9925d7d24f9cf3dfae55640"
+  },
+  "modelExecutionTier": "SCRIPTED_SIMULATION",
+  "transactionExecutionTier": "NATIVE_LOCAL_PROTOCOL",
+  "upstream": {
+    "repository": "https://github.com/x402-foundation/x402",
+    "commit": "e95b06661e1a2a8a9a21fce34cc28b9934834650",
+    "protocol": "x402 v2",
+    "scheme": "exact",
+    "assetTransferMethod": "eip3009",
+    "sdkVersion": "2.28.0"
+  },
+  "toolchain": {
+    "anvil": "/workspace/.tools/foundry/v1.8.5/anvil",
+    "solc": "/workspace/.tools/solc/v0.8.28/solc",
+    "node": "v24.19.0"
+  },
+  "chain": {
+    "rpcUrl": "http://127.0.0.1:19801",
+    "chainId": 31337,
+    "network": "eip155:31337",
+    "tokenAddress": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+    "sourceSha256": "4decd30c239f09aa0b3ee4df76ce1078020fdc30c9925d7d24f9cf3dfae55640",
+    "deploymentHash": "0x7ba0d3c3a86fe60fc4673ae14ccdc03ef72028ec12f380c81e49bb79c5868cfc",
+    "mintHash": "0x01da10d98b2d141e1a4d44472071e1316c28bead126e1d4424a2cc7c89cc6a78"
+  },
+  "actors": {
+    "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "facilitator": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+    "buyer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "seller": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+    "provider": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+    "independentBuyer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "auditor": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+    "payer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "payerRole": "buyer"
+  },
+  "http": {
+    "resourceUrl": "http://127.0.0.1:19812/audit-intake/invoice-fda8bbc7e1c6675b339c945a",
+    "facilitatorUrl": "http://127.0.0.1:19811",
+    "challenge": {
+      "x402Version": 2,
+      "error": "Payment required",
+      "resource": {
+        "url": "http://127.0.0.1:19812/audit-intake/invoice-fda8bbc7e1c6675b339c945a",
+        "description": "Valueless research HTTP resource",
+        "mimeType": "application/json"
+      },
+      "accepts": [
+        {
+          "scheme": "exact",
+          "network": "eip155:31337",
+          "amount": "2000000",
+          "asset": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+          "payTo": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+          "maxTimeoutSeconds": 120,
+          "extra": {
+            "name": "Research Test USD",
+            "version": "1",
+            "assetTransferMethod": "eip3009"
+          }
+        }
+      ]
+    },
+    "paymentSignatureHeaderSha256": "5dcb030b1622d8ffa2cf7da758859d2c7e0c547c70b3314655b8c378a52fbfc8",
+    "paidStatus": 200,
+    "resourceBody": {
+      "acknowledgment": "PAID_INTAKE_ONLY",
+      "amount_minor_units": 2000000,
+      "audit_verdict": null,
+      "binding_sha256": "c99b681b7cfa2dc44f470a0ff4d6f7de799b9e8d8c55cf327f7f0623e556ea49",
+      "obligation_id": "invoice-fda8bbc7e1c6675b339c945a",
+      "payee": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+      "payer_role": "buyer",
+      "proves_invoice_quality": false,
+      "report_digest": "197f39b9973313e2a31418bf7525bc65f88106f117e139c44c9e8073d4d59f48",
+      "resource_type": "invoice_audit_intake_ack",
+      "schema_version": 1,
+      "service_id": "independent-invoice-audit-intake/v1"
+    },
+    "paymentResponse": {
+      "success": true,
+      "payer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "transaction": "0xb3175a399f4e689e253f16fe33ddd745add5eaf8e96472b7883a772650e247bf",
+      "network": "eip155:31337"
+    },
+    "replayStatus": 402
+  },
+  "authorization": {
+    "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "to": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+    "value": "2000000",
+    "validAfter": "0",
+    "validBefore": "1792087972",
+    "nonce": "0x632b3912eb505feeee3e60702a8bc5bbc98879d0ebd2a3c585de8363439f84d9",
+    "signature": "0xf89a7be59e66c3a0b4009c71b2d4e84412134182bbc49bae358c4908f8b943c749c439da05e6e5a99f6a0bd6b8af660ecaf44924b2ae864357195613f2a0a9101c",
+    "domain": {
+      "name": "Research Test USD",
+      "version": "1",
+      "chainId": 31337,
+      "verifyingContract": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+    }
+  },
+  "verify": {
+    "result": {
+      "isValid": true,
+      "payer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+    },
+    "before": {
+      "nonceUsed": false,
+      "buyerBalance": "4000000",
+      "sellerBalance": "0",
+      "block": "2"
+    },
+    "after": {
+      "nonceUsed": false,
+      "buyerBalance": "4000000",
+      "sellerBalance": "0",
+      "block": "2"
+    }
+  },
+  "settle": {
+    "result": {
+      "success": true,
+      "transaction": "0xb3175a399f4e689e253f16fe33ddd745add5eaf8e96472b7883a772650e247bf",
+      "network": "eip155:31337",
+      "payer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+    },
+    "before": {
+      "nonceUsed": false,
+      "buyerBalance": "4000000",
+      "sellerBalance": "0",
+      "block": "2"
+    },
+    "after": {
+      "nonceUsed": true,
+      "buyerBalance": "2000000",
+      "sellerBalance": "2000000",
+      "block": "3"
+    }
+  },
+  "transaction": {
+    "hash": "0xb3175a399f4e689e253f16fe33ddd745add5eaf8e96472b7883a772650e247bf",
+    "from": "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc",
+    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+    "input": "0xe3ee160e00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c800000000000000000000000090f79bf6eb2c4f870365e785982e1f101e93b90600000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006ad117a4632b3912eb505feeee3e60702a8bc5bbc98879d0ebd2a3c585de8363439f84d9000000000000000000000000000000000000000000000000000000000000001cf89a7be59e66c3a0b4009c71b2d4e84412134182bbc49bae358c4908f8b943c749c439da05e6e5a99f6a0bd6b8af660ecaf44924b2ae864357195613f2a0a910",
+    "blockNumber": "3",
+    "blockHash": "0xaf6386c3c697d018cde5b614c725a296a35e7afe7d5ffff3ebd210465e1bdb5f",
+    "blockTimestampSeconds": "1792087852",
+    "observedHead": "3",
+    "status": "success",
+    "gasUsed": "82295",
+    "logs": [
+      {
+        "address": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+        "topics": [
+          "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+          "0x00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "0x632b3912eb505feeee3e60702a8bc5bbc98879d0ebd2a3c585de8363439f84d9"
+        ],
+        "data": "0x",
+        "logIndex": 0
+      },
+      {
+        "address": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "0x00000000000000000000000090f79bf6eb2c4f870365e785982e1f101e93b906"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000000000001e8480",
+        "logIndex": 1
+      }
+    ]
+  },
+  "balances": {
+    "initialBuyer": "4000000",
+    "initialSeller": "0",
+    "finalBuyer": "2000000",
+    "finalSeller": "2000000",
+    "nonceUsedAfterSettle": true
+  },
+  "negatives": {
+    "wrongAmount": {
+      "result": {
+        "isValid": false,
+        "invalidReason": "invalid_exact_evm_payload_authorization_value_mismatch",
+        "payer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+      },
+      "before": {
+        "nonceUsed": false,
+        "buyerBalance": "2000000",
+        "sellerBalance": "2000000",
+        "block": "3"
+      },
+      "after": {
+        "nonceUsed": false,
+        "buyerBalance": "2000000",
+        "sellerBalance": "2000000",
+        "block": "3"
+      }
+    },
+    "wrongPayee": {
+      "result": {
+        "isValid": false,
+        "invalidReason": "invalid_exact_evm_recipient_mismatch",
+        "payer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+      },
+      "before": {
+        "nonceUsed": false,
+        "buyerBalance": "2000000",
+        "sellerBalance": "2000000",
+        "block": "3"
+      },
+      "after": {
+        "nonceUsed": false,
+        "buyerBalance": "2000000",
+        "sellerBalance": "2000000",
+        "block": "3"
+      }
+    },
+    "expired": {
+      "result": {
+        "isValid": false,
+        "invalidReason": "invalid_exact_evm_payload_authorization_valid_before",
+        "payer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+      },
+      "before": {
+        "nonceUsed": false,
+        "buyerBalance": "2000000",
+        "sellerBalance": "2000000",
+        "block": "3"
+      },
+      "after": {
+        "nonceUsed": false,
+        "buyerBalance": "2000000",
+        "sellerBalance": "2000000",
+        "block": "3"
+      }
+    },
+    "replayVerify": {
+      "isValid": false,
+      "invalidReason": "invalid_exact_evm_transaction_simulation_failed",
+      "payer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "invalidMessage": "The contract function \"transferWithAuthorization\" reverted with the following reason:\nAuthorizationAlreadyUsed\n\nContract Call:\n  address:   0x5FbDB2315678afecb367f032d93F642f64180aa3\n  function:  transferWithAuthorization(address from, address to, uint256 value, uint256 validAfter, uint256 validBefore, bytes32 nonce, uint8 v, bytes32 r, bytes32 s)\n  args:                               (0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 0x90F79bf6EB2c4f870365E785982E1f101E93b906, 2000000, 0, 1792087972, 0x632b3912eb505feeee3e60702a8bc5bbc98879d0ebd2a3c585de8363439f84d9, 28, 0xf89a7be59e66c3a0b4009c71b2d4e84412134182bbc49bae358c4908f8b943c7, 0x49c439da05e6e5a99f6a0bd6b8af660ecaf44924b2ae864357195613f2a0a910)\n\nDocs: https://viem.sh/docs/contract/readContract\nDetails: execution reverted: AuthorizationAlreadyUsed\nVersion: viem@2.48.11"
+    },
+    "replayHttpStatus": 402,
+    "replayContractRejected": true,
+    "invalidContractSignatureRejected": true
+  },
+  "handlerFailure": {
+    "url": "http://127.0.0.1:19812/audit-intake/invoice-fda8bbc7e1c6675b339c945a-fail",
+    "status": 503,
+    "body": {
+      "error": "injected_resource_failure"
+    },
+    "verifyCallsBefore": 6,
+    "verifyCallsAfter": 7,
+    "handlerCount": 1,
+    "verificationResults": [
+      {
+        "isValid": true,
+        "payer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+      }
+    ],
+    "settleCallsBefore": 1,
+    "settleCallsAfter": 1,
+    "before": {
+      "nonceUsed": false,
+      "buyerBalance": "2000000",
+      "sellerBalance": "2000000",
+      "block": "3"
+    },
+    "after": {
+      "nonceUsed": false,
+      "buyerBalance": "2000000",
+      "sellerBalance": "2000000",
+      "block": "3"
+    },
+    "paymentResponseHeader": null
+  },
+  "schemeLimit": {
+    "alteredResourceUrlVerified": true,
+    "explanation": "EIP-3009 signs token, chain, payer, payee, amount, validity and nonce; it does not sign the HTTP resource URL."
+  },
+  "trace": [
+    {
+      "sequence": 0,
+      "phase": "CHALLENGE",
+      "timestampUtc": "2026-10-15T18:10:52.178Z",
+      "elapsedMs": 931.201415,
+      "status": 402,
+      "headerSha256": "49978131525bee969b048cbcaee0dabc03019bfceb1120893f52bffc7e68fec1"
+    },
+    {
+      "sequence": 1,
+      "phase": "SIGNED_AUTHORIZATION",
+      "timestampUtc": "2026-10-15T18:10:52.184Z",
+      "elapsedMs": 937.126694,
+      "signatureSha256": "91d68b8334fe29dd464936a24429bef82e49a814d2d5c47a3c03e07acda5b4e2"
+    },
+    {
+      "sequence": 2,
+      "phase": "VERIFY",
+      "timestampUtc": "2026-10-15T18:10:52.199Z",
+      "elapsedMs": 952.917228,
+      "nonce": "0x632b3912eb505feeee3e60702a8bc5bbc98879d0ebd2a3c585de8363439f84d9"
+    },
+    {
+      "sequence": 3,
+      "phase": "RESOURCE_EXECUTE",
+      "timestampUtc": "2026-10-15T18:10:52.244Z",
+      "elapsedMs": 997.561065
+    },
+    {
+      "sequence": 4,
+      "phase": "SETTLE",
+      "timestampUtc": "2026-10-15T18:10:52.250Z",
+      "elapsedMs": 1003.645953,
+      "nonce": "0x632b3912eb505feeee3e60702a8bc5bbc98879d0ebd2a3c585de8363439f84d9"
+    },
+    {
+      "sequence": 5,
+      "phase": "RESPONSE",
+      "timestampUtc": "2026-10-15T18:10:52.278Z",
+      "elapsedMs": 1031.765221,
+      "status": 200
+    }
+  ],
+  "assertions": {
+    "challenge": "PASS",
+    "signedAuthorization": "PASS",
+    "readOnlyVerify": "PASS",
+    "onchainSettlement": "PASS",
+    "eventAndBalances": "PASS",
+    "replay": "PASS",
+    "expiry": "PASS",
+    "wrongAmount": "PASS",
+    "wrongPayee": "PASS",
+    "contractSignature": "PASS",
+    "handlerFailureNoSettlement": "PASS",
+    "timing": "PASS"
+  }
+}
