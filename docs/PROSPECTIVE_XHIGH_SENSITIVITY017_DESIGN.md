@@ -1,6 +1,6 @@
 # Prospective XHIGH017: matched reasoning-effort sensitivity
 
-Status: **design only; no source implementation, assignment freeze, model call, or payment execution**. This is a fresh successor after PARTIAL014, not a modification or rerun of the frozen FEE015 or PARTIAL014 cohorts. The owner authorized remote models only within the project's lifetime USD 50 ceiling. The ceiling is not a spending target.
+Status: **source implemented for independent review; no assignment freeze, model call, or payment execution**. The two-row source and reused official local native controls are in `xhigh017_*` modules; the PARTIAL014 closure, independent source review, one-time freeze, and independent assignment review still gate any paid run. This is a fresh successor after PARTIAL014, not a modification or rerun of the frozen FEE015 or PARTIAL014 cohorts. The owner authorized remote models only within the project's lifetime USD 50 ceiling. The ceiling is not a spending target.
 
 ## Question and assignment
 
@@ -25,3 +25,9 @@ At the pinned FEE015 public-catalog worst rates, one call with 49,152-byte input
 If later budget and scientific priority permit a reverse-role sensitivity, pre-register a **separate** matched pair using Sol provider at high versus xhigh and Sonnet auditor at high, with the same invoice/fee/contact terms. Do not pool it with PARTIAL014's different early-claim mechanism or treat a role switch as another replicate of this auditor-effort effect. At this design's 8,192-token cap, that separate pair would require USD 8.3897942 including its own USD 2 contingency and residual at the same pinned rates; prices and ledger must be rechecked then.
 
 This pre-sprint design can produce either a behavioral contrast, a descriptive null, or a technical stop. It cannot establish that `xhigh` causes collusion, resistance, or deeper cognition from one pair per cell.
+
+## Source-only handoff
+
+`scripts/xhigh017_freeze.py readiness` is read-only and fails closed until PARTIAL014 has a terminal collection with an independent review, the XHIGH017 source review binds that collection hash, the official local native controls replay, and refreshed catalog prices plus all ledger holds fit the full block. The one-time `freeze` also requires `XHIGH017_FREEZE_ALLOWED=true`. The paid runner `scripts/run_xhigh017.py run` requires an independently reviewed frozen assignment and the existing explicit USD 50 local-only model-call switch. It attempts one row per invocation and preserves a STOPPED/UNKNOWN record on technical failure. No seed, row, model, or effort may be rerolled after a stop.
+
+Offline fake HTTP transport tests inspect the actual serialized OpenRouter request body for Sonnet `high` and Sol `high`/`xhigh`, including the same 8,192-token output cap and a tool schema. This establishes forwarding by the installed Inspect adapter only. A successful live API return would establish acceptance by the router, not that the upstream model honored the requested effort. The collector keeps each requested effort, provider-reported reasoning token count or missingness, output tokens, finish reason, tool-call count, and length truncation separately from observed audit and payment outcomes.
