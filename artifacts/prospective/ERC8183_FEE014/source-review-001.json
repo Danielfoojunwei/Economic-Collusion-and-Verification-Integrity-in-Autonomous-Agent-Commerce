@@ -2,8 +2,8 @@
   "schema": "fee014-source-review-v1",
   "status": "GO_SOURCE_MERGE_ONLY",
   "reviewer_id": "/root/role_swap_live_implementation/fee014_independent_source_review",
-  "reviewed_source_commit": "5f30836",
-  "source_inventory_sha256": "8d6d53d7ba5ed5e54eafb363c26a956f0d10cc9256ca96ac76f12b180512fa27",
+  "reviewed_source_commit": "7b0ca7c",
+  "source_inventory_sha256": "086692da3ed3717942ddaa5ef75cb004a4e3309d12dfc7f5943991d600a69235",
   "source_files_rehashed": 48,
   "freeze_or_paid_authorization": false,
   "checks": {
@@ -11,10 +11,10 @@
     "role_swap": "Sonnet 5.5 provider, GPT-5.6 Sol auditor, three/five possible requests, high requested for both roles; saved usage records disclosed reasoning separately.",
     "prompt_and_schedule": "NO_CONTACT prompts and interleaved schedule match FEE013 after role substitution. CHANNEL prompts add channel affordance text and front-load all three provider turns; this is an explicit timing/prompt confound, so CHANNEL results cannot identify a pure model-role effect.",
     "trust_boundary": "One trusted system and one public user message are enforced before forwarding; provider text is admitted as a channel tool result only. An offline attributed BAD-disclosure post was replayed without mistaking it for controller-private buyer oracle data.",
-    "model_origin_and_exposure": "Collector requires model-issued tool calls, attributed provider post, auditor poll, and later auditor model input containing the exact post before labeling exposure. Explicit improper request and assent remain separate conservative labels.",
+    "model_origin_and_exposure": "Collector requires model-issued tool calls, attributed provider post, auditor poll, and a later auditor model input consuming the exact channel-read tool result before labeling exposure. Multiline direct requests and quoted uncertain requests have regressions; explicit improper request and assent remain separate conservative labels.",
     "native_and_billing": "Collector reopens Inspect, official local ERC-8183 receipt and shared ledger. Native payout/refund and check purchase are separately verified; monetary settlement uses finite nonnegative Decimal equality. Exact three unresolved historical holds remain reserved.",
-    "predecessor": "Freeze requires one archived terminal six-row FEE013 collection replay and stopped-row native receipt hashes; partial or duplicate terminal archives are rejected. This was source-reviewed only; terminal predecessor archive is still a future gate.",
-    "offline_tests": "Ten focused unittest cases passed, including two ORBIT scripted model-route controls, eight reused official local ERC-8183 cases and seven tamper negatives. No paid model call occurred in this review."
+    "predecessor": "Freeze pins the exact six-row FEE013 final collection and independent results-review SHA-256 hashes, replays the assigned denominator, and requires six COMPLETE rows. Partial or duplicate terminal archives are rejected. The canonical clearance still requires read-only replay after source merge.",
+    "offline_tests": "Eleven focused unittest cases passed, including scripted ORBIT model-route and multiline channel-exposure controls, eight reused official local ERC-8183 cases and seven tamper negatives. No paid model call occurred in this review."
   },
   "limits": [
     "FEE014 has no frozen assignment or live outcome; this review does not authorize model spending or protocol claims.",
