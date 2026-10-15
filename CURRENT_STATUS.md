@@ -1,6 +1,6 @@
 # Current research build status — 2026-10-15
 
-## Latest evidence snapshot (16:20 UTC)
+## Latest evidence snapshot (16:45 UTC)
 
 The owner raised the **lifetime OpenRouter ceiling to USD 50**. The shared
 hash-chained ledger is unblocked at sequence 147 with USD 6.833366 settled,
@@ -53,7 +53,8 @@ reasoning-token counts are in the saved Inspect logs.
   [pinned evidence file](artifacts/budget/provider-reconciliation-mpp006-001/conditional-zero-asof-001/evidence.json),
   without an `actual_usd` value, and retains the full USD 6.307840 hold. The
   owner's later `(2)` model-hour CSV uploads were byte-identical to the prior
-  exports and added no per-request charge.
+  exports and added no per-request charge. Their exact bytes and aggregate-only
+  interpretation are retained in the [export review](docs/OPENROUTER_AGGREGATE_EXPORT_2026-10-15.md).
   The [MPP007 factorial memo](artifacts/prospective/MPP007-design/DESIGN.md)
   is design only.
 - The [MPP008 cross-vendor study](docs/MPP008_MIXED_MODEL_PROTOCOL.md)
@@ -79,6 +80,15 @@ reasoning-token counts are in the saved Inspect logs.
   and 9 pending rows remain in the original denominator. This GOOD row shows
   no improper agreement, and the BAD incentive cells were not executed. Any
   correction requires a separate prospective assignment.
+- [MPP010](docs/PROSPECTIVE_MPP_PRESSURE_010.md) is a distinct prospective
+  ten-row Sol/Sonnet high-reasoning experiment crossing BAD acceptance bonus,
+  auditor-paid native check price and provider/auditor model direction, with
+  two GOOD anchors. Nine scripted native cases and seven tamper negatives pass.
+  It has **no frozen assignment or paid model call**. An independent review
+  found gaps in cross-study closure counting and partial STOPPED native-receipt
+  uniqueness; the builder is correcting those and resealing the prospective
+  provider net-revenue prompt before any freeze. The old MPP009 denominator
+  remains 0 complete, 1 stopped, 9 pending.
 - A separate [MPP obligation-binding control](artifacts/prospective/mpp-booking-obligation-control/REPORT.md)
   passed eight native local A-versus-B charge/session check/release cases and
   twelve verifier tests. A valid, unused A proof was refused for B before
@@ -112,8 +122,17 @@ reasoning-token counts are in the saved Inspect logs.
   shows no agent collusion and does not estimate a population collusion rate.
   The [native ERC-8183 evaluator-fee controls](artifacts/prospective/erc8183-fee-live/zero-model-001/REPORT.md)
   add nine verified zero-model local payment cases, including a prior partial
-  settlement that pays a fee before a later REJECT; their live two-role study
-  remains unfrozen and unrun.
+  settlement that pays a fee before a later REJECT. Fee study FEE010 froze
+  eight assigned rows but a schema/status comparison bug stopped the block
+  **before any model or native row execution**. Its independent
+  [administrative closure](artifacts/gates/ERC8183_FEE010/verification-stop-001.json)
+  records eight `STOPPED_BEFORE_EXECUTION` rows, zero completed, zero pending,
+  and no fee ledger run. The [FEE011 successor](docs/PROSPECTIVE_FEE011_SUCCESSOR.md)
+  reuses the exact original seed and rows, fixes the verifier in separate
+  prospective source, and passes five tests plus all nine native controls.
+  Independent source review approved its design; no FEE011 readiness was saved,
+  no assignment frozen and no paid call made. MPP010 is scheduled first under
+  the shared budget, then FEE011 headroom must be refreshed.
 - The [ACP retail-order handoff control](docs/ACP_ORDER_AUDIT_HANDOFF_LOCAL_CONTROL.md)
   independently verified four scripted mock-checkout/native ERC-8183 rows. A
   permissive application paid a BAD job B based on a mock order for A; strict
