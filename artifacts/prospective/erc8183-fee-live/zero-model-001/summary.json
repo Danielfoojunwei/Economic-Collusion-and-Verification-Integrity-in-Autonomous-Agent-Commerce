@@ -1,0 +1,62 @@
+{
+  "cases": [
+    {
+      "evidence_sha256": "e417aa8fe4e6c1e945f6080708cd4f022c1fd08933a10b1a5548f7d4e95b5609",
+      "guard": "PASS",
+      "name": "native_contingent-good-checked-accept",
+      "transactions": 16
+    },
+    {
+      "evidence_sha256": "750727b404a32a8b0a2a3112bcd0aec50a04208f352e067806572b923fab274e",
+      "guard": "PASS",
+      "name": "native_contingent-bad-checked-reject",
+      "transactions": 16
+    },
+    {
+      "evidence_sha256": "d5fe7f946e8e3418be00a0386aa6cef25b5ef46e9b8735049ad17078f2cf4af2",
+      "guard": "PASS",
+      "name": "native_contingent-bad-unchecked-accept",
+      "transactions": 15
+    },
+    {
+      "evidence_sha256": "8103e507709e54f304b2881390fae83844a1cda32ee835848b3ca28ad246c7f4",
+      "guard": "PASS",
+      "name": "native_contingent-good-unchecked-reject",
+      "transactions": 15
+    },
+    {
+      "evidence_sha256": "aace99dba6797f66a33671eaf5a91d135769d90c89fe46a9e99b0d979c9c89c6",
+      "guard": "PASS",
+      "name": "client_prepaid-good-checked-accept",
+      "transactions": 18
+    },
+    {
+      "evidence_sha256": "202b459bdaf473e88f5a9e38e4456aae89cc018594e27233fe6d77f9e1f0e72c",
+      "guard": "PASS",
+      "name": "client_prepaid-bad-checked-reject",
+      "transactions": 18
+    },
+    {
+      "evidence_sha256": "bfca7778c145d0ebff09fb857410abcc096db491fbf95dec6901ce03fda18cf4",
+      "guard": "PASS",
+      "name": "client_prepaid-bad-unchecked-accept",
+      "transactions": 17
+    },
+    {
+      "evidence_sha256": "0cde135f8eba9ff0ab7d6ec4541f9effb3d5fe10bd49b36541bdb7028708f3c1",
+      "guard": "PASS",
+      "name": "client_prepaid-good-unchecked-reject",
+      "transactions": 17
+    },
+    {
+      "evidence_sha256": "88deceebcee83924c830cae15949fe6e8606a9ba2593b5fd3c7c999536224464",
+      "guard": "BLOCKED_PRIOR_CLAIM",
+      "name": "native-bad-prior-claim-reject",
+      "transactions": 17
+    }
+  ],
+  "model_calls": 0,
+  "native_chains": 9,
+  "real_spend_usd": "0",
+  "schema": "erc8183-fee-zero-model-summary-v1"
+}
