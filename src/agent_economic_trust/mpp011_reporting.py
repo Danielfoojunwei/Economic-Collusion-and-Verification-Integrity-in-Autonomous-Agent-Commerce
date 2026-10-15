@@ -7,6 +7,7 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import re
+import subprocess
 from types import SimpleNamespace
 
 from inspect_ai.log import read_eval_log
@@ -14,17 +15,22 @@ from inspect_ai.log import read_eval_log
 from .meeting_booking_market import calendar_record
 from .mpp005_reporting import ENDPOINTS, _offer_exposure, binary_bounds
 from .mpp008_linkage import _request_kind, action_linkage
-from .mpp011_boundary import (file_sha, inspect_mixed_native_log,
-                             verify_raw_model_boundary)
+from .mpp011_boundary import (expected_serialized_tools, file_sha,
+    inspect_mixed_native_log, provider_opened_market, verify_raw_model_boundary,
+    verify_strict_tool_schemas)
 from .mpp011_native_service import NativeMeetingService
-from .mpp011_plan import CLIENT_RELEASE_ATOMIC, ROLE_DIRECTIONS, STUDY_ID, digest
+from .mpp011_plan import (CALL_SCHEDULE, CLIENT_RELEASE_ATOMIC,
+    MAX_CALLS_PER_EPISODE, MAX_INPUT_BYTES, ROLE_DIRECTIONS, STUDY_ID, digest)
 from .mpp011_remote import (MPP011_HTTP_URL, MPP011_RPC_URL, _pricing_basis,
                            _usage_estimate, run_id)
+from .mpp005_boundary import _safe_model_input_size
 from .remote_budget import BudgetLedger
 from .reporting import _agent_for_event
 
 
 ROOT = Path(__file__).resolve().parents[2]
+CONTINGENT_CLEARANCE = ROOT / "artifacts/gates/MPP011/contingent-clearance"
+CONTINGENT_SIDECARS = ROOT / "artifacts/budget/mpp011-contingent"
 
 
 def _native_json(path: Path, native_dir: Path) -> dict:
@@ -269,6 +275,216 @@ def verify_stopped_native(row, directory: Path) -> list[dict]:
     return verified
 
 
+def verify_stopped_request_boundary(row, directory: Path, stopped: dict) -> dict:
+    """Reconcile every saved Inspect model event with the guarded API attempts.
+
+    A missing or truncated Inspect archive cannot establish final billing. The
+    wrapper's completed flag establishes only that its API coroutine returned.
+    """
+    observed = stopped.get("model_request_boundary")
+    if (not isinstance(observed, list)
+            or stopped.get("model_calls_attempted") != len(observed)
+            or len(observed) > MAX_CALLS_PER_EPISODE):
+        raise ValueError("MPP011 stopped API attempt count differs")
+    expected_models = {"provider": "openrouter/" + row.provider_model_id,
+                       "auditor": "openrouter/" + row.auditor_model_id}
+    for index, attempt in enumerate(observed):
+        if (not isinstance(attempt, dict)
+                or attempt.get("call_index") != index + 1
+                or attempt.get("role") != CALL_SCHEDULE[index]
+                or attempt.get("model") != expected_models[CALL_SCHEDULE[index]]
+                or attempt.get("provider_api_invoked") is not True
+                or attempt.get("network_forwarding") != "UNOBSERVED"
+                or attempt.get("http_client_max_retries") != 0
+                or type(attempt.get("completed")) is not bool
+                or type(attempt.get("serialized_input_bytes")) is not int
+                or not 0 < attempt["serialized_input_bytes"] <= MAX_INPUT_BYTES
+                or re.fullmatch(r"[0-9a-f]{64}",
+                                str(attempt.get("tool_schemas_sha256"))) is None):
+            raise ValueError("MPP011 stopped guarded API attempt differs from assignment")
+    archives = sorted(path for path in directory.rglob("*.eval") if path.is_file())
+    if not archives:
+        return {"status": "NO_SAVED_INSPECT_ARCHIVE",
+                "guarded_api_invocations": len(observed),
+                "wrapper_completed_returns": sum(item["completed"] for item in observed),
+                "inspect_model_events": None, "inspect_model_event_errors": None,
+                "unlogged_guarded_attempts": len(observed),
+                "unlogged_completed_returns": sum(item["completed"] for item in observed),
+                "inspect_sha256": None,
+                "provider_opened_market_before_auditor": None,
+                "final_provider_billing": "UNVERIFIED"}
+    hashes = []
+    for path in archives:
+        if (path.is_symlink() or not path.resolve().is_relative_to(directory.resolve())):
+            raise ValueError("MPP011 stopped Inspect archive escaped its episode")
+        hashes.append(file_sha(path))
+    if len(set(hashes)) != 1:
+        raise ValueError("MPP011 stopped Inspect archives conflict")
+    selected = directory / "inspect.eval" if (directory / "inspect.eval").is_file() else archives[0]
+    log = read_eval_log(str(selected), resolve_attachments=True)
+    if len(log.samples or []) != 1:
+        raise ValueError("MPP011 stopped Inspect sample count differs")
+    sample = log.samples[0]
+    events = [event for event in sample.events if event.event == "model"]
+    if len(events) > len(observed):
+        raise ValueError("MPP011 stopped Inspect model events exceed guarded requests")
+    for index, event in enumerate(events):
+        attempt = observed[index]
+        role = _agent_for_event(event, sample)
+        schema_sha = verify_strict_tool_schemas(
+            expected_serialized_tools(event.tools), role)
+        if (role != attempt["role"] or event.model != attempt["model"]
+                or _safe_model_input_size(event.input, event.tools) !=
+                   attempt["serialized_input_bytes"]
+                or schema_sha != attempt["tool_schemas_sha256"]):
+            raise ValueError("MPP011 stopped Inspect event differs from API attempt")
+    first_auditor = next((index for index, event in enumerate(sample.events)
+                          if event.event == "model"
+                          and _agent_for_event(event, sample) == "auditor"), None)
+    opened = None
+    if first_auditor is not None:
+        prior_actions = [{"actor": _agent_for_event(event, sample),
+                          "function": event.function, "arguments": event.arguments}
+                         for event in sample.events[:first_auditor]
+                         if event.event == "tool" and not event.error]
+        opened = provider_opened_market(prior_actions, row)
+    return {"status": ("ALL_ATTEMPTS_REPLAYED" if len(events) == len(observed)
+                       else "SAVED_PREFIX_REPLAYED_WITH_UNLOGGED_ATTEMPTS"),
+            "guarded_api_invocations": len(observed),
+            "wrapper_completed_returns": sum(item["completed"] for item in observed),
+            "inspect_model_events": len(events),
+            "inspect_model_event_errors": sum(bool(event.error) for event in events),
+            "unlogged_guarded_attempts": len(observed) - len(events),
+            "unlogged_completed_returns": sum(
+                item["completed"] for item in observed[len(events):]),
+            "inspect_sha256": file_sha(selected),
+            "provider_opened_market_before_auditor": opened,
+            "final_provider_billing": "UNVERIFIED"}
+
+
+def _committed_review_file(path: Path) -> tuple[str, str]:
+    """Require a review artifact's exact bytes in the current Git commit."""
+    if (path.is_symlink() or not path.resolve().is_relative_to(ROOT.resolve())):
+        raise ValueError("MPP011 contingent review path escaped the checkout")
+    digest_value = file_sha(path)
+    relative = str(path.relative_to(ROOT))
+    saved = subprocess.run(["git", "show", "HEAD:" + relative], cwd=ROOT,
+                           capture_output=True, timeout=10)
+    if saved.returncode or sha256(saved.stdout).hexdigest() != digest_value:
+        raise ValueError("MPP011 contingent review artifact is not committed unchanged")
+    return relative, digest_value
+
+
+def verify_stopped_billing(row, directory: Path, stopped: dict, *,
+                           assignment_sha: str, ledger: dict,
+                           ledger_path: Path, replay: dict,
+                           expected_reserve_usd: str) -> dict:
+    """Keep STOPPED immutable while permitting one reviewed full contingent hold.
+
+    The deterministic sidecar and clearance paths are committed before the
+    UNKNOWN-to-CONTINGENT ledger event. Their hashes bind the stop, raw log,
+    full reserve, and exact prior ledger head. No final charge is inferred.
+    """
+    ident = run_id(assignment_sha, row.episode_id)
+    state = stopped.get("budget_state")
+    billed = ledger["runs"].get(ident)
+    if stopped.get("ledger_run_id") != ident:
+        raise ValueError("MPP011 stopped ledger identity differs")
+    if state == "UNRESERVED" and billed is None:
+        if stopped.get("model_request_boundary") or replay["inspect_model_events"] not in (None, 0):
+            raise ValueError("MPP011 stopped API activity lacks a reservation")
+        return {"saved_state": state, "current_state": state,
+                "final_provider_billing": "UNVERIFIED"}
+    if not isinstance(billed, dict):
+        raise ValueError("MPP011 stopped reservation is absent")
+    if billed.get("metadata") != {
+            "provider_model_id": row.provider_model_id,
+            "auditor_model_id": row.auditor_model_id,
+            "episode_id": row.episode_id,
+            "assignment_sha": assignment_sha}:
+        raise ValueError("MPP011 stopped reservation metadata differs")
+    reserve = _amount(billed.get("reserved_usd"))
+    if reserve <= 0 or reserve != _amount(expected_reserve_usd):
+        raise ValueError("MPP011 stopped full assigned reservation is missing")
+    if state == "UNKNOWN" and billed.get("status") == "UNKNOWN":
+        if (billed.get("unknown_reason") != stopped.get("error_type")
+                or "actual_usd" in billed):
+            raise ValueError("MPP011 stopped UNKNOWN reason differs")
+        return {"saved_state": state, "current_state": "UNKNOWN",
+                "full_reserved_usd": billed["reserved_usd"],
+                "final_provider_billing": "UNVERIFIED"}
+    if state == "UNKNOWN" and billed.get("status") == "CONTINGENT":
+        sidecar_path = CONTINGENT_SIDECARS / f"{row.episode_id}.json"
+        clearance_path = CONTINGENT_CLEARANCE / f"{row.episode_id}.json"
+        sidecar_relative, sidecar_sha = _committed_review_file(sidecar_path)
+        _, clearance_sha = _committed_review_file(clearance_path)
+        reference = "sha256:" + sidecar_sha
+        if (billed.get("evidence_ref") != reference
+                or billed.get("contingent_evidence_ref") != reference
+                or billed.get("prior_unknown_reason") != stopped.get("error_type")
+                or "actual_usd" in billed):
+            raise ValueError("MPP011 contingent ledger did not retain the UNKNOWN full hold")
+        stop_sha = file_sha(directory / "STOPPED.json")
+        sidecar = json.loads(sidecar_path.read_bytes())
+        clearance = json.loads(clearance_path.read_bytes())
+        head = sidecar.get("ledger_prestate")
+        if (not isinstance(head, dict) or type(head.get("seq")) is not int
+                or not isinstance(head.get("last_hash"), str)):
+            raise ValueError("MPP011 contingent prior ledger head is missing")
+        expected_sidecar = {
+            "schema": "mpp011-contingent-billing-sidecar-v1",
+            "run_id": ident, "episode_id": row.episode_id,
+            "assignment_manifest_sha256": assignment_sha,
+            "stop_sha256": stop_sha,
+            "stopped_model_request_sha256": digest(stopped["model_request_boundary"]),
+            "inspect_sha256": replay["inspect_sha256"],
+            "full_reserved_usd": billed["reserved_usd"],
+            "final_provider_charge_usd": None,
+            "settlement_requires_independent_review": True,
+            "ledger_prestate": head}
+        expected_clearance = {
+            "schema": "mpp011-contingent-billing-clearance-v1",
+            "decision": "RETAIN_FULL_RESERVATION_AFTER_INDEPENDENT_REVIEW",
+            "run_id": ident, "episode_id": row.episode_id,
+            "sidecar_path": sidecar_relative,
+            "sidecar_sha256": sidecar_sha,
+            "stop_sha256": stop_sha,
+            "ledger_prestate": head}
+        if sidecar != expected_sidecar or clearance != expected_clearance:
+            raise ValueError("MPP011 contingent review facts or clearance differ")
+        events = [json.loads(line) for line in ledger_path.read_bytes().splitlines()]
+        seq = head["seq"]
+        if (seq < 0 or seq + 1 >= len(events)
+                or len(events) - 1 != ledger["seq"]
+                or events[-1]["hash"] != ledger["last_hash"]
+                or events[seq]["hash"] != head["last_hash"]
+                or events[seq]["kind"] != "unknown"
+                or events[seq]["payload"] != {
+                    "run_id": ident, "reason": stopped.get("error_type")}
+                or events[seq + 1]["kind"] != "contingent"
+                or events[seq + 1]["payload"] != {
+                    "run_id": ident, "evidence_ref": reference}):
+            raise ValueError("MPP011 contingent ledger transition differs from reviewed UNKNOWN head")
+        return {"saved_state": "UNKNOWN", "current_state": "CONTINGENT",
+                "full_reserved_usd": billed["reserved_usd"],
+                "reviewed_sidecar_sha256": sidecar_sha,
+                "reviewed_clearance_sha256": clearance_sha,
+                "final_provider_billing": "UNVERIFIED"}
+    if state == "SETTLED" and billed.get("status") == "SETTLED":
+        if (replay["inspect_sha256"] is None
+                or _amount(billed.get("actual_usd")) > reserve
+                or billed.get("evidence_ref") != "sha256:" + replay["inspect_sha256"]):
+            raise ValueError("MPP011 stopped settled estimate or raw archive differs")
+        return {"saved_state": "SETTLED", "current_state": "SETTLED",
+                "estimated_model_cost_usd": billed["actual_usd"],
+                "final_provider_billing": "UNVERIFIED"}
+    if state == "UNRESOLVED" and billed.get("status") in {"RESERVED", "UNKNOWN"}:
+        return {"saved_state": "UNRESOLVED", "current_state": billed["status"],
+                "full_reserved_usd": billed["reserved_usd"],
+                "final_provider_billing": "UNVERIFIED"}
+    raise ValueError("MPP011 stopped billing transition is unsupported")
+
+
 def record_unique_native_transactions(seen: dict[str, str], episode_id: str,
                                       hashes: list[str]) -> None:
     for transaction_hash in hashes:
@@ -331,6 +547,8 @@ def verify_episode(row, directory: Path, *, assignment_sha: str, ledger: dict) -
         raise ValueError("MPP011 native funding floor or historical top-up differs")
     stub = {**row.public_row(), "truth": row.truth,
             "model_cost_usd": record["model_cost_usd"],
+            "provider_opened_market_before_auditor":
+                boundary["provider_opened_market_before_auditor"],
             "provider_funding_floor_atomic": 100_000,
             "native_wallets_shared_across_rows": True,
             "execution_tiers": {"model": "REAL_LLM_REMOTE_APPROVED",
@@ -476,33 +694,54 @@ def collect(assignment_dir: Path, runs_dir: Path, ledger_path: Path) -> dict:
                 if previous != episode_id:
                     raise ValueError("MPP011 native obligation or challenge reused across rows")
         stub = {**row.public_row(), "truth": row.truth,
+                "provider_opened_market_before_auditor": None,
                 **{field: None for field in ENDPOINTS}}
         if has_stop:
+            if has_record or (directory / "STOPPED.json").is_symlink():
+                raise ValueError("MPP011 stopped episode also claims a completed record")
             stopped = json.loads((directory / "STOPPED.json").read_bytes())
             if (stopped.get("schema") != "mpp011-stopped-episode-v1"
                     or stopped.get("episode_id") != episode_id
                     or stopped.get("assignment_manifest_sha256") != assignment_sha
                     or stopped.get("no_retry_or_substitution") is not True):
                 raise ValueError("MPP011 STOPPED row differs from assignment")
-            for artifact in stopped.get("partial_artifacts", []):
+            inventory = stopped.get("partial_artifacts")
+            if not isinstance(inventory, list):
+                raise ValueError("MPP011 stopped partial inventory is absent")
+            paths = set()
+            for artifact in inventory:
+                if (not isinstance(artifact, dict) or not isinstance(artifact.get("path"), str)
+                        or artifact["path"] in paths):
+                    raise ValueError("MPP011 stopped partial artifact path repeats")
                 path = directory / artifact["path"]
                 if (path.is_symlink() or not path.resolve().is_relative_to(directory.resolve())
                         or file_sha(path) != artifact["sha256"]):
                     raise ValueError("MPP011 stopped partial artifact changed")
-            ident = stopped.get("ledger_run_id")
-            billed = ledger["runs"].get(ident) if ident else None
-            if (stopped.get("budget_state") in {"UNKNOWN", "SETTLED", "UNRESOLVED"}
-                    and not billed):
-                raise ValueError("MPP011 stopped billed row lacks shared ledger entry")
-            if (stopped.get("budget_state") in {"UNKNOWN", "SETTLED"}
-                    and billed["status"] != stopped["budget_state"]):
-                raise ValueError("MPP011 stopped billing status differs")
+                paths.add(artifact["path"])
+            actual = set()
+            for path in directory.rglob("*"):
+                if path.is_symlink():
+                    raise ValueError("MPP011 stopped episode contains a symlink")
+                if path.is_file() and path != directory / "STOPPED.json":
+                    actual.add(str(path.relative_to(directory)))
+            if actual != paths:
+                raise ValueError("MPP011 stopped partial inventory omits or invents files")
+            replay = verify_stopped_request_boundary(row, directory, stopped)
+            billing = verify_stopped_billing(row, directory, stopped,
+                assignment_sha=assignment_sha, ledger=ledger,
+                ledger_path=Path(ledger_path), replay=replay,
+                expected_reserve_usd=frozen["worst_case_reserve_usd_by_episode"][episode_id])
             native_history = verify_stopped_native(row, directory)
             rows.append({**stub, "status": "STOPPED",
                          "error_type": stopped.get("error_type"),
                          "budget_state": stopped.get("budget_state"),
+                         "current_budget_state": billing["current_state"],
+                         "stopped_billing": billing,
+                         "stopped_model_request_replay": replay,
+                         "provider_opened_market_before_auditor":
+                             replay["provider_opened_market_before_auditor"],
                          "verified_native_history": native_history,
-                         "partial_native_evidence": stopped.get("partial_artifacts", [])})
+                         "partial_native_evidence": inventory})
         elif has_record:
             try:
                 rows.append(verify_episode(row, directory,

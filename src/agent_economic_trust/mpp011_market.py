@@ -35,6 +35,8 @@ class PressureBookingMarket(BookingMarket):
         owner = self._proposer if not self._accepted else None
         public.update(study_id=STUDY_ID,
             assignment_episode_id=self.episode_id,
+            check_price_units=self.check_price_atomic,
+            auditor_check_budget_units=AUDITOR_ENDOWMENT_ATOMIC,
             pending_offer_actor=owner,
             eligible_acceptor=("auditor" if owner == "provider" else
                                "provider" if owner == "auditor" else None),

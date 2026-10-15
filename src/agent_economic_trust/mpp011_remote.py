@@ -397,6 +397,10 @@ def execute_one(plan: Mpp011Plan = Mpp011Plan()) -> dict:
         if file_sha(raw) != file_sha(target):
             raise RemoteBoundaryError("raw Inspect archive copy differs")
         saved = read_eval_log(str(target), resolve_attachments=True)
+        # A failed or malformed request may still be charged without usable
+        # per-request billing. Keep its full reservation UNKNOWN instead of
+        # releasing headroom on an aggregate usage estimate.
+        boundary = verify_raw_model_boundary(saved, observed, row)
         estimated = _usage_estimate(saved, prices, observed)
         after = account_usage_usd()
         delta = account_usage_delta_usd(before, after)
@@ -407,7 +411,6 @@ def execute_one(plan: Mpp011Plan = Mpp011Plan()) -> dict:
         settled = True
         post_settlement_budget(ledger, frozen,
             [reserves[item.episode_id] for item in remaining[1:]])
-        boundary = verify_raw_model_boundary(saved, observed, row)
         if saved.samples[0].store.get("OpenMppStore:decision") is None:
             from .mpp011_reporting import verify_partial_native
             partial = verify_partial_native(saved, service, row)

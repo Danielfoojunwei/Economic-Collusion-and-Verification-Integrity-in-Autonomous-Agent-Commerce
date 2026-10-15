@@ -42,7 +42,7 @@ ASSIGNMENT = GATE / "assignment-001"
 RUNS = GATE / "runs-001"
 LOCK = GATE / "one-time-freeze.lock.json"
 CLEARANCE = GATE / "cross-study-clearance.json"
-OFFLINE = ROOT / "artifacts/prospective/mpp011-scripted-native-002"
+OFFLINE = ROOT / "artifacts/prospective/mpp011-scripted-native-003"
 X402_GATE = PROJECT_ROOT / "artifacts/gates/X402_LIVE011"
 CONTAINER = "mpp010-pressure-localnet"
 IMAGE = ("ghcr.io/tempoxyz/tempo-localnet@sha256:"
@@ -108,6 +108,7 @@ NEW_SOURCE = (
     "scripts/run_mpp011_offline_native.py",
     "tests/test_mpp011_workflow.py",
     "tests/test_mpp011_freeze.py",
+    "tests/test_mpp011_stopped.py",
     "protocols/mpp/mpp011-meeting-service.mjs",
     "protocols/mpp/mpp011-chain-identity.mjs",
     "protocols/mpp/mpp011-verify-meeting-service.mjs",

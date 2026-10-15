@@ -9,7 +9,6 @@ from typing import Any
 
 from inspect_ai.model import ChatMessageSystem, ContentReasoning
 from inspect_ai.model._openai import openai_chat_tools
-from inspect_ai.util import store_as
 from orbit.communication import current_identity
 
 from .mpp005_boundary import (_safe_model_input_size, RemoteBoundaryError,
@@ -19,7 +18,7 @@ from .mpp011_plan import (AUDITOR_CALLS, CLIENT_RELEASE_ATOMIC,
     MAX_OUTPUT_TOKENS, PROVIDER_CALLS, digest)
 from .mpp011_native_service import inspect_native_service_log
 from .mpp011_orbit import (AUDITOR_TOOLS, PROVIDER_TOOLS,
-    AUDITOR_OFFER_POLICY, PROVIDER_WORKFLOW, OpenMppStore, replay,
+    AUDITOR_OFFER_POLICY, PROVIDER_WORKFLOW, replay,
     provider_net_booking_objective)
 from .mpp011_market import PressureBookingMarket
 from .open_mpp_meeting import commitment
@@ -197,11 +196,6 @@ def guard_model_apis(models: dict[str, Any], row,
             actor = identity.agent_id if identity is not None else None
             verify_system_role_boundary(input, actor, expected_prompts)
             size = _safe_model_input_size(input, tools)
-            if (actor == "auditor"
-                    and not any(item["role"] == "auditor" for item in observed)
-                    and not provider_opened_market(store_as(OpenMppStore).actions, row)):
-                raise RemoteBoundaryError(
-                    "MPP011 auditor request preceded provider charge and live offer")
             serialized_tools = model_apis[_model_name].tools_to_openai(tools)
             tool_schemas_sha256 = verify_strict_tool_schemas(serialized_tools, actor)
             reasoning_history = any(isinstance(part, ContentReasoning)
@@ -260,6 +254,17 @@ def verify_raw_model_boundary(log: Any, observed: list[dict], row) -> dict:
     if not events or len(events) != len(observed) or len(events) > MAX_CALLS_PER_EPISODE:
         raise RemoteBoundaryError("MPP011 model events or actual request count differ")
     counts = Counter()
+    first_auditor = next((index for index, event in enumerate(sample.events)
+                         if event.event == "model"
+                         and _agent_for_event(event, sample) == "auditor"), None)
+    if first_auditor is None:
+        raise RemoteBoundaryError("MPP011 no auditor model request in raw log")
+    prior_actions = [{"actor": _agent_for_event(event, sample),
+                      "function": event.function, "arguments": event.arguments}
+                     for event in sample.events[:first_auditor]
+                     if event.event == "tool" and not event.error
+                     and event.function in PROVIDER_TOOLS | AUDITOR_TOOLS]
+    offered_before_auditor = provider_opened_market(prior_actions, row)
     prompts = {agent["name"]: agent["system_prompt"] for agent in agents}
     for index, (event, actual) in enumerate(zip(events, observed, strict=True)):
         actor = _agent_for_event(event, sample)
@@ -286,7 +291,8 @@ def verify_raw_model_boundary(log: Any, observed: list[dict], row) -> dict:
     if not all(counts[role] for role in ROLE_LIMITS):
         raise RemoteBoundaryError("MPP011 both roles require real model events")
     return {"provider_calls": counts["provider"], "auditor_calls": counts["auditor"],
-            "raw_model_events_sha256": digest([event.model_dump(mode="json") for event in events])}
+            "raw_model_events_sha256": digest([event.model_dump(mode="json") for event in events]),
+            "provider_opened_market_before_auditor": offered_before_auditor}
 
 
 def normalize_for_native(log: Any, row) -> tuple[Any, str]:

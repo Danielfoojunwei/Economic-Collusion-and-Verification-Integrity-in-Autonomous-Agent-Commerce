@@ -1,7 +1,8 @@
-"""Prospective MPP011 headroom after the MPP006 charge remains CONTINGENT.
+"""Prospective MPP011 headroom with three retained prior billing holds.
 
-The canonical ledger already subtracts the original USD 6.307840 MPP006
-reservation. Adding it again here would double count the unresolved bill.
+The canonical ledger already subtracts MPP006 and x402011 CONTINGENT runs
+and the separate FEE011 RESERVED failed-request hold. Verify each exactly;
+never subtract a prior reservation twice or treat an unknown charge as zero.
 """
 from __future__ import annotations
 

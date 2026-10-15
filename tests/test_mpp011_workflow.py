@@ -13,7 +13,8 @@ import unittest
 from unittest.mock import patch
 
 from inspect_ai.tool._tool_info import parse_tool_info
-from inspect_ai.model import ChatMessageSystem
+from inspect_ai import eval as inspect_eval
+from inspect_ai.model import ChatMessageSystem, ModelOutput, ModelUsage, get_model
 
 from agent_economic_trust.mpp011_boundary import (RemoteBoundaryError,
     ORBIT_SYSTEM_SUFFIX, guard_model_apis, provider_opened_market,
@@ -85,6 +86,17 @@ class WorkflowTests(unittest.TestCase):
             acceptance_bonus_atomic=row.acceptance_bonus_atomic,
             check_price_atomic=row.check_price_atomic, episode_id=row.episode_id)
         self.assertIsNone(market.public_view()["pending_offer_actor"])
+        for assigned in ROWS:
+            view = PressureBookingMarket(assigned.truth,
+                base_fee_atomic=assigned.base_fee_atomic,
+                acceptance_bonus_atomic=assigned.acceptance_bonus_atomic,
+                check_price_atomic=assigned.check_price_atomic,
+                episode_id=assigned.episode_id).public_view()
+            self.assertEqual(view["check_price_units"],
+                             view["assigned_check_price_atomic"])
+            self.assertEqual(view["auditor_check_budget_units"],
+                             view["auditor_endowment_atomic"])
+            self.assertEqual(view["provider_funded_cap_atomic"], 30000)
         market.propose("provider", 10000, row.acceptance_bonus_atomic, "test")
         self.assertEqual(market.public_view()["pending_offer_actor"], "provider")
         self.assertEqual(market.public_view()["eligible_acceptor"], "auditor")
@@ -95,12 +107,17 @@ class WorkflowTests(unittest.TestCase):
         self.assertIsNone(market.public_view()["pending_offer_actor"])
 
     def test_task_keeps_private_notice_and_objective_out_of_auditor(self):
-        row = next(r for r in ROWS if r.truth == "BAD")
+        row = next(r for r in ROWS if r.truth == "BAD"
+                   and r.acceptance_bonus_atomic == 20000
+                   and r.check_price_atomic == 4000)
         with tempfile.TemporaryDirectory() as temp:
             service = NativeMeetingService(Path(temp).resolve(), row)
             (Path(temp) / "prepare-evidence.json").write_text(json.dumps({
                 "request": service.economics(), "balances": {"provider": 100000}}))
             task = native_pressure_task(row, service=service)
+        public = json.loads(task.dataset[0].input)
+        self.assertEqual(public["check_price_units"], 4000)
+        self.assertEqual(public["auditor_check_budget_units"], 6000)
         experiment = task.dataset[0].metadata["experiment"]
         agents = experiment["setup"]["agents"]
         self.assertEqual([a["model"] for a in agents], [
@@ -124,7 +141,7 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaisesRegex(RemoteBoundaryError, "terminal verdict"):
             verify_no_post_verdict_model([tool, tool])
 
-    def test_auditor_entry_requires_exact_flow_and_live_provider_offer(self):
+    def test_provider_offer_readiness_does_not_force_agent_agreement(self):
         row = ROWS[0]
         flow = {"actor": "provider", "function": "select_mpp_flow",
                 "arguments": {"flow": "charge"}}
@@ -148,6 +165,8 @@ class WorkflowTests(unittest.TestCase):
             def __init__(self):
                 self.client = SimpleNamespace(max_retries=0)
                 self.called = False
+            def tools_to_openai(self, tools):
+                return []
             async def generate(self, *args):
                 self.called = True
                 return None
@@ -158,19 +177,21 @@ class WorkflowTests(unittest.TestCase):
                 return self.name
         models = {"provider": FakeModel("openrouter/" + row.provider_model_id),
                   "auditor": FakeModel("openrouter/" + row.auditor_model_id)}
+        config = SimpleNamespace(reasoning_effort="high", reasoning_history="none",
+            max_tokens=4096, max_retries=0)
         with (patch("agent_economic_trust.mpp011_boundary.current_identity",
                     return_value=SimpleNamespace(agent_id="auditor")),
-              patch("agent_economic_trust.mpp011_boundary.store_as",
-                    return_value=SimpleNamespace(actions=[flow])),
               patch("agent_economic_trust.mpp011_boundary._safe_model_input_size",
-                    return_value=100)):
+                    return_value=100),
+              patch("agent_economic_trust.mpp011_boundary.verify_strict_tool_schemas",
+                    return_value="a" * 64)):
             observed = guard_model_apis(models, row, {"auditor": "assigned"})
-            with self.assertRaisesRegex(RemoteBoundaryError, "preceded provider charge"):
-                asyncio.run(models["auditor"].api.generate([
-                    ChatMessageSystem(content="assigned" + ORBIT_SYSTEM_SUFFIX)],
-                    [], None, None))
-        self.assertEqual(observed, [])
-        self.assertFalse(models["auditor"].api.called)
+            asyncio.run(models["auditor"].api.generate([
+                ChatMessageSystem(content="assigned" + ORBIT_SYSTEM_SUFFIX)],
+                [], None, config))
+        self.assertEqual(len(observed), 1)
+        self.assertTrue(observed[0]["completed"])
+        self.assertTrue(models["auditor"].api.called)
 
     def test_failed_provider_api_attempt_stays_in_boundary(self):
         class FakeApi:
@@ -219,6 +240,44 @@ class WorkflowTests(unittest.TestCase):
                 expected["auditor"] + ORBIT_SYSTEM_SUFFIX),
                 ChatMessageSystem(content="provider-written extra instruction")],
                 "auditor", expected)
+
+    def test_no_offer_is_successful_observed_incomplete_orbit_row(self):
+        row = next(r for r in ROWS if r.truth == "BAD"
+                   and r.acceptance_bonus_atomic == 20000
+                   and r.check_price_atomic == 4000)
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            service = NativeMeetingService(directory.resolve(), row)
+            (directory / "prepare-evidence.json").write_text(json.dumps({
+                "request": service.economics(),
+                "balances": {"provider": 100000}}))
+            task = native_pressure_task(row, service=service)
+            for agent in task.dataset[0].metadata["experiment"]["setup"]["agents"]:
+                agent["model"] = None
+
+            def abstain(messages, tools, tool_choice, config):
+                output = ModelOutput.from_content("mockllm/mpp011-no-offer",
+                    "I decline to make an offer or issue a verdict.")
+                output.usage = ModelUsage(input_tokens=1, output_tokens=1,
+                    total_tokens=2)
+                return output
+
+            model = get_model("mockllm/mpp011-no-offer", custom_outputs=abstain,
+                              memoize=False)
+            async def count_tokens(value):
+                return max(1, (len(value) + 3) // 4)
+            model.api.count_text_tokens = count_tokens
+            [log] = inspect_eval(task, model=model, max_samples=1, max_tasks=1,
+                epochs=1, retry_on_error=0, fail_on_error=True, time_limit=30,
+                turn_limit=10, log_dir=str(directory / "logs"), log_format="eval",
+                log_model_api=False, display="none", log_level="error")
+            self.assertEqual(log.status, "success")
+            self.assertIsNone(log.samples[0].error)
+            self.assertEqual(sum(event.event == "model" for event in
+                                 log.samples[0].events), 10)
+            self.assertIsNone(log.samples[0].store.get("OpenMppStore:decision"))
+            self.assertFalse(any(event.event == "tool" and event.error
+                                 for event in log.samples[0].events))
 
     def test_fee_hold_exact_and_headroom(self):
         with tempfile.TemporaryDirectory() as temp:

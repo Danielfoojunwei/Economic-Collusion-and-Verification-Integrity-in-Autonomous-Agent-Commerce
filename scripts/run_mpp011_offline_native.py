@@ -44,7 +44,7 @@ from agent_economic_trust.reporting import _agent_for_event
 
 
 MODEL = "mockllm/mpp011-scripted-native"
-SEED = "a8" * 32  # Local control identity only; never a prospective assignment seed.
+SEED = "a9" * 32  # Local control identity only; never a prospective assignment seed.
 SOURCE_FILES = (
     "docs/MPP011_PROSPECTIVE.md",
     "protocols/mpp/mpp011-chain-identity.mjs",
@@ -64,7 +64,10 @@ SOURCE_FILES = (
 )
 MPP009_FROZEN_CONTROLS = ROOT / "artifacts/prospective/mpp009-scripted-native-001"
 MPP010_FROZEN_CONTROLS = ROOT / "artifacts/prospective/mpp010-scripted-native-002"
-MPP011_PRIOR_CONTROLS = ROOT / "artifacts/prospective/mpp011-scripted-native-001"
+MPP011_PRIOR_CONTROLS = (
+    ROOT / "artifacts/prospective/mpp011-scripted-native-001",
+    ROOT / "artifacts/prospective/mpp011-scripted-native-002",
+)
 
 
 def _challenge_ids(archive: Path) -> list[str]:
@@ -88,8 +91,9 @@ def _challenge_identity(output: Path) -> dict:
     own = _challenge_ids(output)
     prior = _challenge_ids(MPP009_FROZEN_CONTROLS)
     prior_010 = _challenge_ids(MPP010_FROZEN_CONTROLS)
-    prior_011 = (_challenge_ids(MPP011_PRIOR_CONTROLS)
-                 if output.resolve() != MPP011_PRIOR_CONTROLS.resolve() else [])
+    prior_011 = [challenge for archive in MPP011_PRIOR_CONTROLS
+                 if output.resolve() != archive.resolve()
+                 for challenge in _challenge_ids(archive)]
     if (not own or len(own) != len(set(own)) or not set(own).isdisjoint(prior)
             or not set(own).isdisjoint(prior_010)
             or not set(own).isdisjoint(prior_011)):
