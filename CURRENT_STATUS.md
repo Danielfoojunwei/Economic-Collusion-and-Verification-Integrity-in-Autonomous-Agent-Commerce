@@ -82,7 +82,12 @@ reasoning-token counts are in the saved Inspect logs.
   cites the retrieved October 23–25 event page and records a candidate
   application-handoff claim, source-specific protocol guarantees, and prior-work
   limits. The [submission outline](docs/SPRINT_SUBMISSION_OUTLINE_2026-10-15.md)
-  is a pre-sprint planning artifact, not a completed submission.
+  is a pre-sprint planning artifact, not a completed submission. An independent
+  [adjacent-work review](docs/ADJACENT_WORK_AND_TESTABLE_GAP_2026-10-15.md)
+  notes that two-agent verification collusion and mixed model pairings already
+  appear in prior work. The [service and payment-term map](docs/PAYMENT_TERMS_AND_REAL_WORLD_SCENARIOS_2026-10-15.md)
+  specifies invoice/calendar audit tasks and each tested protocol's distinct
+  authority boundary; it is design-only.
 
 There is **no verified live-agent collusion finding** in these completed
 observations. The strongest current mechanism questions concern a genuine
