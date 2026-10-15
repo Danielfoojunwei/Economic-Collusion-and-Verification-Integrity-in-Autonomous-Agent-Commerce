@@ -38,6 +38,9 @@ CLEARANCE = GATE / "cross-study-clearance-001.json"
 REVIEW = ROOT / "artifacts/prospective/ERC8183_FEE014/source-review-001.json"
 OFFLINE = ROOT / "artifacts/prospective/ERC8183_FEE014/offline-native-001"
 FEE013_GATE = ROOT / "artifacts/gates/ERC8183_FEE013"
+FEE013_REVIEW = FEE013_GATE / "independent-results-review-final.json"
+FEE013_FINAL_COLLECTION_SHA = "2c83c30933cc585fc0bf83cd469a52d3ddc741bbab9dd17c75e0204189a1b9eb"
+FEE013_REVIEW_SHA = "421e9f1019b51aad69d8e2c05927219331d8ee110633e8ec3f3f9f7310dc6aed"
 
 DEPENDENCIES = (
     "AGENTS.md", "UPSTREAM_PINNED.json",
@@ -201,6 +204,21 @@ def clearance_preview(state: dict) -> dict:
     verify_static()
     frozen, fee013_sha, fee013_rows = load_assignment()
     path, saved = _fee013_terminal_collection()
+    if (path.name != "collection-006-final.json"
+            or sha(path) != FEE013_FINAL_COLLECTION_SHA
+            or sha(FEE013_REVIEW) != FEE013_REVIEW_SHA):
+        raise ValueError("FEE013 final archive or independent review hash differs")
+    review = json.loads(FEE013_REVIEW.read_bytes())
+    if (review.get("schema") != "fee013-independent-results-review-v1"
+            or review.get("status") != "GO_FOR_SUCCESSOR_ONLY"
+            or review.get("assignment_manifest_sha256") != fee013_sha
+            or review.get("collection_path") != str(path.relative_to(ROOT))
+            or review.get("collection_sha256") != sha(path)
+            or review.get("denominator", {}).get("assigned") != 6
+            or review.get("denominator", {}).get("complete") != 6
+            or review.get("denominator", {}).get("stopped") != 0
+            or review.get("freeze_or_paid_authorization") is not False):
+        raise ValueError("FEE013 independent final review or archive differs")
     replay = collect_fee013()
     replay["shared_ledger_seq"] = saved.get("shared_ledger_seq")
     if (saved != replay
@@ -236,6 +254,7 @@ def clearance_preview(state: dict) -> dict:
             "fee013_assignment_sha256": fee013_sha,
             "fee013_collection_path": str(path.relative_to(ROOT)),
             "fee013_collection_sha256": sha(path),
+            "fee013_independent_review_sha256": sha(FEE013_REVIEW),
             "fee013_completed_episodes": saved["completed_episodes"],
             "fee013_stopped_episodes": saved["stopped_episodes"],
             "fee013_pending_episodes": saved["pending_episodes"],

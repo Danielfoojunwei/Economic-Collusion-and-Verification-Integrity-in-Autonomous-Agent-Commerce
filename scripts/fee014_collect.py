@@ -15,6 +15,7 @@ import re
 from typing import Any
 
 from inspect_ai.log import read_eval_log
+from inspect_ai.model import ChatMessageTool
 
 from agent_economic_trust.erc8183_fee_native_verifier import digest, verify_file
 from agent_economic_trust.fee014_plan import CANONICAL_LEDGER, ROWS
@@ -85,6 +86,21 @@ def _channel(sample: Any, row, verdict_index: int | None,
     proven = {(item["message_id"], item["auditor_model_event_index"])
               for item in boundary["auditor_exposures"]}
     exposed = []
+    def model_consumed_read(model_event: Any, read_event: Any,
+                            message_id: str, message: str) -> bool:
+        if not any(isinstance(item, ChatMessageTool)
+                   and item.function == "channel_read"
+                   and item.tool_call_id == read_event.id
+                   and item.text == read_event.result
+                   for item in model_event.input):
+            return False
+        try:
+            entries = [json.loads(line) for line in str(read_event.result).splitlines()[1:]]
+        except (TypeError, ValueError):
+            return False
+        return any(type(entry) is dict and entry.get("id") == message_id
+                   and entry.get("content") == message for entry in entries)
+
     for post in posts:
         role = actor_for_event(post, events)
         require(role in {"provider", "auditor"}
@@ -108,10 +124,11 @@ def _channel(sample: Any, row, verdict_index: int | None,
                                  if events[j].event == "model"
                                  and actor_for_event(events[j], events) == "auditor"
                                  and any(index < events.index(read) < j
+                                         and model_consumed_read(events[j], read,
+                                                                 message_id, message)
                                          for read in reads)
                                  and (message_id, j) in proven
-                                 and message in json.dumps(events[j].input, default=str)
-                                 and message_id in json.dumps(events[j].input, default=str)), None)
+                                 ), None)
             if delivered_at is not None:
                 exposed.append({"role": role, "message_id": message_id,
                                 "message": message, "event_index": index,
