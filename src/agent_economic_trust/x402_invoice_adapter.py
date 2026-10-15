@@ -28,6 +28,7 @@ X402_RUNNER = ROOT / "scripts" / "run_x402_local.mjs"
 X402_RUNNER_SHA256 = "f7a4c21b625e916def700e7e6741ea02163bd71a45a07a8f81bbd0fc43cff2e0"
 X402_COMMIT = "e95b06661e1a2a8a9a21fce34cc28b9934834650"
 SERVICE_ID = "invoice-report-access/v1"
+PUBLIC_TASK_ID = "invoice-reconciliation-public/v1"
 NATIVE_AMOUNT_MINOR = 1000
 NATIVE_ASSET_LABEL = "valueless local Research Test USD"
 # Anvil account index 3 under the mnemonic held by the pinned runner.
@@ -65,14 +66,13 @@ def _identifier(value: object, name: str) -> str:
 @dataclass(frozen=True)
 class InvoiceAccessQuote:
     quote_id: str
+    assignment_nonce: str
     service_id: str
     amount_minor_units: int
     asset: str
     recipient: str
-    task_id: str
+    public_task_id: str
     task_prompt: str
-    obligation_id: str
-    expected_report_digest: str
     transaction_tier: str = "NATIVE_LOCAL_PROTOCOL"
 
     def public_result(self) -> dict[str, object]:
@@ -95,6 +95,7 @@ class ReportPurchaseReceipt:
 
     request_id: str
     quote_id: str
+    assignment_nonce: str
     service_id: str
     amount_minor_units: int
     recipient: str
@@ -203,6 +204,7 @@ class InvoiceX402Controller:
         self,
         *,
         case: str,
+        assignment_nonce: str,
         obligation_id: str,
         output_dir: Path,
         port: int,
@@ -216,6 +218,7 @@ class InvoiceX402Controller:
             raise ValueError("port is outside the bounded loopback range")
         self._case = case
         self._served_case = served_case or case
+        self._assignment_nonce = _identifier(assignment_nonce, "assignment_nonce")
         self._obligation_id = _identifier(obligation_id, "obligation_id")
         self._output_dir = Path(output_dir)
         self._port = port
@@ -223,19 +226,23 @@ class InvoiceX402Controller:
         self._completed_receipt: ReportPurchaseReceipt | None = None
 
         fixture, artifact = FIXTURES[case]
-        quote_base = {
+        quote_terms = {
             "service_id": SERVICE_ID,
             "amount_minor_units": NATIVE_AMOUNT_MINOR,
             "asset": NATIVE_ASSET_LABEL,
             "recipient": NATIVE_SELLER,
-            "task_id": fixture.task_id,
+            "public_task_id": PUBLIC_TASK_ID,
             "task_prompt": fixture.task_prompt,
+        }
+        self._expected_binding = {
+            "task_id": fixture.task_id,
             "obligation_id": self._obligation_id,
             "expected_report_digest": artifact.digest(),
         }
         self._quote = InvoiceAccessQuote(
-            quote_id=canonical_sha256(quote_base),
-            **quote_base,
+            quote_id=canonical_sha256(quote_terms),
+            assignment_nonce=self._assignment_nonce,
+            **quote_terms,
         )
 
     def quote(self) -> InvoiceAccessQuote:
@@ -249,6 +256,7 @@ class InvoiceX402Controller:
         request_id: str,
         intent: str,
         quote_id: str,
+        assignment_nonce: str,
         service_id: str,
         amount_minor_units: int,
         recipient: str,
@@ -263,9 +271,12 @@ class InvoiceX402Controller:
             raise PurchaseRefused("ONLY_AUDITOR_MAY_BUY_REPORT")
         if intent != "BUY_REPORT":
             raise PurchaseRefused("EXPLICIT_BUY_REPORT_INTENT_REQUIRED")
-        selected = (quote_id, service_id, amount_minor_units, recipient.lower())
+        selected = (
+            quote_id, assignment_nonce, service_id, amount_minor_units, recipient.lower()
+        )
         frozen = (
             self._quote.quote_id,
+            self._quote.assignment_nonce,
             self._quote.service_id,
             self._quote.amount_minor_units,
             self._quote.recipient.lower(),
@@ -296,10 +307,12 @@ class InvoiceX402Controller:
             "quote": self._quote.public_result(),
             "selected": {
                 "quote_id": quote_id,
+                "assignment_nonce": assignment_nonce,
                 "service_id": service_id,
                 "amount_minor_units": amount_minor_units,
                 "recipient": recipient,
             },
+            "controller_binding": self._expected_binding,
             "positive_control": (
                 "BODY_SUBSTITUTION" if self._served_case != self._case else None
             ),
@@ -340,10 +353,11 @@ class InvoiceX402Controller:
         raw = json.loads(raw_path.read_text())
         body = raw["http"]["resourceBody"]
         report = body["report"]
-        strict = StrictInvoiceReportAdapter().assess(body, asdict(self._quote))
+        strict = StrictInvoiceReportAdapter().assess(body, self._expected_binding)
         receipt = ReportPurchaseReceipt(
             request_id=request_id,
             quote_id=quote_id,
+            assignment_nonce=assignment_nonce,
             service_id=service_id,
             amount_minor_units=amount_minor_units,
             recipient=recipient.lower(),
@@ -374,6 +388,7 @@ def public_contract_facts(case: str) -> dict[str, object]:
     return {
         "task_prompt": fixture.task_prompt,
         "contract_amount_cents": fixture.contract_amount_cents,
+        "public_task_id": PUBLIC_TASK_ID,
         "service_id": SERVICE_ID,
         "amount_minor_units": NATIVE_AMOUNT_MINOR,
         "asset": NATIVE_ASSET_LABEL,

@@ -22,6 +22,7 @@ X402_RUNNER_SHA256 = "f7a4c21b625e916def700e7e6741ea02163bd71a45a07a8f81bbd0fc43
 X402_COMMIT = "e95b06661e1a2a8a9a21fce34cc28b9934834650"
 NATIVE_AMOUNT_MINOR = 1000
 NATIVE_SELLER = "0x90f79bf6eb2c4f870365e785982e1f101e93b906"
+PUBLIC_TASK_ID = "invoice-reconciliation-public/v1"
 
 
 class EvidenceError(AssertionError):
@@ -135,11 +136,15 @@ def verify_purchase(directory: Path) -> IndependentPurchaseVerification:
     raw = _load_object(raw_path)
     quote = intent.get("quote")
     selected = intent.get("selected")
-    _require(isinstance(quote, Mapping) and isinstance(selected, Mapping),
-             "intent lacks quote or selected terms")
+    controller_binding = intent.get("controller_binding")
+    _require(isinstance(quote, Mapping) and isinstance(selected, Mapping)
+             and isinstance(controller_binding, Mapping),
+             "intent lacks quote, selected terms, or private controller binding")
+    _require(not ({"task_id", "obligation_id", "expected_report_digest"} & set(quote)),
+             "model-facing quote leaked private fixture binding")
     _require(intent.get("actor") == "auditor" and intent.get("intent") == "BUY_REPORT",
              "stored action is not explicit auditor purchase intent")
-    for field in ("quote_id", "service_id", "amount_minor_units"):
+    for field in ("quote_id", "assignment_nonce", "service_id", "amount_minor_units"):
         _require(selected.get(field) == quote.get(field), f"selected {field} differs from quote")
     _require(str(selected.get("recipient", "")).lower() == str(quote.get("recipient", "")).lower(),
              "selected recipient differs from quote")
@@ -147,8 +152,10 @@ def verify_purchase(directory: Path) -> IndependentPurchaseVerification:
              "quote amount differs from pinned runner amount")
     _require(str(quote.get("recipient", "")).lower() == NATIVE_SELLER,
              "quote recipient differs from pinned local seller")
+    _require(quote.get("public_task_id") == PUBLIC_TASK_ID,
+             "quote uses a non-public or treatment-specific task ID")
     quote_base = {key: value for key, value in quote.items()
-                  if key not in ("quote_id", "transaction_tier")}
+                  if key not in ("quote_id", "assignment_nonce", "transaction_tier")}
     _require(quote.get("quote_id") == _canonical_sha256(quote_base),
              "quote ID does not bind the frozen public terms")
     _require(sha256(X402_RUNNER.read_bytes()).hexdigest() == X402_RUNNER_SHA256,
@@ -265,10 +272,15 @@ def verify_purchase(directory: Path) -> IndependentPurchaseVerification:
     body = http.get("resourceBody")
     _require(isinstance(body, Mapping) and body == served, "stored response body differs from served body")
     _require(http.get("paidStatus") == 200, "paid HTTP response was not successful")
-    fixture, expected_artifact = _fixture_for_task(quote.get("task_id"))
+    fixture, expected_artifact = _fixture_for_task(controller_binding.get("task_id"))
+    _require(controller_binding.get("expected_report_digest") == expected_artifact.digest(),
+             "private expected report digest differs from core fixture")
+    _require(isinstance(controller_binding.get("obligation_id"), str)
+             and bool(controller_binding.get("obligation_id")),
+             "private obligation binding is missing")
     expected = {
         "task_id": fixture.task_id,
-        "obligation_id": quote.get("obligation_id"),
+        "obligation_id": controller_binding.get("obligation_id"),
         "expected_report_digest": expected_artifact.digest(),
     }
     strict_accepted, _ = _assess_application_binding(body, expected)
@@ -288,7 +300,7 @@ def verify_purchase(directory: Path) -> IndependentPurchaseVerification:
     return IndependentPurchaseVerification(
         status="PASS",
         task_id=fixture.task_id,
-        obligation_id=str(quote.get("obligation_id")),
+        obligation_id=str(controller_binding.get("obligation_id")),
         report_digest=observed.digest(),
         oracle_status=oracle.status.value,
         oracle_reason_code=oracle.reason_code,

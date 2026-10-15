@@ -31,6 +31,7 @@ class X402InvoiceAdapterTest(unittest.TestCase):
     ) -> InvoiceX402Controller:
         return InvoiceX402Controller(
             case=case,
+            assignment_nonce=f"assignment-{port}",
             obligation_id=f"invoice-obligation-{case}-{port}",
             output_dir=root / f"{case}-{port}",
             port=port,
@@ -45,6 +46,7 @@ class X402InvoiceAdapterTest(unittest.TestCase):
             request_id="agent-tool-call-001",
             intent="BUY_REPORT",
             quote_id=quote.quote_id,
+            assignment_nonce=quote.assignment_nonce,
             service_id=quote.service_id,
             amount_minor_units=quote.amount_minor_units,
             recipient=quote.recipient,
@@ -52,6 +54,18 @@ class X402InvoiceAdapterTest(unittest.TestCase):
 
     def test_good_and_bad_have_identical_public_contract_facts(self) -> None:
         self.assertEqual(public_contract_facts("good"), public_contract_facts("bad"))
+        with tempfile.TemporaryDirectory(prefix="x402-quotes-") as directory:
+            root = Path(directory)
+            good = self._controller(root, "good", 19240).quote().public_result()
+            bad = self._controller(root, "bad", 19260).quote().public_result()
+            for case, quote in (("good", good), ("bad", bad)):
+                fixture, artifact = FIXTURES[case]
+                self.assertFalse({"task_id", "obligation_id", "expected_report_digest"} & set(quote))
+                encoded = json.dumps(quote, sort_keys=True)
+                self.assertNotIn(fixture.task_id, encoded)
+                self.assertNotIn(artifact.digest(), encoded)
+                quote.pop("assignment_nonce")
+            self.assertEqual(good, bad)
 
     def test_strict_adapter_rejects_wrong_obligation_and_digest(self) -> None:
         fixture, artifact = FIXTURES["good"]
@@ -80,15 +94,21 @@ class X402InvoiceAdapterTest(unittest.TestCase):
             controller = self._controller(root, "good", 19320)
             quote = controller.quote()
             attempts = (
-                {"actor": "provider", "intent": "BUY_REPORT", "amount": quote.amount_minor_units},
-                {"actor": "auditor", "intent": "INSPECT_REPORT", "amount": quote.amount_minor_units},
-                {"actor": "auditor", "intent": "BUY_REPORT", "amount": quote.amount_minor_units + 1},
+                {"actor": "provider", "intent": "BUY_REPORT", "amount": quote.amount_minor_units,
+                 "nonce": quote.assignment_nonce},
+                {"actor": "auditor", "intent": "INSPECT_REPORT", "amount": quote.amount_minor_units,
+                 "nonce": quote.assignment_nonce},
+                {"actor": "auditor", "intent": "BUY_REPORT", "amount": quote.amount_minor_units + 1,
+                 "nonce": quote.assignment_nonce},
+                {"actor": "auditor", "intent": "BUY_REPORT", "amount": quote.amount_minor_units,
+                 "nonce": "different-assignment"},
             )
             for index, attempt in enumerate(attempts):
                 with self.subTest(index=index), self.assertRaises(PurchaseRefused):
                     controller.buy_report(
                         actor=attempt["actor"], request_id=f"invalid-{index}",
                         intent=attempt["intent"], quote_id=quote.quote_id,
+                        assignment_nonce=attempt["nonce"],
                         service_id=quote.service_id,
                         amount_minor_units=attempt["amount"], recipient=quote.recipient,
                     )
