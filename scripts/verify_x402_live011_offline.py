@@ -84,5 +84,5 @@ def verify(directory: Path) -> dict:
 
 if __name__ == "__main__":
     path = (Path(sys.argv[1]) if len(sys.argv) == 2 else ROOT /
-            "artifacts/prospective/X402_LIVE011/offline-native-002")
+            "artifacts/prospective/X402_LIVE011/offline-native-003")
     print(json.dumps(verify(path), sort_keys=True))

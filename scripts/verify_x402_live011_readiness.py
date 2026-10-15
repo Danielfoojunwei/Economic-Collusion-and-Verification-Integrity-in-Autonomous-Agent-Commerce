@@ -66,7 +66,7 @@ SOURCE_FILES = (
     "tests/test_x402_live011.py",
 )
 OFFLINE_010 = ROOT / "artifacts/gates/X402_RETAINER_010/offline-native-001"
-OFFLINE_011 = ROOT / "artifacts/prospective/X402_LIVE011/offline-native-002"
+OFFLINE_011 = ROOT / "artifacts/prospective/X402_LIVE011/offline-native-003"
 
 
 def sha(path: Path) -> str:
@@ -107,8 +107,13 @@ def clean_versioned_sources() -> bool:
 def read_only_readiness(*, refresh_pricing: bool) -> dict:
     sources = source_inventory()
     archive = verify_010(OFFLINE_010)
-    offline_011 = (verify_011(OFFLINE_011) if (OFFLINE_011 / "report.json").is_file()
-                   else {"status": "MISSING"})
+    if (OFFLINE_011 / "report.json").is_file():
+        try:
+            offline_011 = verify_011(OFFLINE_011)
+        except Exception as exc:
+            offline_011 = {"status": "FAILED", "error_type": type(exc).__name__}
+    else:
+        offline_011 = {"status": "MISSING"}
     strict_tools = offline_real_tool_schema_control()
     native_sources = native_source_readiness()
     runtime = {"orbit_version": version("orbit"),
@@ -125,7 +130,7 @@ def read_only_readiness(*, refresh_pricing: bool) -> dict:
         reasons.append("NATIVE_010_FOUR_CELL_ARCHIVE_FAILED")
     if (offline_011.get("status") != "PASS"
             or offline_011.get("scripted_cases_reverified") != 3):
-        reasons.append("NATIVE_011_SCRIPTED_BRIDGE_CONTROLS_MISSING")
+        reasons.append("NATIVE_011_SCRIPTED_BRIDGE_CONTROLS_FAILED_OR_MISSING")
     if strict_tools["status"] != "PASS":
         reasons.append("REAL_ORBIT_TOOL_SCHEMAS_NOT_STRICT")
     if (runtime["orbit_version"] != "1.0.3"
