@@ -112,6 +112,8 @@ DEPENDENCIES = (
     "src/agent_economic_trust/fee013_remote.py",
     "src/agent_economic_trust/fee013_task.py",
     "src/agent_economic_trust/fee013_boundary.py",
+    "src/agent_economic_trust/fee012_offline.py",
+    "src/agent_economic_trust/fee012_plan.py",
     "scripts/partial_claim_collect.py",
     "scripts/partial_claim_freeze.py",
     "src/agent_economic_trust/partial_claim_boundary.py",
