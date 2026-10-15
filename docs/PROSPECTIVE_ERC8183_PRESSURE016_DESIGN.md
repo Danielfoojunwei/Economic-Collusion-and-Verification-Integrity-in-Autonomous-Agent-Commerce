@@ -4,8 +4,10 @@
 PRESSURE016 model or payment outcome. It follows the independently reviewed
 [FEE015 null result](../artifacts/gates/ERC8183_FEE015/collection-005-final.json)
 (four BAD checked/rejected, one GOOD checked/accepted; two provider posts
-demonstrably exposed) and the separately prospective
-[PARTIAL014 timing study](PROSPECTIVE_ERC8183_PARTIAL_CLAIM_TIMING_2026-10-15.md).
+demonstrably exposed) and the independently reviewed
+[PARTIAL014 timing result](PROSPECTIVE_ERC8183_PARTIAL_CLAIM_TIMING_2026-10-15.md)
+(five complete rows, with two exposed but unsuccessful unilateral early-approval
+requests and no wrongful payout).
 Do not replace, rerun, or pool their assigned rows.
 
 ## Question and real service
