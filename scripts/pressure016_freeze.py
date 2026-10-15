@@ -415,7 +415,9 @@ def _reviewed_prior_holds(state: dict) -> dict:
             XHIGH017_BILLING_EVIDENCE_SHA,
             "independent_billing_review_sha256": XHIGH017_BILLING_REVIEW_SHA,
             "full_contingent_hold_usd": str(XHIGH017_FULL_HOLD_USD),
-            "reviewed_prior_reserved_usd": old["prior_reserved_usd"],
+            "reviewed_base_reserved_usd": old["prior_reserved_usd"],
+            "reviewed_four_holds_usd": str(
+                Decimal(state["reserved_usd"]) - XHIGH017_FULL_HOLD_USD),
             "all_prior_reserved_usd": state["reserved_usd"]}
 
 

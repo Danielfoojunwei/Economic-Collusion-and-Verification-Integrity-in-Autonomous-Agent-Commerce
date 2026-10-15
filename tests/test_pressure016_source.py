@@ -15,22 +15,26 @@ import json
 import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
 from inspect_ai import eval as inspect_eval
 from inspect_ai.log import read_eval_log
-from inspect_ai.model import ChatMessageAssistant, ChatMessageUser, ModelOutput
+from inspect_ai.model import (ChatMessageAssistant, ChatMessageUser,
+                              ModelCall, ModelOutput)
 from inspect_ai.tool import ToolError
 
 from agent_economic_trust.pressure016_boundary import (
-    _view_object, guard_model_apis, models, strict_message_priority,
+    _validated_adapter_output, _view_object, guard_model_apis, models,
+    strict_message_priority,
     verify_boundary)
 from agent_economic_trust.pressure016_plan import (
     CELLS, NEUTRAL, PROMPTED_PRESSURE, PressureRow, make_schedule,
     prospective_manifest, required_headroom, validate_rows)
 from agent_economic_trust.pressure016_offline import (
     ARCHIVE, verify as verify_offline)
+from agent_economic_trust import pressure016_boundary as pressure_boundary
 from agent_economic_trust.pressure016_task import (
     CHANNEL, PressureInboxStore, decide_first_milestone,
     pressure016_orbit, role_system_prompts)
@@ -50,6 +54,56 @@ from test_partial014_task import Bridge, prefix
 class Pressure016SourceTests(unittest.TestCase):
     def setUp(self):
         self.rows = make_schedule("ab" * 32)
+
+    def test_openrouter_tuple_requires_one_successful_untruncated_choice(self):
+        model = "openrouter/anthropic/claude-sonnet-5.5"
+        good = ModelOutput.from_content(model, "Proceed")
+        self.assertIs(_validated_adapter_output(
+            (good, ModelCall(request={}))), good)
+        truncated = ModelOutput.from_content(model, "Incomplete")
+        truncated.choices[0].stop_reason = "length"
+        cases = (
+            ("handled HTTP error", (ValueError("HTTP 400"),
+                                    ModelCall(request={}, error=True))),
+            ("output error", (ModelOutput(model=model, error="bad"),
+                              ModelCall(request={}))),
+            ("call error", (good, ModelCall(request={}, error=True))),
+            ("bare output", good),
+            ("short tuple", (good,)),
+            ("missing call", (good, None)),
+            ("empty choices", (ModelOutput(model=model), ModelCall(request={}))),
+            ("truncated", (truncated, ModelCall(request={}))),
+        )
+        for label, result in cases:
+            with self.subTest(label=label), self.assertRaises(RemoteBoundaryError):
+                _validated_adapter_output(result)
+
+    def test_handled_error_tuple_keeps_guard_attempt_incomplete(self):
+        row = self.rows[0]
+        with patch.dict(os.environ,
+                        {"OPENROUTER_API_KEY": "offline-test-placeholder"}):
+            role_models = models(row)
+        provider = role_models["provider"]
+
+        async def handled_error(_input, _tools, _tool_choice, _config):
+            return ValueError("handled HTTP error"), ModelCall(
+                request={}, error=True)
+
+        provider.api.generate = handled_error
+        observed = guard_model_apis(role_models, row, prefix(row.native_row))
+        config = self._task(row, Bridge(row.native_row)).config
+        with patch.object(pressure_boundary, "current_identity",
+                          return_value=SimpleNamespace(agent_id="provider")), \
+             patch.object(pressure_boundary, "strict_message_priority",
+                          return_value=False), \
+             patch.object(pressure_boundary, "_strict_tools",
+                          return_value="offline-tools"):
+            with self.assertRaisesRegex(RemoteBoundaryError,
+                                        "unsuccessful output"):
+                asyncio.run(provider.api.generate([], [], None, config))
+        self.assertEqual(len(observed), 1)
+        self.assertTrue(observed[0]["provider_api_invoked"])
+        self.assertFalse(observed[0]["completed"])
 
     def test_provider_request_screen_recognizes_predecessor_posts(self):
         # These are the exact two live PARTIAL014 posts independently reviewed
@@ -170,8 +224,10 @@ class Pressure016SourceTests(unittest.TestCase):
                                 for item in observed)
                     action = actions[_role][index]
                     if isinstance(action, str):
-                        return ModelOutput.from_content(_name, action)
-                    return ModelOutput.for_tool_call(_name, *action)
+                        output = ModelOutput.from_content(_name, action)
+                    else:
+                        output = ModelOutput.for_tool_call(_name, *action)
+                    return output, ModelCall(request={})
                 model.api.generate = fake
             observed = guard_model_apis(role_models, row, prefix(native_row))
             with TemporaryDirectory(prefix="pressure016-offline-", dir="/tmp") as raw:

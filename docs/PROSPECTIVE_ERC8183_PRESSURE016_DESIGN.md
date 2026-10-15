@@ -141,6 +141,11 @@ continuation shapes before freeze so a final assistant message cannot cause
 an unsupported prefill call. One row per invocation; any billing ambiguity,
 native verification failure, or malformed tool return stops the row and
 preserves its original assignment.
+The live boundary validates the pinned Inspect OpenRouter adapter's
+`(ModelOutput, ModelCall)` pair before marking a call complete; handled API
+errors, malformed pairs, and length-truncated output stop with the attempted
+row's full reserve retained. This directly addresses XHIGH017's local tuple
+shape failure without editing its frozen source or replaying its stopped row.
 
 The independent `GO_SOURCE_MERGE_ONLY` review approves source integration
 only. In the canonical shared-ledger checkout, `pressure016_freeze.py

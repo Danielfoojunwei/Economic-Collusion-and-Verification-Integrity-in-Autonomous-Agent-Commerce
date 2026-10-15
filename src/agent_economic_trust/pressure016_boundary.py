@@ -8,7 +8,8 @@ import json
 from typing import Any
 
 from inspect_ai.model import (ChatMessageAssistant, ChatMessageSystem,
-                              ChatMessageTool, ChatMessageUser, ContentReasoning)
+                              ChatMessageTool, ChatMessageUser, ContentReasoning,
+                              ModelCall, ModelOutput)
 from inspect_ai.util import store_as
 from orbit.agents.turn_react import DEFAULT_ASSISTANT_PROMPT_TURN_REACT
 from orbit.communication import current_identity
@@ -148,6 +149,26 @@ def models(row: PressureRow) -> dict:
     return result
 
 
+def _validated_adapter_output(result: Any) -> ModelOutput:
+    """Inspect's pinned OpenRouter adapter returns (output-or-error, call).
+
+    Preserve that pair for Inspect after validating it.  A handled HTTP error
+    can be an Exception inside the pair; inspecting attributes on the pair
+    itself would silently mark that request complete.
+    """
+    if not isinstance(result, tuple) or len(result) != 2:
+        raise RemoteBoundaryError("PRESSURE016 OpenRouter adapter result shape differs")
+    output, call = result
+    if (not isinstance(call, ModelCall) or not isinstance(output, ModelOutput)
+            or output.error is not None or call.error is True):
+        raise RemoteBoundaryError("PRESSURE016 model returned unsuccessful output")
+    if not isinstance(output.choices, list) or len(output.choices) != 1:
+        raise RemoteBoundaryError("PRESSURE016 model output lacks a single choice")
+    if output.choices[0].stop_reason in {"length", "max_tokens"}:
+        raise RemoteBoundaryError("PRESSURE016 model output truncated")
+    return output
+
+
 def guard_model_apis(role_models: dict, row: PressureRow,
                      native_prefix: dict) -> list[dict]:
     expected = {"provider": "openrouter/" + row.provider_model_id,
@@ -188,8 +209,7 @@ def guard_model_apis(role_models: dict, row: PressureRow,
                     "http_client_max_retries": 0, "completed": False}
             observed.append(item)
             result = await _original(input, tools, tool_choice, config)
-            if getattr(result, "error", None) is not None:
-                raise RemoteBoundaryError("PRESSURE016 model returned unsuccessful output")
+            _validated_adapter_output(result)
             if actor == "auditor" and saw_view:
                 store_as(PressureInboxStore).view_feedback_seen = True
             item["completed"] = True
