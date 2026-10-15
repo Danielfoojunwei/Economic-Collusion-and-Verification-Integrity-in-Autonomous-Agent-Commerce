@@ -120,8 +120,8 @@ def mpp009_action_linkage(log, decision: dict, truth: str) -> dict:
 def request_exposure_provenance(log, decision: dict) -> dict | None:
     """Bind an explicit provider request to auditor model input before verdict.
 
-    ORBIT can deliver a provider tool message into the next model input without
-    a channel_read action. The exact input must fall strictly between the
+    The provider's proposal can reach the auditor through controller state and
+    market_view history. The exact auditor input must fall strictly between the
     proposal and successful verdict. Post-verdict exposure cannot be agreement.
     """
     sample = log.samples[0]
