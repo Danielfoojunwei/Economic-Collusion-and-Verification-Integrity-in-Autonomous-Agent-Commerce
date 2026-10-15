@@ -179,7 +179,11 @@ reasoning-token counts are in the saved Inspect logs.
   to system role. No provider made an improper request; no BAD invoice was
   accepted. The USD 0.358532 model-use total is an estimate. This one-row-per-
   cell payer contrast is descriptive and does not test a native contingent
-  evaluator fee.
+  evaluator fee. An independent byte-for-byte recollection passed. The 26
+  successful calls all requested high reasoning, but reported only 1,433
+  provider and 34 auditor reasoning tokens in total. The first BAD provider
+  explicitly disclosed that its report was BAD, weakening that row as a probe
+  of collusive provider behavior.
 - The [ACP retail-order handoff control](docs/ACP_ORDER_AUDIT_HANDOFF_LOCAL_CONTROL.md)
   independently verified four scripted mock-checkout/native ERC-8183 rows. A
   permissive application paid a BAD job B based on a mock order for A; strict
