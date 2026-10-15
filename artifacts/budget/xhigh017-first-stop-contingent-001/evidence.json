@@ -1,0 +1,55 @@
+{
+  "account_usage_after_usd": "3.4305802",
+  "account_usage_before_usd": "3.4305802",
+  "attributable_final_provider_bill_usd": null,
+  "auditor_api_invocations": 0,
+  "completed_model_returns": 0,
+  "episode_id": "xhigh017-0a63961c0d306890326609f6",
+  "failed_local_boundary_class": "FROZEN_API_RESULT_TUPLE_SHAPE_MISMATCH",
+  "final_settlement_requires": "attributable provider final billing for the guarded call",
+  "frozen_artifacts_sha256": {
+    "anchor": "0ffd24b300c70d21fba155cbadbd76d0a36622852b2226d6cb826786a6871219",
+    "assignment": "a0f79e6ba7de1c1b0bee28e39e9d70165405f325d9a52a9c0b2f432708b2237b",
+    "boundary_source": "ad8b2ac57d98d0cb27345d99ee6917a9d87770d649d896ef1e7df6f27c1d5f62",
+    "collection": "eefd7c61b9b8667a3923a8979c78226e8433488f9a032e537b11f418633e95ec",
+    "forensics": "66b0c983ebc587380fcaaad8ce8f16a4f9b169684981385b3df0512751780e17",
+    "freeze": "dc8d700b72279383417bb526de62aa6eea6c09d3d58deb98f465aa01add8969a",
+    "inspect": "3c83426dfa2a27f60ab2851db6ed8cc60f59020b8cc36fb8b3495d7b6f587778",
+    "ledger": "22d8e15df568f151edb0589715ec5489ce89f2d9c01d5917fa4dbb6503b36bd9",
+    "native": "5b3a470f2f490f67837a27ca60cd789877d33fe03d5d6093943629d569565e17",
+    "remote_source": "d089f7f03cc088d6e00be860c87cd3db9116191497311e3fef811f4f11b325c9",
+    "stopped": "20628ac8c11a1e658728ba37b04d5ae3d9ff22c99c94da7be5418b5bb9f1097d"
+  },
+  "frozen_row_disposition": "ZERO_COMPLETE_ONE_STOPPED_ONE_PENDING_NO_RETRY",
+  "guarded_provider_api_invocations": 1,
+  "inspect_model_event_indices": [
+    21
+  ],
+  "inspect_sample_uuid": "bp5N3WkLopztfMzEaACGPi",
+  "intended_transition": "UNKNOWN_TO_CONTINGENT_WITH_FULL_HOLD",
+  "ledger_mutations_by_assessment": 0,
+  "ledger_prestate": {
+    "available_usd": "17.080202",
+    "blocked": true,
+    "cap_usd": "50",
+    "last_hash": "f0e592b73cfb4091e8459e637365352ce49fb444f5ab1a2d40d03f355e0b1fcf",
+    "reserved_usd": "23.1055",
+    "seq": 216,
+    "settled_spent_usd": "9.814298",
+    "unknown_run_ids": [
+      "xhigh017-a0f79e6ba7de-xhigh017-0a63961c0d306890326609f6"
+    ]
+  },
+  "live_collusion_effect_estimate": null,
+  "native_local_state": "FUNDED_SUBMITTED_NO_TERMINAL_VERDICT_OR_PAYOUT",
+  "paid_model_calls_by_assessment": 0,
+  "provider_request_or_billing_id": null,
+  "result": "PROVISIONAL_HOLD_RETAINED_FINAL_CHARGE_UNKNOWN",
+  "retained_run_reservation_usd": "4.718592",
+  "run_id": "xhigh017-a0f79e6ba7de-xhigh017-0a63961c0d306890326609f6",
+  "schema": "xhigh017-first-stop-provisional-billing-v1",
+  "underlying_provider_http_status": null,
+  "underlying_provider_model_choice_count": null,
+  "whole_account_delta_is_per_call_bill": false,
+  "whole_account_delta_usd": "0E-7"
+}
