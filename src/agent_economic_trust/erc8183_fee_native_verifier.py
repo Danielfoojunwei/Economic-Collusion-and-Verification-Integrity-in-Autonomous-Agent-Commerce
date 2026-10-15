@@ -11,6 +11,7 @@ from dataclasses import asdict
 from hashlib import sha256
 import json
 from pathlib import Path
+import subprocess
 
 from scripts import verify_erc8183_fee_control as controls
 from scripts.run_erc8183_fee_control import AUDITOR_REWARD, CHECK_PRICE, CLIENT_MAX
@@ -44,8 +45,9 @@ def _base(e: dict, row: FeeRow) -> None:
              and source.get("fixture_sha256") == digest(
                  ROOT / "src/agent_economic_trust/ap2_live_fixture.py"),
              "pinned live controller or official source differs")
-    _require(controls.UPSTREAM.is_dir() and controls._cast("sig", "complete(uint256,bytes32,bytes)"),
-             "official ABI tooling unavailable")
+    _require(subprocess.run(["git", "rev-parse", "HEAD"], cwd=controls.UPSTREAM,
+                            capture_output=True, text=True, check=True).stdout.strip()
+             == controls.PIN, "official ERC-8183 checkout differs")
     _require(e["chain"]["host"] == "127.0.0.1" and e["chain"]["chain_id"] == 31337,
              "native chain differs")
     _require(e["terms"] == {
@@ -186,6 +188,12 @@ def verify_prefix(e: dict, row: FeeRow) -> dict:
              "funded/precheck balance differs")
     controls._calldata(by_step["job.set_budget"], "setBudget(uint256,address,uint256,bytes)",
                        [e["job_id"], token, e["terms"]["job_budget_minor"]])
+    controls._calldata(by_step["setup.evaluator_fee"], "setEvaluatorFee(uint256)", [1000])
+    controls._calldata(by_step["terms.platform_zero"], "setPlatformFee(uint256,address)",
+                       [0, roles["treasury"]])
+    controls._calldata(by_step["job.create"],
+                       "createJob(address,address,uint48,string,address,uint256)",
+                       [roles["provider"], roles["evaluator"]])
     controls._calldata(by_step["job.fund"], "fund(uint256,address,uint256,bytes)",
                        [e["job_id"], token, e["terms"]["job_budget_minor"]])
     controls._transfer(by_step["job.fund"], token, roles["client"], core,
@@ -213,6 +221,8 @@ def verify_prefix(e: dict, row: FeeRow) -> dict:
         _require(e["invoice"]["buyer_records"] is None,
                  "unchecked prefix disclosed protected buyer records")
     report = e["invoice"]["public_report_digest"]
+    controls._calldata(by_step["job.submit"], "submit(uint256,bytes32,bytes)",
+                       [e["job_id"], "0x" + report])
     _require(controls._logs(by_step["job.submit"], "JobSubmitted", address=core)[0]["data"].lower()
              == "0x" + report, "submitted report digest differs")
     _require(e["job_id"] > 0 and e["invoice"]["submitted_cents"] == 350
