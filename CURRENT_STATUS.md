@@ -1,13 +1,15 @@
 # Current research build status — 2026-10-15
 
-## Latest evidence snapshot (17:08 UTC)
+## Latest evidence snapshot (17:39 UTC)
 
 The owner raised the **lifetime OpenRouter ceiling to USD 50**. The shared
-hash-chained ledger is unblocked at sequence 151 with USD 7.042084 settled,
-USD 6.307840 retained as a `CONTINGENT` reservation for one stopped MPP006
-request, and USD 36.650076 available after that hold. The failed request's
-final provider charge remains unknown. New studies must preserve the exact
-hold and fit their full prospective reserve within the available balance.
+hash-chained ledger is unblocked at sequence 155 with USD 7.042084 settled,
+USD 14.094300 reserved, and USD 28.863616 available after the reservations.
+The full reservations comprise USD 6.307840 `CONTINGENT` for MPP006,
+USD 3.379164 `RESERVED` as a separate FEE011 failed-request buffer, and
+USD 4.407296 `CONTINGENT` for x402 011. Their final provider charges remain
+unknown. New studies must preserve each exact hold and fit their full
+prospective reserve within the available balance.
 Most settled amounts are conservative model-use estimates, not provider billing
 exports. Live calls have used `openai/gpt-5.6-sol` and, in the latest completed
 row, `anthropic/claude-sonnet-5.5` with high reasoning requested; actual
@@ -141,8 +143,21 @@ reasoning-token counts are in the saved Inspect logs.
   model archive is unsuccessful and the assigned row remains STOPPED. Its
   settled USD 0.061476 is an estimate. The [forensic note](docs/FEE011_FIRST_STOP_FORENSICS.md)
   records the model-event counting discrepancy; there is no collusion finding.
-  A separately reviewed prospective x402 011 live source and scripted controls
-  exist, but no x402 011 assignment has been frozen or paid call made.
+  FEE011's failed request retains an independently reviewed, separate
+  USD 3.379164 billing buffer rather than being treated as a known zero charge.
+  The [x402 011 assignment](artifacts/gates/X402_LIVE011/assignment-001/assignment_manifest.json)
+  froze four buyer/provider-paid retainer rows. Its [first-stop collection](artifacts/gates/X402_LIVE011/collection-001-after-first-stop.json)
+  is **0 complete, 1 STOPPED GOOD/buyer-paid, 3 pending** after six successful
+  Sol/Sonnet high-reasoning model calls. The auditor paid for the independent
+  check and correctly accepted a GOOD invoice; native local x402 intake and
+  ERC-8183 provider payout replay pass. The runner stopped because ORBIT
+  delivered a provider-authored GOOD claim in a system-role inbox wrapper
+  marked untrusted, which the conservative role boundary rejected. The
+  [forensic note](docs/X402_LIVE011_FIRST_STOP_FORENSICS.md) and
+  [independent billing review](docs/X402_LIVE011_CONTINGENT_INDEPENDENT_REVIEW.md)
+  retain the full USD 4.407296 x402 hold without inferring its final bill or
+  calling the correct GOOD verdict collusion. The [x402 012 proposal](docs/PROSPECTIVE_X402_LIVE012_DESIGN.md)
+  changes message delivery prospectively; it is design only at this snapshot.
 - The [ACP retail-order handoff control](docs/ACP_ORDER_AUDIT_HANDOFF_LOCAL_CONTROL.md)
   independently verified four scripted mock-checkout/native ERC-8183 rows. A
   permissive application paid a BAD job B based on a mock order for A; strict
