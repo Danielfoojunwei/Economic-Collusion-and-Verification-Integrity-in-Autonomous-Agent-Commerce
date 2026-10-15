@@ -117,6 +117,109 @@ class RemoteBudgetTests(unittest.TestCase):
         ledger.settle("run-1", "4", "provider-usage/run-1")
         self.assertEqual(ledger.reserve("run-2", "1", "20", {})["unknown_run_ids"], [])
 
+    def test_contingent_transition_retains_full_hold_and_allows_only_remaining_cap(self) -> None:
+        ledger = create_ledger(self.path, "20", "2")
+        ledger.reserve("uncertain", "6", "20", {})
+        before = ledger.mark_unknown("uncertain", "provider_request_failed")
+        self.assertTrue(before["blocked"])
+        with self.assertRaises(BudgetStateError):
+            ledger.reserve("later", "1", "20", {})
+
+        evidence = "sha256:" + "a" * 64
+        after = ledger.mark_contingent("uncertain", evidence)
+        for field in ("cap_usd", "settled_spent_usd", "reserved_usd", "committed_usd", "available_usd"):
+            self.assertEqual(after[field], before[field], field)
+        self.assertFalse(after["blocked"])
+        self.assertEqual(after["unknown_run_ids"], [])
+        self.assertEqual(after["contingent_run_ids"], ["uncertain"])
+        self.assertEqual(after["runs"]["uncertain"], {
+            "status": "CONTINGENT", "reserved_usd": "6", "metadata": {},
+            "evidence_ref": evidence, "contingent_evidence_ref": evidence,
+            "prior_unknown_reason": "provider_request_failed",
+        })
+        self.assertNotIn("actual_usd", after["runs"]["uncertain"])
+        self.assertEqual(after["seq"], before["seq"] + 1)
+        self.assertEqual(read_ledger(self.path), after)
+        self.assertEqual(ledger.reserve("later", "12", "20", {})["available_usd"], "0")
+        with self.assertRaises(BudgetExceeded):
+            ledger.reserve("over", "0.01", "20", {})
+
+    def test_contingent_transition_rejects_bad_evidence_and_wrong_states(self) -> None:
+        ledger = create_ledger(self.path, "20", "0")
+        evidence = "sha256:" + "b" * 64
+        with self.assertRaises(BudgetStateError):
+            ledger.mark_contingent("absent", evidence)
+        ledger.reserve("run", "6", "20", {})
+        with self.assertRaises(BudgetStateError):
+            ledger.mark_contingent("run", evidence)
+        ledger.mark_unknown("run", "provider_timeout")
+        for invalid in ("", "b" * 64, "sha256:" + "B" * 64,
+                        "sha256:" + "b" * 63, "sha256:" + "b" * 65,
+                        "sha256:" + "b" * 63 + "x", "Bearer hidden"):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                ledger.mark_contingent("run", invalid)
+        self.assertEqual(ledger.snapshot()["seq"], 2)
+        ledger.mark_contingent("run", evidence)
+        with self.assertRaises(BudgetStateError):
+            ledger.mark_contingent("run", evidence)
+        self.assertEqual(ledger.snapshot()["seq"], 3)
+
+    def test_contingent_evidence_can_be_discredited_without_releasing_hold(self) -> None:
+        ledger = create_ledger(self.path, "20", "0")
+        ledger.reserve("run", "6", "20", {})
+        ledger.mark_unknown("run", "provider_timeout")
+        contingent = ledger.mark_contingent("run", "sha256:" + "c" * 64)
+        reblocked = ledger.mark_unknown("run", "evidence_discredited")
+        self.assertTrue(reblocked["blocked"])
+        self.assertEqual(reblocked["unknown_run_ids"], ["run"])
+        self.assertEqual(reblocked["contingent_run_ids"], [])
+        self.assertEqual(reblocked["reserved_usd"], contingent["reserved_usd"])
+        self.assertEqual(reblocked["committed_usd"], contingent["committed_usd"])
+        self.assertEqual(reblocked["available_usd"], contingent["available_usd"])
+        self.assertEqual(reblocked["runs"]["run"]["unknown_reason"], "evidence_discredited")
+        self.assertEqual(reblocked["runs"]["run"]["contingent_evidence_ref"], "sha256:" + "c" * 64)
+        self.assertNotIn("evidence_ref", reblocked["runs"]["run"])
+        with self.assertRaises(BudgetStateError):
+            ledger.reserve("later", "1", "20", {})
+        with self.assertRaises(BudgetStateError):
+            ledger.mark_contingent("run", "sha256:" + "d" * 64)
+        self.assertEqual(read_ledger(self.path), reblocked)
+
+    def test_contingent_settlement_requires_final_attributable_billing_reference(self) -> None:
+        ledger = create_ledger(self.path, "20", "13")
+        ledger.reserve("run", "6", "20", {})
+        ledger.mark_unknown("run", "provider_timeout")
+        ledger.mark_contingent("run", "sha256:" + "a" * 64)
+        for evidence in ("provider-usage/run", "sha256:" + "b" * 64,
+                         "provider-billing:sha256:" + "B" * 64):
+            with self.subTest(evidence=evidence), self.assertRaises(BudgetStateError):
+                ledger.settle("run", "8", evidence)
+        self.assertEqual(ledger.snapshot()["seq"], 3)
+        final = "provider-billing:sha256:" + "b" * 64
+        settled = ledger.settle("run", "8", final)
+        self.assertEqual(settled["settled_spent_usd"], "21")
+        self.assertEqual(settled["reserved_usd"], "0")
+        self.assertEqual(settled["available_usd"], "-1")
+        self.assertTrue(settled["over_cap"])
+        self.assertEqual(settled["contingent_run_ids"], [])
+        self.assertEqual(settled["runs"]["run"]["actual_usd"], "8")
+        self.assertEqual(settled["runs"]["run"]["evidence_ref"], final)
+        self.assertEqual(ledger.settle("run", "8", final)["seq"], 4)
+        with self.assertRaises(BudgetExceeded):
+            ledger.reserve("later", "0.01", "20", {})
+
+    def test_reblocked_contingent_run_still_requires_final_billing_to_settle(self) -> None:
+        ledger = create_ledger(self.path, "20", "0")
+        ledger.reserve("run", "6", "20", {})
+        ledger.mark_unknown("run", "provider_timeout")
+        ledger.mark_contingent("run", "sha256:" + "a" * 64)
+        ledger.mark_unknown("run", "evidence_discredited")
+        with self.assertRaises(BudgetStateError):
+            ledger.settle("run", "0", "provider-usage/run")
+        settled = ledger.settle("run", "0", "provider-billing:sha256:" + "b" * 64)
+        self.assertFalse(settled["blocked"])
+        self.assertEqual(settled["available_usd"], "20")
+
     def test_actual_charge_above_estimate_is_recorded_and_blocks_overspend(self) -> None:
         ledger = create_ledger(self.path, "20", "18")
         ledger.reserve("run-1", "2", "20", {})

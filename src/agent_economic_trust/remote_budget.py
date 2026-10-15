@@ -37,6 +37,8 @@ _SENSITIVE_TEXT = re.compile(
     re.IGNORECASE,
 )
 _REASON_CODE = re.compile(r"[A-Za-z][A-Za-z0-9_.:-]{0,99}\Z")
+_EVIDENCE_SHA256 = re.compile(r"sha256:[0-9a-f]{64}\Z")
+_FINAL_PROVIDER_BILLING = re.compile(r"provider-billing:sha256:[0-9a-f]{64}\Z")
 
 
 class BudgetError(Exception):
@@ -131,6 +133,18 @@ def _safe_reason(value: str) -> str:
         raise TypeError("reason must be a string")
     if not _REASON_CODE.fullmatch(value) or _SENSITIVE_TEXT.search(value):
         return "unspecified_or_sensitive_error"
+    return value
+
+
+def _contingent_evidence(value: str) -> str:
+    if not isinstance(value, str) or not _EVIDENCE_SHA256.fullmatch(value):
+        raise ValueError("contingent evidence_ref must be sha256:<64 lowercase hex>")
+    return value
+
+
+def _final_billing_evidence(value: str) -> str:
+    if not isinstance(value, str) or not _FINAL_PROVIDER_BILLING.fullmatch(value):
+        raise ValueError("contingent run settlement requires provider-billing:sha256:<64 lowercase hex>")
     return value
 
 
@@ -336,6 +350,8 @@ class BudgetLedger:
                         raise ValueError("settlement has no open reservation")
                     actual = self._stored_usd(payload["actual_usd"], "actual_usd")
                     _safe_text(payload["evidence_ref"], "evidence_ref")
+                    if "contingent_evidence_ref" in runs[run_id]:
+                        _final_billing_evidence(payload["evidence_ref"])
                     runs[run_id].update({
                         "status": "SETTLED", "actual_usd": _format_usd(actual),
                         "evidence_ref": payload["evidence_ref"],
@@ -346,11 +362,28 @@ class BudgetLedger:
                     if set(payload) != {"run_id", "reason"}:
                         raise ValueError("invalid unknown charge")
                     run_id = _safe_text(payload["run_id"], "run_id", limit=200)
-                    if run_id not in runs or runs[run_id]["status"] != "RESERVED":
+                    if run_id not in runs or runs[run_id]["status"] not in {"RESERVED", "CONTINGENT"}:
                         raise ValueError("unknown charge has no open reservation")
                     if _safe_reason(payload["reason"]) != payload["reason"]:
                         raise ValueError("invalid stored unknown reason")
+                    if runs[run_id]["status"] == "CONTINGENT":
+                        runs[run_id].pop("evidence_ref")
                     runs[run_id].update({"status": "UNKNOWN", "unknown_reason": payload["reason"]})
+                elif kind == "contingent":
+                    if set(payload) != {"run_id", "evidence_ref"}:
+                        raise ValueError("invalid contingent charge")
+                    run_id = _safe_text(payload["run_id"], "run_id", limit=200)
+                    if (run_id not in runs or runs[run_id]["status"] != "UNKNOWN"
+                            or "contingent_evidence_ref" in runs[run_id]):
+                        raise ValueError("contingent charge has no eligible unknown reservation")
+                    evidence_ref = _contingent_evidence(payload["evidence_ref"])
+                    prior_reason = runs[run_id].pop("unknown_reason")
+                    runs[run_id].update({
+                        "status": "CONTINGENT",
+                        "evidence_ref": evidence_ref,
+                        "contingent_evidence_ref": evidence_ref,
+                        "prior_unknown_reason": prior_reason,
+                    })
                 else:
                     raise ValueError("invalid event kind")
                 prev = event["hash"]
@@ -358,6 +391,7 @@ class BudgetLedger:
                 raise ValueError("anchor differs from ledger head")
             committed = settled + reserved
             unknown_ids = sorted(run_id for run_id, run in runs.items() if run["status"] == "UNKNOWN")
+            contingent_ids = sorted(run_id for run_id, run in runs.items() if run["status"] == "CONTINGENT")
             snapshot = {
                 "cap_usd": _format_usd(cap),
                 "opening_spent_usd": _format_usd(opening),
@@ -368,6 +402,7 @@ class BudgetLedger:
                 "over_cap": committed > cap,
                 "blocked": bool(unknown_ids) or committed >= cap,
                 "unknown_run_ids": unknown_ids,
+                "contingent_run_ids": contingent_ids,
                 "runs": runs,
                 "seq": len(lines) - 1,
                 "last_hash": prev,
@@ -427,6 +462,14 @@ class BudgetLedger:
                     if (current["actual_usd"], current["evidence_ref"]) == (payload["actual_usd"], payload["evidence_ref"]):
                         return snapshot
                     raise BudgetStateError("run_id was settled with different evidence or amount")
+                if "contingent_evidence_ref" in current:
+                    try:
+                        _final_billing_evidence(payload["evidence_ref"])
+                    except ValueError as exc:
+                        raise BudgetStateError("contingent run requires attributable final provider billing") from exc
+            elif kind == "contingent":
+                if current is None or current["status"] != "UNKNOWN" or "contingent_evidence_ref" in current:
+                    raise BudgetStateError("run_id has no eligible unknown reservation")
             elif kind == "unknown":
                 if current is None or current["status"] == "SETTLED":
                     raise BudgetStateError("run_id has no open reservation")
@@ -473,8 +516,12 @@ class BudgetLedger:
     ) -> dict[str, Any]:
         """Reconcile a reservation using an external billing evidence reference.
 
-        An actual charge above its estimate is recorded, even if it exceeds the
-        cap, so that subsequent reservations fail closed instead of hiding debt.
+        For a run previously marked CONTINGENT, evidence_ref must be
+        provider-billing:sha256:<digest> of attributable final provider billing.
+        The caller must independently verify those bytes and attribution; this
+        ledger validates only the reference syntax. An actual charge above its
+        estimate is recorded even if it exceeds the cap, so later reservations
+        fail closed instead of hiding debt.
         """
         return self._mutate("settle", {
             "run_id": _safe_text(run_id, "run_id", limit=200),
@@ -483,10 +530,21 @@ class BudgetLedger:
         })
 
     def mark_unknown(self, run_id: str, reason: str) -> dict[str, Any]:
-        """Block future calls until this run is settled from billing evidence."""
+        """Block future calls, including reblocking discredited CONTINGENT evidence."""
         return self._mutate("unknown", {
             "run_id": _safe_text(run_id, "run_id", limit=200),
             "reason": _safe_reason(reason),
+        })
+
+    def mark_contingent(self, run_id: str, evidence_ref: str) -> dict[str, Any]:
+        """Unblock an UNKNOWN run while retaining its full cap reservation.
+
+        The evidence is a content-addressed provisional billing assessment, not
+        an actual charge or a final invoice. This transition is allowed once.
+        """
+        return self._mutate("contingent", {
+            "run_id": _safe_text(run_id, "run_id", limit=200),
+            "evidence_ref": _contingent_evidence(evidence_ref),
         })
 
 
