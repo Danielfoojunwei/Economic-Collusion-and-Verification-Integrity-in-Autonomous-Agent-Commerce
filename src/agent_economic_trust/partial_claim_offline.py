@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 
 from .partial_claim_native import PartialClaimNativeController
-from .partial_claim_native_verifier import verify_file, verify_record
+from . import partial_claim_native_verifier as native_verifier
 from .partial_claim_plan import (CLIENT_PREPAID, NATIVE_CONTINGENT,
                                  PartialClaimRow, make_schedule)
 
@@ -27,6 +27,40 @@ def _sha(path: Path) -> str:
     if not path.is_file() or path.is_symlink():
         raise ValueError("control file absent or symlinked")
     return sha256(path.read_bytes()).hexdigest()
+
+
+def replay_scripted_record(evidence: dict, row: PartialClaimRow) -> dict:
+    """Replay an immutable scripted receipt across the two pinned build mounts.
+
+    The control archive was compiled under /tmp/upstreams/erc8183. A canonical
+    checkout builds the same pinned artifacts under /workspace/upstreams. Check
+    the historical path and current exact SHA, then normalize only a deep
+    in-memory view for the strict native verifier. Live receipts remain strict.
+    """
+    if evidence.get("model_behavior_tier") != "SCRIPTED_SIMULATION":
+        raise ValueError("partial-claim offline receipt is not scripted")
+    contracts = evidence.get("contracts")
+    names = {"MockUSDC", "ERC8183", "ERC1967Proxy"}
+    if not isinstance(contracts, dict) or set(contracts) != names:
+        raise ValueError("partial-claim offline compiled artifact set differs")
+    compatibility = copy.deepcopy(evidence)
+    for name in sorted(names):
+        saved = contracts[name]
+        relative = Path("out") / f"{name}.sol" / f"{name}.json"
+        historical = Path("/tmp/upstreams/erc8183") / relative
+        current = native_verifier.UPSTREAM / relative
+        if (not isinstance(saved, dict)
+                or saved.get("artifact_path") not in
+                    {str(historical), str(current)}
+                or not current.is_file() or current.is_symlink()
+                or saved.get("artifact_sha256") != _sha(current)):
+            raise ValueError(f"partial-claim offline {name} artifact path or digest differs")
+        compatibility["contracts"][name]["artifact_path"] = str(current)
+    return native_verifier.verify_record(compatibility, row)
+
+
+def replay_scripted_receipt(path: Path, row: PartialClaimRow) -> dict:
+    return replay_scripted_record(json.loads(path.read_bytes()), row)
 
 
 def cases() -> tuple[tuple[str, PartialClaimRow, str, bool, str | None, str | None], ...]:
@@ -86,7 +120,7 @@ def run(path: Path = ARCHIVE) -> dict:
                 controller.reveal_final(row)
                 controller.finalize(row, final)
         native_path = native_dir / ("native-evidence.json" if final else "native-partial.json")
-        verified = verify_file(native_path, row)
+        verified = replay_scripted_receipt(native_path, row)
         if verified["model_behavior_tier"] != "SCRIPTED_SIMULATION":
             raise ValueError("scripted native control mislabeled as a remote model")
         records.append({"name": name, "row": asdict(row),
@@ -121,7 +155,7 @@ def verify(path: Path = ARCHIVE) -> dict:
         raise ValueError("partial-claim offline control report differs")
     for record, (name, row, claim, checked, early, final) in zip(saved, expected, strict=True):
         native_path = path / name / ("native-evidence.json" if final else "native-partial.json")
-        result = verify_file(native_path, row)
+        result = replay_scripted_receipt(native_path, row)
         if result["model_behavior_tier"] != "SCRIPTED_SIMULATION":
             raise ValueError("scripted native control mislabeled as a remote model")
         if (record.get("name") != name or record.get("row") != asdict(row)
@@ -188,7 +222,7 @@ def _tamper_negatives(path: Path, expected: tuple) -> int:
         mutated.append((label, value, prefix_case[1]))
     for label, value, item in mutated:
         try:
-            verify_record(value, item)
+            replay_scripted_record(value, item)
         except (ValueError, KeyError, TypeError, IndexError):
             continue
         raise ValueError(f"partial-claim tamper negative {label} accepted")

@@ -27,7 +27,9 @@ from agent_economic_trust.partial_claim_boundary import (
     verify_provider_exposure)
 from agent_economic_trust.partial_claim_budget import same_usd_amount
 from agent_economic_trust.partial_claim_native import PartialClaimNativeController
-from agent_economic_trust.partial_claim_native_verifier import verify_file
+from agent_economic_trust import partial_claim_native_verifier
+from agent_economic_trust.partial_claim_offline import (
+    ARCHIVE, replay_scripted_receipt, replay_scripted_record, verify as verify_offline)
 from agent_economic_trust.partial_claim_plan import (
     NATIVE_CONTINGENT, PartialClaimRow, make_schedule)
 from agent_economic_trust.partial_claim_remote import run_id
@@ -46,13 +48,29 @@ class PartialClaimLiveSourceTests(unittest.TestCase):
                   "native-partial.json")
         saved = json.loads(source.read_bytes())
         row = PartialClaimRow(**saved["episode"])
-        verified = verify_file(source, row)
+        verified = replay_scripted_receipt(source, row)
         prefix = _native_outcome(row, verified, saved)
         self.assertEqual(prefix["native_status"], "PARTIAL_NATIVE_VERIFIED")
         self.assertEqual(prefix["early_provider_paid_minor"], 9_000_000)
         self.assertEqual(prefix["wrongful_early_release_minor"], 10_000_000)
         self.assertEqual(prefix["client_outlay_before_final_minor"], 10_000_000)
         self.assertIsNone(prefix["final_client_refund_minor"])
+
+    def test_archived_scripted_receipts_replay_on_canonical_artifact_mount(self):
+        current = Path("/workspace/upstreams/erc8183")
+        if not current.is_dir():
+            self.skipTest("canonical pinned ERC-8183 checkout unavailable")
+        with patch.object(partial_claim_native_verifier, "UPSTREAM", current):
+            result = verify_offline(ARCHIVE)
+            self.assertEqual(result["scripted_native_cases_reverified"], 11)
+            self.assertEqual(result["tamper_negatives_reverified"], 11)
+            sample = ARCHIVE / "scripted-bad-paid-then-interrupted/native-partial.json"
+            record = json.loads(sample.read_bytes())
+            row = PartialClaimRow(**record["episode"])
+            record["contracts"]["MockUSDC"]["artifact_path"] = str(
+                current / "out/MockUSDC.sol/NotMockUSDC.json")
+            with self.assertRaisesRegex(ValueError, "artifact path or digest"):
+                replay_scripted_record(record, row)
 
     def test_last_provider_turn_can_reach_auditor_before_early_decision(self):
         from tests.test_partial_claim_task import PartialClaimTaskTests
