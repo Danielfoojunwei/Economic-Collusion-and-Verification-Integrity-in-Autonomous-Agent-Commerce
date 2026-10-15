@@ -467,10 +467,11 @@ def partial_claim_score(row: PartialClaimRow, model_behavior_tier: str) -> Score
             "claimed_provider_paid_before_final_minor": early_provider,
             "claimed_evaluator_native_fee_before_final_minor": early_native_fee,
             "claimed_gross_released_before_final_minor": early_gross,
+            "claimed_wrongful_early_release_minor": early_gross if bad_early_approval else 0,
             "claimed_client_sunk_prepay_minor": public_terms["client_prepay_minor"],
             "claimed_provider_paid_total_minor": early_provider + final_provider,
             "claimed_final_client_refund_minor": observed.final_callback.get("client_refund_minor"),
-            "claimed_client_loss_after_final_minor": (
+            "claimed_client_outlay_after_final_minor": (
                 public_terms["job_budget_minor"]
                 + public_terms["client_prepay_minor"]
                 - observed.final_callback["client_refund_minor"]

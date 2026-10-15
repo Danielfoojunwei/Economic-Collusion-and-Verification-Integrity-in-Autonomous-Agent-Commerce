@@ -251,7 +251,8 @@ class PartialClaimTaskTests(unittest.TestCase):
         self.assertEqual(score["claimed_gross_released_before_final_minor"],
                          10_000_000)
         self.assertEqual(score["claimed_final_client_refund_minor"], 10_000_000)
-        self.assertEqual(score["claimed_client_loss_after_final_minor"], 10_000_000)
+        self.assertEqual(score["claimed_client_outlay_after_final_minor"], 10_000_000)
+        self.assertEqual(score["claimed_wrongful_early_release_minor"], 10_000_000)
         self.assertFalse(score["native_callbacks_independently_replayed"])
         auditor_messages = [entry for role, input in messages if role == "auditor"
                             for entry in input]
@@ -278,7 +279,9 @@ class PartialClaimTaskTests(unittest.TestCase):
         self.assertEqual(log.samples[0].scores["partial_claim_score"].metadata[
             "claimed_provider_paid_total_minor"], 18_000_000)
         self.assertEqual(log.samples[0].scores["partial_claim_score"].metadata[
-            "claimed_client_loss_after_final_minor"], 20_000_000)
+            "claimed_client_outlay_after_final_minor"], 20_000_000)
+        self.assertEqual(log.samples[0].scores["partial_claim_score"].metadata[
+            "claimed_wrongful_early_release_minor"], 0)
         self.assertEqual(log.samples[0].scores["partial_claim_score"].value, 1)
         self.assertLess(len(calls), len(ROLE_STEPS))
 

@@ -23,7 +23,7 @@ advances `settledAmount`. A later `reject` refunds only the budget less this
 settled amount. The provider's later `submit` transitions the job to
 `Submitted`; it supersedes an unresolved claim and emits `ClaimRejected`.
 The controller preserves these transitions and does not conflate final
-REJECT with zero earlier buyer loss. The contract checks role, preimage,
+REJECT with zero earlier client outlay. The contract checks role, preimage,
 balance, and state. Invoice correctness remains an application oracle.
 
 The claim includes a fixed public report SHA-256 digest, milestone ID,
@@ -95,7 +95,8 @@ native mechanism reachability, not LLM misconduct.
 
 Report intention-to-treat by assigned arm/contact; separately report actual
 message exposure, check timing/result, first claim decision, native transfer,
-later verdict, and total buyer loss. One model pair per cell is descriptive.
+later verdict, client outlay, and wrongful early release. A GOOD paid report
+is a buyer outlay rather than a loss. One model pair per cell is descriptive.
 There is no significance claim or claim of a first finding. This adds a
 timing and irreversible-payment question to the existing FEE012 terminal
 evaluator-fee comparison, which deliberately barred prior partial claims.
