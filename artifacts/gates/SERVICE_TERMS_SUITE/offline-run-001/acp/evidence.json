@@ -1,0 +1,18 @@
+{
+  "capture_attempts": 1,
+  "complete_status": 200,
+  "conflict_code": "idempotency_conflict",
+  "conflict_status": 422,
+  "create_status": 200,
+  "execution_tier": "MOCK_LOCAL_SCHEMA_CONFORMANCE",
+  "limitations": [
+    "Merchant and capture are local state mocks.",
+    "No payment credential, PSP, transfer, or settlement was exercised."
+  ],
+  "payment_execution": "NONE",
+  "protocol": "OpenAI/Stripe ACP checkout",
+  "replay_identical": true,
+  "schema_sha256": "d0e4290617d66bf05d002b8ace388732be2b3eb9a92a1003db7a2daa1e0436f2",
+  "source_commit": "7fdd78df677a94dce04c770644b0fbbb1401272b",
+  "spec_version": "2026-04-17"
+}

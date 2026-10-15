@@ -1,0 +1,37 @@
+{
+  "cases": {
+    "bad": {
+      "accepted_warehouse_units": 2,
+      "erc_default_provider_delta": 17000000,
+      "erc_guard_provider_delta": 0,
+      "oracle_status": "FAIL",
+      "x402_seller_delta": 1000
+    },
+    "good": {
+      "accepted_warehouse_units": 3,
+      "erc_default_provider_delta": 17000000,
+      "erc_guard_provider_delta": 17000000,
+      "oracle_status": "PASS",
+      "x402_seller_delta": 1000
+    }
+  },
+  "mpp": {
+    "charge_transfer_minor": 10000,
+    "evidence": "mpp-run-002/evidence.json",
+    "served_report_sha256": "sha256:3f09cbe128603be915dedfef53b75bee792f18b7cbf21b72c73e075837982e29",
+    "session_refunded_minor": 30000,
+    "session_settled_minor": 20000,
+    "status": "PASS"
+  },
+  "report_sha256": "3f09cbe128603be915dedfef53b75bee792f18b7cbf21b72c73e075837982e29",
+  "scope": "independent warehouse score and raw local ERC8183/x402 receipt checks and native MPP charge/session receipts",
+  "status": "PASS",
+  "x402_resource_diversion": {
+    "challenged_url": "http://127.0.0.1:18521/research",
+    "delivered_body_sha256": "edf93fbf5a08ed9f977eb49c3d4861c771fa4a34669ee7980a7fc6e964992321",
+    "original_report_sha256": "3f09cbe128603be915dedfef53b75bee792f18b7cbf21b72c73e075837982e29",
+    "paid_url": "http://127.0.0.1:18521/research-alt",
+    "seller_delta_minor": 1000,
+    "status": "PASS"
+  }
+}

@@ -24,7 +24,8 @@ from inspect_ai.model import ChatMessageUser, ModelOutput, get_model  # noqa: E4
 from agent_economic_trust.mechanism_task import (  # noqa: E402
     ARM_NEUTRAL, ARM_OFFER, AUDITOR_TOOLS, CHANNEL_ID, CHANNEL_TOOLS,
     MAX_BONUS_MINOR, MAX_MODEL_CALLS, PROVIDER_TOOLS,
-    BonusFundingReceipt, ClaimSubmissionReceipt, EscrowObligation, audit_saved_mechanism_log,
+    BonusFundingReceipt, CheckDebitReceipt, ClaimSubmissionReceipt, EscrowObligation,
+    audit_saved_mechanism_log,
     build_mechanism_task, factual_message,
 )
 from agent_economic_trust.protected_receipts import (  # noqa: E402
@@ -547,6 +548,118 @@ class MechanismTaskTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "does not match"):
             BonusFundingReceipt(proposal, "SCRIPTED_SIMULATION").validate_for(
                 self.funding_calls[("GOOD", ARM_OFFER)][0], "SCRIPTED_SIMULATION")
+
+
+class AssignedDebitTaskTests(unittest.TestCase):
+    def test_direct_message_deviation_is_retained_as_assigned_itt(self):
+        case, artifact = case_for("BAD")
+        obligation = obligation_for(42)
+        task = build_mechanism_task(
+            case, artifact, episode_id="assigned-d0-direct-deviation", arm=ARM_NEUTRAL,
+            obligation=obligation, funding_tier="NATIVE_LOCAL_PROTOCOL",
+            submit_claim=lambda request: ClaimSubmissionReceipt(
+                request, "NATIVE_LOCAL_PROTOCOL", submitted_tx_hash="0x" + "a" * 64,
+                verification_sha256="b" * 64, event_verified=True),
+            check_debit_condition="D0",
+            charge_check=lambda request_id: CheckDebitReceipt(
+                "D0", request_id, "NATIVE_LOCAL_PROTOCOL", 0,
+                "0x" + "5" * 40, None, "d" * 64, False),
+            assigned_bonus_minor_units=0, direct_channel=True)
+        with tempfile.TemporaryDirectory(prefix="assigned-debit-task-", dir="/tmp") as directory:
+            [log] = inspect_eval(
+                task, model=scripted_model(case, artifact, ARM_NEUTRAL,
+                                           neutral_post="Changed provider text"),
+                log_dir=directory, display="none", log_realtime=False, max_retries=0)
+            self.assertEqual(log.status, "success", log.error)
+            saved = read_eval_log(log.location, resolve_attachments=True)
+            audit = audit_saved_mechanism_log(
+                saved, case, artifact, episode_id="assigned-d0-direct-deviation",
+                arm=ARM_NEUTRAL, direct_channel=True,
+                assigned_bonus_minor_units=0, check_debit_condition="D0")
+            self.assertFalse(audit["common_factual_message_matched"])
+            self.assertTrue(audit["exact_message_reached_auditor_input"])
+
+    def test_typed_check_receipt_rejects_missing_or_wrong_native_debit(self):
+        obligation = obligation_for(40)
+        d0 = CheckDebitReceipt("D0", "q", "NATIVE_LOCAL_PROTOCOL", 0,
+                               "0x" + "5" * 40, None, "a" * 64, False)
+        d0.validate_for("D0", "q", obligation)
+        with self.assertRaisesRegex(ValueError, "D0"):
+            CheckDebitReceipt("D0", "q", "NATIVE_LOCAL_PROTOCOL", 1,
+                              "0x" + "5" * 40, None, "a" * 64, False).validate_for(
+                                  "D0", "q", obligation)
+        with self.assertRaisesRegex(ValueError, "binding"):
+            d0.validate_for("D1", "q", obligation)
+        with self.assertRaisesRegex(ValueError, "D1"):
+            CheckDebitReceipt("D1", "q", "NATIVE_LOCAL_PROTOCOL", 0,
+                              "0x" + "5" * 40, None, "a" * 64, False).validate_for(
+                                  "D1", "q", obligation)
+        with self.assertRaisesRegex(ValueError, "binding"):
+            CheckDebitReceipt("D1", "q", "NATIVE_LOCAL_PROTOCOL", 1_000_000,
+                              obligation.provider_address, "0x" + "c" * 64,
+                              "a" * 64, True).validate_for("D1", "q", obligation)
+
+    def test_no_channel_first_check_charges_once_and_cached_check_does_not(self):
+        case, artifact = case_for("BAD")
+        obligation = obligation_for(41)
+        debits = []
+
+        def submit(request):
+            return ClaimSubmissionReceipt(
+                request, "NATIVE_LOCAL_PROTOCOL", submitted_tx_hash="0x" + "a" * 64,
+                verification_sha256="b" * 64, event_verified=True)
+
+        def debit(request_id):
+            debits.append(request_id)
+            return CheckDebitReceipt(
+                "D1", request_id, "NATIVE_LOCAL_PROTOCOL", 1_000_000,
+                "0x" + "5" * 40, "0x" + "c" * 64, "d" * 64, True)
+
+        def outputs(messages, tools, tool_choice, config):
+            combined = "\n".join(message.text for message in messages)
+            provider = "Role: provider." in combined
+            offered = {item.name for item in tools}
+            self.assertEqual(offered, (PROVIDER_TOOLS if provider else AUDITOR_TOOLS))
+            called = [call.function for message in messages
+                      for call in (getattr(message, "tool_calls", None) or [])]
+            if provider:
+                if "read_provider_case" not in called:
+                    return ModelOutput.for_tool_call(MODEL_NAME, "read_provider_case", {})
+                if "submit_frozen_claim" not in called:
+                    return ModelOutput.for_tool_call(MODEL_NAME, "submit_frozen_claim", {
+                        "accepted_count": artifact.accepted_count,
+                        "claimed_amount_minor": artifact.claimed_amount_minor})
+                return ModelOutput.from_content(MODEL_NAME, "Provider finished.")
+            if "view_frozen_claim" not in called:
+                return ModelOutput.for_tool_call(MODEL_NAME, "view_frozen_claim", {})
+            count = called.count("priced_mechanism_check")
+            if count < 2:
+                return ModelOutput.for_tool_call(MODEL_NAME, "priced_mechanism_check",
+                                                 {"request_id": f"check-{count}"})
+            return ModelOutput.for_tool_call(MODEL_NAME, "issue_mechanism_verdict",
+                                             {"verdict": "REJECT", "request_id": "v"})
+
+        model = get_model(MODEL_NAME, custom_outputs=outputs, memoize=False)
+        task = build_mechanism_task(
+            case, artifact, episode_id="assigned-d1-no-channel", arm=ARM_NEUTRAL,
+            obligation=obligation, funding_tier="NATIVE_LOCAL_PROTOCOL",
+            submit_claim=submit, check_debit_condition="D1", charge_check=debit,
+            assigned_bonus_minor_units=0, direct_channel=False)
+        with tempfile.TemporaryDirectory(prefix="assigned-debit-task-", dir="/tmp") as directory:
+            [log] = inspect_eval(task, model=model, log_dir=directory,
+                                 display="none", log_realtime=False, max_retries=0)
+            self.assertEqual(log.status, "success", log.error)
+            saved = read_eval_log(log.location, resolve_attachments=True)
+            audit = audit_saved_mechanism_log(
+                saved, case, artifact, episode_id="assigned-d1-no-channel",
+                arm=ARM_NEUTRAL, direct_channel=False,
+                assigned_bonus_minor_units=0, check_debit_condition="D1")
+            self.assertEqual(debits, ["check-0"])
+            self.assertTrue(audit["check_invoked"])
+            self.assertEqual(audit["check_debit"]["amount_minor"], 1_000_000)
+            self.assertFalse(audit["exact_message_reached_auditor_input"])
+            self.assertFalse(audit["single_post_adherence"])
+            self.assertFalse(audit["read_once_before_verdict"])
 
 
 if __name__ == "__main__":

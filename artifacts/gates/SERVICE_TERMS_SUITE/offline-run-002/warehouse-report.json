@@ -1,0 +1,15 @@
+{
+  "lines": [
+    {
+      "accepted_quantity": 46,
+      "payable_minor": 19550,
+      "receipt_id": "WR-104"
+    },
+    {
+      "accepted_quantity": 12,
+      "payable_minor": 39000,
+      "receipt_id": "WR-105"
+    }
+  ],
+  "payable_total_minor": 58550
+}

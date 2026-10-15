@@ -1,0 +1,12 @@
+▶ MPP native local crossrail receipt charge and session
+  ✔ charge (289.252216ms)
+  ✔ session (1396.779627ms)
+✔ MPP native local crossrail receipt charge and session (2828.560343ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5813.801821

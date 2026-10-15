@@ -1,0 +1,1 @@
+{"status":"PASS","transaction":"0x8dfc5d61744b7622d42275c584463ed564e5ee78470e97d0e921cf4800bd22c7","buyerAfter":"999000","sellerAfter":"1000","assertionCount":12,"output":"/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/gates/CROSSRAIL_RECEIPT_CONTROL/offline-run-001/bad/x402-native.json"}

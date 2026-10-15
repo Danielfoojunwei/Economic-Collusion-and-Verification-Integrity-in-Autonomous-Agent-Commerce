@@ -1,0 +1,1 @@
+{"status":"PASS","transaction":"0x6f055807a33b3aae02549121cd22d601690051442c9e065a37c2a290897039d0","buyerAfter":"999000","sellerAfter":"1000","assertionCount":12,"output":"/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/gates/SERVICE_TERMS_SUITE/offline-run-001/x402/evidence.json"}

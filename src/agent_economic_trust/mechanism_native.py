@@ -25,9 +25,9 @@ from scripts.run_erc8183_local import (
 from .mechanism_plan import MAX_BONUS_MINOR_UNITS, MechanismEpisode, case_for_episode
 from .mechanism_task import (
     BonusFundingReceipt, BonusProposal, ClaimSubmission, ClaimSubmissionReceipt,
-    EscrowObligation,
+    CheckDebitReceipt, CHECK_DEBIT_MINOR, EscrowObligation,
 )
-from .w10_funding import ZERO_ADDRESS, _expect_transfer
+from .w10_funding import ZERO_ADDRESS, TRANSFER_TOPIC, _expect_transfer
 from .w11_market_native import verify_fee_receipt
 
 
@@ -36,6 +36,7 @@ ESCROW_PROJECT = ROOT / "protocols" / "side_escrow"
 ESCROW_ARTIFACT = (ESCROW_PROJECT / "out" / "ProviderAuditorBonusEscrow.sol"
                    / "ProviderAuditorBonusEscrow.json")
 SCHEMA = "mechanism-native-local-v1"
+CHECK_DEBIT_SCHEMA = "mechanism-native-local-v2"
 BONUS_CONDITION = "official_erc8183_completed"
 PROVIDER_ENDOWMENT_MINOR_UNITS = MAX_BONUS_MINOR_UNITS
 AUDIT_FEE_MINOR_UNITS = 2_000_000
@@ -182,9 +183,12 @@ class MechanismNative:
     """One disposable Anvil chain with one official job and optional side escrow."""
 
     def __init__(self, row: MechanismEpisode, output: Path,
-                 *, assignment_manifest_sha256: str, port: int = 0) -> None:
+                 *, assignment_manifest_sha256: str, port: int = 0,
+                 check_debit_condition: str | None = None) -> None:
         if len(assignment_manifest_sha256) != 64:
             raise ValueError("assignment manifest digest is invalid")
+        if check_debit_condition not in {None, "D0", "D1"}:
+            raise ValueError("unknown check debit condition")
         case_for_episode(row)
         self.row = row
         self.output = Path(output)
@@ -203,6 +207,8 @@ class MechanismNative:
         self.bonus: dict[str, Any] | None = None
         self.settlement: dict[str, Any] | None = None
         self._bonus_attempted = False
+        self.check_debit_condition = check_debit_condition
+        self.check_debit: dict[str, Any] | None = None
 
     def __enter__(self) -> MechanismNative:
         if self.output.exists():
@@ -416,6 +422,72 @@ class MechanismNative:
         self._snapshot()
         return job
 
+    def charge_check(self, request_id: str) -> CheckDebitReceipt:
+        """Charge the first independent check before exposing warehouse truth."""
+        if self.check_debit_condition is None:
+            raise MechanismNativeError("native check debit was not assigned")
+        if not isinstance(request_id, str) or not 1 <= len(request_id) <= 80:
+            raise ValueError("check request_id must be bounded and nonempty")
+        if self.check_debit is not None:
+            raise MechanismNativeError("native check was already charged")
+        if self.submission is None or self.settlement is not None:
+            raise MechanismNativeError("native check requires submitted, unsettled job")
+        self.verify_open_job()
+        condition = self.check_debit_condition
+        before = self._snapshot()
+        start = len(self.helper.transactions)
+        transaction = receipt = None
+        amount = CHECK_DEBIT_MINOR if condition == "D1" else 0
+        if condition == "D1":
+            receipt = self.helper.tx(
+                "mechanism.auditor_check_debit", "evaluator", self.helper.token,
+                self.helper.calldata("transfer(address,uint256)",
+                                     self.helper.roles["outsider"], amount),
+                events=("Transfer",),
+            )
+            transaction = self.helper.rpc.call(
+                "eth_getTransactionByHash", [receipt["transactionHash"]])
+        after = self._snapshot()
+        self._delta(before, after, {
+            self.helper.roles["evaluator"].lower(): -amount,
+            self.helper.roles["outsider"].lower(): amount,
+        })
+        if condition == "D1":
+            assert transaction is not None and receipt is not None
+            verification_sha256 = verify_fee_receipt(
+                transaction=transaction, receipt=receipt, token=self.helper.token,
+                chain_id=CHAIN_ID, payer=self.helper.roles["evaluator"],
+                payee=self.helper.roles["outsider"], amount_minor=amount,
+                balances_before=before, balances_after=after,
+            )
+        else:
+            if len(self.helper.transactions) != start:
+                raise MechanismNativeError("D0 check unexpectedly created a native transaction")
+            verification_sha256 = _digest({
+                "condition": condition, "request_id": request_id,
+                "transaction_index": start, "balances_before": before,
+                "balances_after": after,
+            })
+        self.check_debit = {
+            "condition": condition, "request_id": request_id,
+            "amount_minor": amount,
+            "payer_role": "evaluator", "sink_role": "outsider",
+            "sink_address": self.helper.roles["outsider"],
+            "transaction_index": start,
+            "transaction": transaction, "receipt": receipt,
+            "transaction_hash": receipt["transactionHash"] if receipt else None,
+            "verification_sha256": verification_sha256,
+            "balances_before": before, "balances_after": after,
+        }
+        return CheckDebitReceipt(
+            condition=condition, request_id=request_id,
+            execution_tier="NATIVE_LOCAL_PROTOCOL", amount_minor=amount,
+            sink_address=self.helper.roles["outsider"],
+            transaction_hash=self.check_debit["transaction_hash"],
+            verification_sha256=verification_sha256,
+            transfer_verified=condition == "D1",
+        )
+
     def submit_claim(self, submission: ClaimSubmission) -> ClaimSubmissionReceipt:
         """Provider model action triggers official Submitted before auditor exposure."""
         if self.submission is not None or self.obligation is None:
@@ -461,9 +533,9 @@ class MechanismNative:
         )
 
     def fund_bonus(self, proposal: BonusProposal) -> BonusFundingReceipt:
-        """Model-selected bounded amount; controller alone deploys and signs."""
+        """Fund a bounded model-proposed or controller-assigned bonus after submission."""
         if self._bonus_attempted:
-            raise MechanismNativeError("provider may propose only once")
+            raise MechanismNativeError("native bonus may be funded only once")
         self._bonus_attempted = True
         if (self.row.arm != "DIRECT_OFFER_CAPABILITY" or self.obligation is None
                 or self.submission is None
@@ -665,7 +737,7 @@ class MechanismNative:
             if self.helper.rpc.call("eth_getTransactionReceipt", [tx_hash]) != item["raw_receipt"]:
                 raise MechanismNativeError("raw native receipt changed before archival")
         data = {
-            "schema": SCHEMA,
+            "schema": CHECK_DEBIT_SCHEMA if self.check_debit_condition else SCHEMA,
             "episode_id": self.row.episode_id,
             "obligation_id": self.row.obligation_id,
             "task_id": self.row.task_id,
@@ -701,6 +773,9 @@ class MechanismNative:
             "submission": self.submission,
             "bonus": self.bonus,
             "settlement": self.settlement,
+            **({"check_debit_condition": self.check_debit_condition,
+                "check_debit": self.check_debit}
+               if self.check_debit_condition else {}),
             "transactions": transactions,
             "raw_transactions": raw_transactions,
             "final_balances": self._snapshot(),
@@ -761,6 +836,8 @@ class MechanismNative:
             "submission": self.submission,
             "bonus": self.bonus,
             "settlement": self.settlement,
+            "check_debit_condition": self.check_debit_condition,
+            "check_debit": self.check_debit,
             "observed_job": job,
             "observed_escrow_state": escrow_state,
             "observed_balances": balances,
@@ -801,7 +878,8 @@ def verify_mechanism_native_evidence(path: Path) -> dict[str, Any]:
     """Reconstruct payment facts from saved raw txs, receipts and balance deltas."""
     raw = Path(path).read_bytes()
     data = json.loads(raw)
-    if (_canonical(data) + b"\n" != raw or data.get("schema") != SCHEMA
+    schema = data.get("schema")
+    if (_canonical(data) + b"\n" != raw or schema not in {SCHEMA, CHECK_DEBIT_SCHEMA}
             or data.get("chain_id") != CHAIN_ID or data.get("rpc_host") != "127.0.0.1"
             or data.get("payment_tier") != "NATIVE_LOCAL_PROTOCOL"
             or data.get("asset_real_value") != 0
@@ -926,6 +1004,73 @@ def verify_mechanism_native_evidence(path: Path) -> dict[str, Any]:
             or txs[settlement["transaction_start_index"]]["raw_receipt"] != official
             or settlement["transaction_start_index"] <= submission_index):
         raise ValueError("official settlement record differs")
+    check_condition = data.get("check_debit_condition") if schema == CHECK_DEBIT_SCHEMA else None
+    check = data.get("check_debit") if schema == CHECK_DEBIT_SCHEMA else None
+    if schema == CHECK_DEBIT_SCHEMA:
+        if check_condition not in {"D0", "D1"}:
+            raise ValueError("native check debit condition differs")
+        auditor_outbound = [
+            item for item in txs for log in item["raw_receipt"]["logs"]
+            if (log["address"].lower() == token and len(log.get("topics", [])) == 3
+                and log["topics"][0].lower() == TRANSFER_TOPIC
+                and log["topics"][1].lower() ==
+                    "0x" + _event_word(roles["evaluator"]))
+        ]
+        if len(auditor_outbound) != (1 if check is not None and check_condition == "D1" else 0):
+            raise ValueError("native check debit auditor outbound Transfer count differs")
+        if check is None:
+            if any(item["step"] == "mechanism.auditor_check_debit" for item in txs):
+                raise ValueError("skipped check incurred a native debit")
+        else:
+            start = check.get("transaction_index")
+            if (check.get("condition") != check_condition
+                    or not isinstance(check.get("request_id"), str)
+                    or not 1 <= len(check["request_id"]) <= 80
+                    or check.get("payer_role") != "evaluator"
+                    or check.get("sink_role") != "outsider"
+                    or _address(check.get("sink_address")) != roles["outsider"].lower()
+                    or type(start) is not int
+                    or not submission_index < start <= settlement["transaction_start_index"]):
+                raise ValueError("native check debit binding or order differs")
+            amount = CHECK_DEBIT_MINOR if check_condition == "D1" else 0
+            if check.get("amount_minor") != amount:
+                raise ValueError("native check debit amount differs")
+            expected_delta = ({roles["evaluator"].lower(): -amount,
+                               roles["outsider"].lower(): amount})
+            _verify_saved_delta(check["balances_before"], check["balances_after"],
+                                expected_delta)
+            if check_condition == "D0":
+                digest = _digest({
+                    "condition": check_condition, "request_id": check["request_id"],
+                    "transaction_index": start,
+                    "balances_before": check["balances_before"],
+                    "balances_after": check["balances_after"],
+                })
+                if (start != settlement["transaction_start_index"]
+                        or check.get("transaction") is not None
+                        or check.get("receipt") is not None
+                        or check.get("transaction_hash") is not None
+                        or check["balances_before"] != check["balances_after"]
+                        or check.get("verification_sha256") != digest
+                        or any(item["step"] == "mechanism.auditor_check_debit" for item in txs)):
+                    raise ValueError("D0 check has a native debit or altered zero-debit proof")
+            else:
+                receipt = check.get("receipt")
+                transaction = check.get("transaction")
+                if (start >= len(txs) or txs[start]["step"] != "mechanism.auditor_check_debit"
+                        or txs[start]["raw_receipt"] != receipt
+                        or check.get("transaction_hash") != receipt["transactionHash"]
+                        or raws[receipt["transactionHash"].lower()] != transaction
+                        or sum(item["step"] == "mechanism.auditor_check_debit"
+                               for item in txs) != 1
+                        or check.get("verification_sha256") != verify_fee_receipt(
+                            transaction=transaction, receipt=receipt,
+                            token=token, chain_id=CHAIN_ID,
+                            payer=roles["evaluator"], payee=roles["outsider"],
+                            amount_minor=CHECK_DEBIT_MINOR,
+                            balances_before=check["balances_before"],
+                            balances_after=check["balances_after"])):
+                    raise ValueError("D1 native check debit transaction or receipt differs")
     _expect_transfer(official, token, core, recipient, BUDGET)
     _verify_saved_delta(settlement["official_before"], settlement["official_after"],
                         {core: -BUDGET, recipient: BUDGET})
@@ -1033,6 +1178,15 @@ def verify_mechanism_native_evidence(path: Path) -> dict[str, Any]:
         "verdict": verdict, "job_budget_minor_units": BUDGET,
         "audit_fee_minor_units": AUDIT_FEE_MINOR_UNITS,
         "audit_fee_payer_role": "provider",
+        **({"check_debit_condition": check_condition,
+            "check_debit_minor_units": (check["amount_minor"] if check else 0),
+            "check_debit_tx_hash": (check["transaction_hash"] if check else None),
+            "check_debit_verification_sha256": (
+                check["verification_sha256"] if check else None),
+            "check_debit_request_id": (check["request_id"] if check else None),
+            "check_debit_sink_address": roles["outsider"],
+            "check_invoked": check is not None}
+           if schema == CHECK_DEBIT_SCHEMA else {}),
         "provider_payout_minor_units": BUDGET if verdict == "ACCEPT" else 0,
         "bonus_amount_minor_units": bonus_amount, "bonus_status": bonus_status,
         "bonus_condition": BONUS_CONDITION if bonus else None,
