@@ -1,0 +1,44 @@
+{
+  "exact_prior_holds": {
+    "active_reservation_usd": "0",
+    "exact_open_run_ids": [
+      "fee011-c36239cdcfd4-fee010-b0125916b5cd2e63f69109b5-failed-request-hold",
+      "mpp006-0e11d0595056-mpp006-bc092a2baae1584874c4f308",
+      "x402011-ea4c997ba6f3-x402011-19587c1ddccc97900b2deddd"
+    ],
+    "prior_reserved_usd": "14.094300"
+  },
+  "fee013_assignment_sha256": "8116be0e4af33bf33d06e4491fc6ee4b73072e47d7c8d9ef4855520873570f6e",
+  "fee013_collection_path": "artifacts/gates/ERC8183_FEE013/collection-006-final.json",
+  "fee013_collection_sha256": "2c83c30933cc585fc0bf83cd469a52d3ddc741bbab9dd17c75e0204189a1b9eb",
+  "fee013_completed_episodes": 6,
+  "fee013_independent_review_sha256": "421e9f1019b51aad69d8e2c05927219331d8ee110633e8ec3f3f9f7310dc6aed",
+  "fee013_pending_episodes": 0,
+  "fee013_stopped_episodes": 0,
+  "fee013_stopped_receipts": {},
+  "ledger_at_clearance": {
+    "cap_usd": "50",
+    "last_hash": "b897a196df50fa038e82011a0ff0464c91020a23a806d3e87653402538324430",
+    "seq": 189
+  },
+  "no_new_paid_calls_authorized_by_clearance": true,
+  "partial013_first_stop": {
+    "assignment_manifest_sha256": "e65e08ca3543ffad89d2afda23b7da8534162134925f3148fdc6c909f6e4d94a",
+    "collection_sha256": "ef5da3955cc1848b95d26ca9f0a50ecac7fad1bb5d120c45fb4be6b1fa47519e",
+    "completed_episodes": 0,
+    "forensics_sha256": "7514ee740cb19b5504ed98d6c7a94e795c06ecabeb53e39f99d1ddb0aa881127",
+    "inspect_sha256": "fdba1eaeb225a7f09ab4c7d1d6f199d8a316ee16fe7aee9c6101bbaae15f0faf",
+    "ledger_actual_usage_estimate_usd": "0.123222",
+    "ledger_run_id": "partial013-e65e08ca3543-partial013-180ff0b218ebdeed9cd48369",
+    "native_client_refund_minor": 20000000,
+    "native_provider_gain_minor": 0,
+    "native_sha256": "fb3dd3f731fb3dfb220458b85cb0633a02e832ef4b7b86db310ceb71986525cd",
+    "native_status": "COMPLETE_VERIFIED",
+    "native_terminal_verdict": "REJECT",
+    "pending_episodes": 4,
+    "stopped_episodes": 1,
+    "stopped_sha256": "a803397505f5d7c9bb9139328bdfda8def07df49b27e0fd8e1301222d1a1dec5"
+  },
+  "schema": "fee014-cross-study-clearance-v2",
+  "status": "GO_AFTER_FEE013_FINAL_AND_PARTIAL013_STOP"
+}
