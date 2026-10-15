@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 from hashlib import sha256
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -30,6 +31,9 @@ SOURCE_OBLIGATION = "invoice-" + sha256(b"x402-handoff-live013-good-source").hex
 def create(output: Path = OUTPUT, *, port: int = 19655) -> dict:
     if output.exists():
         raise FileExistsError("GOOD-350 source already exists; do not repeat its x402 payment")
+    sdk_root = Path(os.environ.get("X402_SDK_ROOT", "/workspace/upstreams/x402/typescript"))
+    if not (sdk_root / "packages/core/node_modules/zod").exists():
+        raise RuntimeError("pinned local x402 SDK has no resolvable zod dependency; restore setup before native purchase")
     bad = verify_purchase(BAD_ARCHIVE)
     if (bad.status != "PASS" or bad.oracle_status != "FAIL"
             or not bad.protocol_charge_valid or not bad.application_binding_valid):
