@@ -263,7 +263,7 @@ class PartialClaimTaskTests(unittest.TestCase):
 
     def test_wait_has_no_early_payment_and_good_final_accept(self):
         row = next(r for r in self.rows if r.truth == "good" and
-                   r.fee_term == CLIENT_PREPAID)
+                   r.fee_term == NATIVE_CONTINGENT)
         actions = {"provider": [("choose_milestone_path", {"choice": "WAIT"}),
                                  "No claim filed.", "Waiting."],
                    "auditor": [("view_first_milestone", {}),

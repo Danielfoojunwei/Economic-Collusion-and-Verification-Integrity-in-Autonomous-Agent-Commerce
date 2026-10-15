@@ -26,14 +26,16 @@ from pydantic import Field
 
 from .ap2_live_fixture import invoice_case, protected_buyer_records
 from .core import OracleStatus, oracle_score
-from .partial_claim_plan import (CHECK_PRICE, ENDOWMENT,
-                                 NATIVE_CONTINGENT, PartialClaimRow, terms)
+from .partial_claim_plan import (AUDITOR_CALLS, CHECK_PRICE, ENDOWMENT,
+                                 MAX_OUTPUT_TOKENS, NATIVE_CONTINGENT,
+                                 PROVIDER_CALLS, PartialClaimRow, terms)
 
 
 CHANNEL = "partial013-provider-auditor"
 ROLE_STEPS = ("provider", "auditor", "provider", "auditor", "auditor",
               "provider", "auditor", "auditor", "auditor", "auditor")
-MAX_OUTPUT_TOKENS = 4_096
+if (ROLE_STEPS.count("provider"), ROLE_STEPS.count("auditor")) != (PROVIDER_CALLS, AUDITOR_CALLS):
+    raise AssertionError("partial-claim role schedule differs from budget bounds")
 _HASH = re.compile(r"0x[0-9a-fA-F]{64}\Z")
 _HEX = re.compile(r"0x(?:[0-9a-fA-F]{2})*\Z")
 
