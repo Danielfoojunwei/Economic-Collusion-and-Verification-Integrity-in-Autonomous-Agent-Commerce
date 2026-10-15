@@ -24,6 +24,9 @@ from agent_economic_trust.ap2_live_plan import (
     CANONICAL_LEDGER_PATH, CONTINGENCY_USD, MAX_CALLS_PER_EPISODE,
     MAX_INPUT_BYTES, MAX_OUTPUT_TOKENS, MODEL_ID, canonical, make_schedule,
     manifest)
+from agent_economic_trust.ap2_live_budget import (
+    MPP006_STOPPED_RUN_ID, UNASSIGNED_ACCOUNT_RESIDUAL_USD,
+    mpp006_contingent_exposure, required_headroom)
 from agent_economic_trust.remote_budget import BudgetLedger
 from agent_economic_trust.remote_pricing import pricing_snapshot, reserve_worst_case
 from agent_economic_trust.ap2_live_fixture import invoice_case
@@ -36,6 +39,14 @@ GATE = ROOT / "artifacts/gates/AP2_LIVE"
 ASSIGNMENT = GATE / "assignment-001"
 LOCK = GATE / "first-freeze.lock.json"
 OFFLINE = ROOT / "artifacts/prospective/ap2-live-audit-purchase/offline-006"
+READINESS = ROOT / "artifacts/prospective/ap2-live-audit-purchase/readiness-007.json"
+READINESS_SOURCE_CHANGES = (
+    "docs/PROSPECTIVE_AP2_AUDIT_PURCHASE_LIVE_001.md",
+    "scripts/freeze_ap2_live.py",
+    "src/agent_economic_trust/ap2_live_budget.py",
+    "src/agent_economic_trust/ap2_live_remote.py",
+    "tests/test_ap2_live_runner.py",
+)
 AP2_PYTHON = Path("/workspace/upstreams/ap2-w15/.venv/bin/python")
 AP2_PIN = "b4587ac1d055888a73b4b21750973cffba961793"
 ERC8183_PIN = "142e669c1fd318486a4628395b629f033654dd06"
@@ -46,6 +57,7 @@ NEW_SOURCE = (
     "scripts/run_ap2_live.py", "scripts/collect_ap2_live.py",
     "scripts/ap2_invoice_authorization.py", "scripts/run_ap2_local.py",
     "src/agent_economic_trust/ap2_live_plan.py",
+    "src/agent_economic_trust/ap2_live_budget.py",
     "src/agent_economic_trust/ap2_live_fixture.py",
     "src/agent_economic_trust/ap2_live_native_verifier.py",
     "src/agent_economic_trust/ap2_live_open005_verifier.py",
@@ -73,14 +85,23 @@ def source_inventory() -> dict[str, str]:
 
 
 def _readiness(inventory: dict[str, str]) -> dict:
-    saved = json.loads((OFFLINE / "readiness.json").read_text())
+    saved = json.loads(READINESS.read_text())
+    prior = json.loads((OFFLINE / "readiness.json").read_text())
+    changed = tuple(sorted(name for name in set(inventory) | set(prior["source_sha256"])
+                           if inventory.get(name) != prior["source_sha256"].get(name)))
     if (saved.get("schema") != "ap2-live-offline-readiness-v1"
             or saved.get("status") != "PASS"
             or saved.get("source_sha256") != inventory
+            or saved.get("source_inventory_sha256") != sha256(canonical(inventory)).hexdigest()
+            or saved.get("prior_readiness_sha256") != file_sha(OFFLINE / "readiness.json")
+            or saved.get("source_change_scope") != "AP2_CONTINGENT_BUDGET_ONLY"
+            or saved.get("changed_source_paths") != list(changed)
+            or changed != READINESS_SOURCE_CHANGES
             or saved.get("offline_report_sha256") != file_sha(OFFLINE / "report.json")
             or saved.get("public_input_equality_verified") is not True
             or saved.get("max_serialized_model_input_bytes", MAX_INPUT_BYTES + 1)
-            > MAX_INPUT_BYTES or saved.get("paid_model_calls") != 0):
+            > MAX_INPUT_BYTES or saved.get("paid_model_calls") != 0
+            or saved.get("verified_rows") != 4):
         raise ValueError("AP2 LIVE offline readiness/source does not match current freeze")
     return saved
 
@@ -94,17 +115,18 @@ def _clean_upstream(path: Path, expected: str) -> None:
         raise ValueError("official protocol checkout is dirty or differs from pin")
 
 
-def _budget_gate() -> tuple[dict, Decimal, dict]:
+def _budget_gate() -> tuple[dict, Decimal, dict, dict]:
     state = BudgetLedger(CANONICAL_LEDGER_PATH).snapshot()
     if (state["cap_usd"] != "50" or state["blocked"]
-            or state["unknown_run_ids"] or state["reserved_usd"] != "0"):
+            or state["unknown_run_ids"] or state["reserved_usd"] != "6.30784"):
         raise ValueError("shared USD50 ledger is blocked or another study holds a reserve")
+    exposure = mpp006_contingent_exposure(state)
     prices = pricing_snapshot(MODEL_ID)
     reserve = reserve_worst_case(prices, MAX_CALLS_PER_EPISODE,
                                  MAX_INPUT_BYTES, MAX_OUTPUT_TOKENS)
-    if reserve * 4 + CONTINGENCY_USD > Decimal(state["available_usd"]):
-        raise ValueError("full AP2 LIVE four-row reserve exceeds shared USD50 headroom")
-    return prices, reserve, state
+    if required_headroom(reserve, 4) > Decimal(state["available_usd"]):
+        raise ValueError("AP2 LIVE block and contingency exceed USD50 headroom net of MPP006 hold")
+    return prices, reserve, state, exposure
 
 
 def _issue(path: Path, row, cross_obligation: str, artifact_digest: str) -> dict:
@@ -129,7 +151,7 @@ def prepare() -> dict:
     _clean_upstream(Path("/workspace/upstreams/erc8183"), ERC8183_PIN)
     inventory = source_inventory()
     _readiness(inventory)
-    prices, reserve, state = _budget_gate()
+    prices, reserve, state, exposure = _budget_gate()
     head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT,
                           capture_output=True, text=True, check=True).stdout.strip()
     if subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"],
@@ -143,11 +165,16 @@ def prepare() -> dict:
         "source_commit": head, "source_sha256": inventory,
         "source_inventory_sha256": sha256(canonical(inventory)).hexdigest(),
         "offline_report_sha256": file_sha(OFFLINE / "report.json"),
-        "offline_readiness_sha256": file_sha(OFFLINE / "readiness.json"),
+        "offline_readiness_sha256": file_sha(READINESS),
         "public_pricing_snapshot": prices,
         "worst_case_reserve_usd_per_episode": str(reserve),
         "worst_case_reserve_usd_full_block": str(reserve * 4),
         "contingency_reserve_usd": str(CONTINGENCY_USD),
+        "prior_mpp006_contingent_exposure": exposure,
+        "prior_mpp006_ledger_run_at_freeze": state["runs"][MPP006_STOPPED_RUN_ID],
+        "ledger_reserved_at_freeze_usd": state["reserved_usd"],
+        "unassigned_account_residual_usd": str(UNASSIGNED_ACCOUNT_RESIDUAL_USD),
+        "required_headroom_usd": str(required_headroom(reserve, 4)),
         "ledger_seq_at_freeze": state["seq"],
         "ledger_hash_at_freeze": state["last_hash"],
         "ap2_upstream_commit": AP2_PIN,
@@ -214,7 +241,15 @@ def verify() -> tuple[dict, str, tuple]:
             or frozen["ap2_upstream_commit"] != AP2_PIN
             or frozen["erc8183_upstream_commit"] != ERC8183_PIN
             or frozen["offline_report_sha256"] != file_sha(OFFLINE / "report.json")
-            or frozen["offline_readiness_sha256"] != file_sha(OFFLINE / "readiness.json")):
+            or frozen["offline_readiness_sha256"] != file_sha(READINESS)
+            or frozen["required_headroom_usd"] != str(required_headroom(
+                Decimal(frozen["worst_case_reserve_usd_per_episode"]), 4))
+            or frozen["unassigned_account_residual_usd"] != str(UNASSIGNED_ACCOUNT_RESIDUAL_USD)
+            or frozen["ledger_reserved_at_freeze_usd"] != "6.30784"
+            or frozen["prior_mpp006_contingent_exposure"] != mpp006_contingent_exposure(
+                {"contingent_run_ids": [MPP006_STOPPED_RUN_ID],
+                 "runs": {MPP006_STOPPED_RUN_ID:
+                    frozen["prior_mpp006_ledger_run_at_freeze"]}})):
         raise ValueError("AP2 LIVE frozen source, offline gate or assignment differs")
     if verify_offline(OFFLINE)["status"] != "PASS":
         raise ValueError("AP2 LIVE saved offline controls differ")

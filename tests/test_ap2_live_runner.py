@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from decimal import Decimal
 from pathlib import Path
 from hashlib import sha256
 import json
@@ -15,8 +16,12 @@ from inspect_ai.model import ChatMessageUser, GenerateConfig
 
 from agent_economic_trust.ap2_live_plan import CANONICAL_LEDGER_PATH
 from agent_economic_trust.ap2_live_plan import make_schedule
+from agent_economic_trust.ap2_live_budget import (
+    EVIDENCE, MPP006_EVIDENCE_SHA256, MPP006_STOPPED_RUN_ID,
+    mpp006_contingent_exposure, required_headroom)
 from agent_economic_trust.ap2_live_remote import (Ap2LivePlan, guard_api,
-    quarantine_unverified_record, strict_tool_schemas)
+    fresh_budget, post_settlement_budget, quarantine_unverified_record,
+    strict_tool_schemas)
 from agent_economic_trust.ap2_live_fixture import invoice_case
 from agent_economic_trust.open005_native import Open005NativeController
 from agent_economic_trust.ap2_live_open005_verifier import verify_ap2_funded_evidence as verify_open005_funded_evidence
@@ -26,6 +31,78 @@ from scripts.collect_ap2_live import (_channel_and_awareness,
 
 
 class Ap2LiveRunnerTests(unittest.TestCase):
+    @staticmethod
+    def contingent_state(available: str = "23.62688") -> dict:
+        return {"cap_usd": "50", "blocked": False, "unknown_run_ids": [],
+                "contingent_run_ids": [MPP006_STOPPED_RUN_ID],
+                "reserved_usd": "6.30784", "available_usd": available,
+                "runs": {MPP006_STOPPED_RUN_ID: {
+                    "status": "CONTINGENT",
+                    "reserved_usd": "6.30784",
+                    "evidence_ref": "sha256:" + MPP006_EVIDENCE_SHA256,
+                    "contingent_evidence_ref": "sha256:" + MPP006_EVIDENCE_SHA256}}}
+
+    def test_mpp006_hold_requires_exact_contingent_run_and_hashed_evidence(self):
+        state = self.contingent_state()
+        exposure = mpp006_contingent_exposure(state)
+        self.assertEqual(exposure["prior_reservation_usd"], "6.307840")
+        self.assertEqual(required_headroom(Decimal("5.40672"), 4),
+                         Decimal("23.6269142"))
+        for key, value in (("status", "SETTLED"), ("actual_usd", "0"),
+                           ("reserved_usd", "6.3"), ("evidence_ref", "sha256:" + "a" * 64),
+                           ("contingent_evidence_ref", "sha256:" + "a" * 64)):
+            with self.subTest(key=key):
+                altered = self.contingent_state()
+                altered["runs"][MPP006_STOPPED_RUN_ID][key] = value
+                with self.assertRaises(ValueError):
+                    mpp006_contingent_exposure(altered)
+        with self.assertRaises(ValueError):
+            mpp006_contingent_exposure({**state, "runs": {}})
+        with self.assertRaises(ValueError):
+            mpp006_contingent_exposure({**state, "contingent_run_ids": []})
+        with tempfile.TemporaryDirectory(dir="/tmp") as root:
+            tampered = Path(root) / "evidence.json"
+            tampered.write_bytes(EVIDENCE.read_bytes() + b" ")
+            with patch("agent_economic_trust.ap2_live_budget.EVIDENCE", tampered):
+                with self.assertRaisesRegex(ValueError, "evidence bytes differ"):
+                    mpp006_contingent_exposure(state)
+
+    def test_freeze_and_preflight_require_full_contingent_headroom(self):
+        from scripts.freeze_ap2_live import _budget_gate
+        state = self.contingent_state("23.6269141")
+        frozen = {"worst_case_reserve_usd_per_episode": "5.40672",
+                  "prior_mpp006_contingent_exposure": mpp006_contingent_exposure(state),
+                  "unassigned_account_residual_usd": "0.0000342"}
+        with (patch("scripts.freeze_ap2_live.BudgetLedger") as ledger,
+              patch("scripts.freeze_ap2_live.pricing_snapshot", return_value={"model": "test"}),
+              patch("scripts.freeze_ap2_live.reserve_worst_case", return_value=Decimal("5.40672"))):
+            ledger.return_value.snapshot.return_value = state
+            with self.assertRaisesRegex(ValueError, "net of MPP006 hold"):
+                _budget_gate()
+            ledger.return_value.snapshot.return_value = self.contingent_state("23.6269142")
+            self.assertEqual(_budget_gate()[1], Decimal("5.40672"))
+        with (patch("agent_economic_trust.ap2_live_remote.BudgetLedger") as ledger,
+              patch("agent_economic_trust.ap2_live_remote.pricing_snapshot", return_value={"model": "test"}),
+              patch("agent_economic_trust.ap2_live_remote.reserve_worst_case", return_value=Decimal("5.40672"))):
+            ledger.return_value.snapshot.return_value = state
+            with self.assertRaisesRegex(RemoteBoundaryError, "net of MPP006 hold"):
+                fresh_budget(Ap2LivePlan(), frozen, 4)
+            ledger.return_value.snapshot.return_value = self.contingent_state("23.6269142")
+            self.assertEqual(fresh_budget(Ap2LivePlan(), frozen, 4)[1], Decimal("5.40672"))
+
+    def test_post_settlement_retains_hold_and_rejects_other_reservations(self):
+        state = self.contingent_state("2.0000341")
+        frozen = {"prior_mpp006_contingent_exposure": mpp006_contingent_exposure(state),
+                  "unassigned_account_residual_usd": "0.0000342"}
+        ledger = SimpleNamespace(snapshot=lambda: state)
+        with self.assertRaisesRegex(RemoteBoundaryError, "insufficient headroom"):
+            post_settlement_budget(ledger, frozen, Decimal("5.40672"), 0)
+        state["available_usd"] = "2.0000342"
+        post_settlement_budget(ledger, frozen, Decimal("5.40672"), 0)
+        state["reserved_usd"] = "7.30784"
+        with self.assertRaisesRegex(RemoteBoundaryError, "concurrently reserved"):
+            post_settlement_budget(ledger, frozen, Decimal("5.40672"), 0)
+
     def test_worktree_local_ledger_is_rejected_before_freeze_read(self):
         plan = Ap2LivePlan(ledger_path=Path("/tmp/worktree-ledger.jsonl"))
         self.assertNotEqual(plan.ledger_path, CANONICAL_LEDGER_PATH)

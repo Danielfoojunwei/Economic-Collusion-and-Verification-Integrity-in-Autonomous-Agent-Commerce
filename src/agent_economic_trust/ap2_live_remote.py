@@ -22,6 +22,8 @@ from inspect_ai.model import ContentReasoning, GenerateConfig, get_model
 
 from .ap2_live_plan import (CANONICAL_LEDGER_PATH, CONTINGENCY_USD,
     MAX_CALLS_PER_EPISODE, MAX_INPUT_BYTES, MAX_OUTPUT_TOKENS, MODEL_ID)
+from .ap2_live_budget import (UNASSIGNED_ACCOUNT_RESIDUAL_USD,
+    mpp006_contingent_exposure, required_headroom)
 from .ap2_live_purchase import NativeAuditPurchase, validate_ap2_authorization
 from .ap2_live_purchase_verifier import verify_native_audit_purchase
 from .ap2_live_task import ap2_live_invoice_orbit
@@ -85,15 +87,38 @@ def fresh_budget(plan: Ap2LivePlan, frozen: dict,
                  remaining: int) -> tuple[dict, Decimal, dict]:
     state = BudgetLedger(plan.ledger_path).snapshot()
     if (state["cap_usd"] != "50" or state["blocked"]
-            or state["unknown_run_ids"] or state["reserved_usd"] != "0"):
+            or state["unknown_run_ids"] or state["reserved_usd"] != "6.30784"):
         raise RemoteBoundaryError("shared USD50 ledger is blocked or concurrently reserved")
+    _require_contingent_ledger_state(state, frozen)
     prices = pricing_snapshot(plan.model_id)
     reserve = max(Decimal(frozen["worst_case_reserve_usd_per_episode"]),
                   reserve_worst_case(prices, plan.max_calls,
                                      plan.max_input_bytes, plan.max_output_tokens))
-    if reserve * remaining + CONTINGENCY_USD > Decimal(state["available_usd"]):
-        raise RemoteBoundaryError("full remaining AP2 LIVE reserve exceeds USD50 headroom")
+    if required_headroom(reserve, remaining) > Decimal(state["available_usd"]):
+        raise RemoteBoundaryError("remaining AP2 block and contingency exceed USD50 headroom net of MPP006 hold")
     return prices, reserve, state
+
+
+def _require_contingent_ledger_state(state: dict, frozen: dict) -> None:
+    if (state.get("cap_usd") != "50" or state.get("blocked")
+            or state.get("unknown_run_ids") or state.get("reserved_usd") != "6.30784"):
+        raise RemoteBoundaryError("shared USD50 ledger is blocked or concurrently reserved")
+    try:
+        if mpp006_contingent_exposure(state) != frozen["prior_mpp006_contingent_exposure"]:
+            raise ValueError("frozen MPP006 exposure differs from current ledger")
+        if frozen["unassigned_account_residual_usd"] != str(UNASSIGNED_ACCOUNT_RESIDUAL_USD):
+            raise ValueError("frozen unassigned account residual differs")
+    except (KeyError, ValueError) as exc:
+        raise RemoteBoundaryError("MPP006 contingent billing hold is not verified") from exc
+
+
+def post_settlement_budget(ledger: BudgetLedger, frozen: dict,
+                           reserve: Decimal, remaining: int) -> None:
+    """Check headroom after a paid row using a ledger snapshot, without replay."""
+    state = ledger.snapshot()
+    _require_contingent_ledger_state(state, frozen)
+    if required_headroom(reserve, remaining) > Decimal(state["available_usd"]):
+        raise RemoteBoundaryError("settled AP2 row left insufficient headroom net of MPP006 hold")
 
 
 def preflight(plan: Ap2LivePlan = Ap2LivePlan()) -> dict:
@@ -127,6 +152,9 @@ def preflight(plan: Ap2LivePlan = Ap2LivePlan()) -> dict:
             "full_remaining_reserve_usd": str(reserve * (len(rows) - next_index)),
             "per_episode_reserve_usd": str(reserve),
             "contingency_usd": str(CONTINGENCY_USD),
+            "mpp006_contingent_ledger_hold_usd": frozen["prior_mpp006_contingent_exposure"]["prior_reservation_usd"],
+            "unassigned_account_residual_usd": str(UNASSIGNED_ACCOUNT_RESIDUAL_USD),
+            "required_headroom_usd": str(required_headroom(reserve, len(rows) - next_index)),
             "available_usd": state["available_usd"],
             "ledger_seq": state["seq"]}
 
@@ -253,8 +281,8 @@ def execute_one(plan: Ap2LivePlan = Ap2LivePlan()) -> dict:
                                          "assignment_sha": assignment_sha})
         reserved = True
         if (Decimal(after["available_usd"])
-                < reserve * (preview["remaining_rows"] - 1) + CONTINGENCY_USD):
-            raise RemoteBoundaryError("concurrent ledger use consumed full-block headroom")
+                < required_headroom(reserve, preview["remaining_rows"] - 1)):
+            raise RemoteBoundaryError("concurrent ledger use consumed AP2 headroom net of MPP006 hold")
         purchase_dir = directory / "audit-purchase"
         with NativeAuditPurchase(
             purchase_dir, auth_path, obligation_id=row.obligation_id,
@@ -311,6 +339,8 @@ def execute_one(plan: Ap2LivePlan = Ap2LivePlan()) -> dict:
                 raise RemoteBoundaryError("model usage exceeds reserved bound")
             ledger.settle(ident, cost, "sha256:" + file_sha(inspect_path))
             settled = True
+            post_settlement_budget(ledger, frozen, reserve,
+                                   preview["remaining_rows"] - 1)
             verify_model_boundary(saved, observed, plan)
         if not saved.samples or len(saved.samples) != 1:
             raise RemoteBoundaryError("saved Inspect sample count differs")
