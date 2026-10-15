@@ -166,16 +166,36 @@ def _partial014_closed(state: dict) -> dict:
     verify_partial014()
     _, assignment_sha, assigned = load_partial014()
     review = json.loads(PARTIAL014_REVIEW.read_bytes())
-    relative = review.get("collection_path")
+    bindings = review.get("source_bindings")
+    verified = review.get("verification")
+    if not isinstance(bindings, dict) or not isinstance(verified, dict):
+        raise ValueError("PARTIAL014 independent review lacks source bindings")
+    final_binding = bindings.get("final_collection")
+    assignment_binding = bindings.get("assignment_manifest")
+    if not isinstance(final_binding, dict) or not isinstance(assignment_binding, dict):
+        raise ValueError("PARTIAL014 independent review lacks final artifacts")
+    relative = final_binding.get("path")
     if (type(relative) is not str or Path(relative).is_absolute()
             or ".." in Path(relative).parts):
         raise ValueError("PARTIAL014 independent review lacks safe collection path")
     collection_path = ROOT / relative
-    if (not collection_path.resolve().is_relative_to(PARTIAL014_GATE.resolve())
-            or review.get("assignment_manifest_sha256") != assignment_sha
-            or review.get("collection_sha256") != sha(collection_path)
+    assignment_path = PARTIAL014_GATE / "assignment-001/assignment_manifest.json"
+    if (collection_path.resolve() !=
+            (PARTIAL014_GATE / "collection-005-final.json").resolve()
+            or assignment_binding.get("path") !=
+               str(assignment_path.relative_to(ROOT))
+            or assignment_binding.get("sha256") != assignment_sha
+            or sha(assignment_path) != assignment_sha
+            or final_binding.get("sha256") != sha(collection_path)
+            or verified.get("final_collection_sha256") != sha(collection_path)
+            or verified.get("saved_collector_replayed_byte_identically") is not True
+            or verified.get("frozen_assignment_bound_rows") != len(assigned)
+            or verified.get("shared_ledger_settled_runs_bound_to_inspect") !=
+               len(assigned)
+            or review.get("schema") != "partial014-independent-results-review-v1"
+            or review.get("study") != "erc8183-partial-claim-timing-014"
             or review.get("reviewer_id") in (None, "", "/root")
-            or review.get("freeze_or_paid_authorization") is not False
+            or review.get("freeze_or_paid_authorization", False) is not False
             or not str(review.get("status", "")).startswith("REVIEW_COMPLETE")):
         raise ValueError("PARTIAL014 final independent review differs")
     saved = json.loads(collection_path.read_bytes())
