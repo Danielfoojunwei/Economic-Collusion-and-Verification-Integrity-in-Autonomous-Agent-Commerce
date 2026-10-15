@@ -1,0 +1,62 @@
+{
+  "exact_prior_holds": {
+    "active_reservation_usd": "0",
+    "exact_open_run_ids": [
+      "fee011-c36239cdcfd4-fee010-b0125916b5cd2e63f69109b5-failed-request-hold",
+      "fee014-d6409ff93bcb-fee014-deb758472e05bb8622e9a1d6",
+      "mpp006-0e11d0595056-mpp006-bc092a2baae1584874c4f308",
+      "x402011-ea4c997ba6f3-x402011-19587c1ddccc97900b2deddd"
+    ],
+    "prior_reserved_usd": "18.386908"
+  },
+  "fee013_assignment_sha256": "8116be0e4af33bf33d06e4491fc6ee4b73072e47d7c8d9ef4855520873570f6e",
+  "fee013_collection_path": "artifacts/gates/ERC8183_FEE013/collection-006-final.json",
+  "fee013_collection_sha256": "2c83c30933cc585fc0bf83cd469a52d3ddc741bbab9dd17c75e0204189a1b9eb",
+  "fee013_completed_episodes": 6,
+  "fee013_independent_review_sha256": "421e9f1019b51aad69d8e2c05927219331d8ee110633e8ec3f3f9f7310dc6aed",
+  "fee013_pending_episodes": 0,
+  "fee013_stopped_episodes": 0,
+  "fee013_stopped_receipts": {},
+  "fee014_first_stop": {
+    "assignment_manifest_sha256": "d6409ff93bcbd1332aba4ad90b19953c045e9a3136383ea6fa30fe76ece3bfed",
+    "collection_sha256": "e929867f0e327bba854be8a53d8949ee097a1677adda4e7eb96f98d9ce38444f",
+    "completed_episodes": 1,
+    "contingent_evidence_sha256": "22ca35d7dabb6d8ab87ecb2410c2f2f84a1ce22cc48eb18a7f703aa60c08d155",
+    "contingent_independent_review_sha256": "a4b11d2c7181d76138827b50f318b82f8e2fcde3f368eb42928a11c017c2ec0a",
+    "contingent_ledger_ancestor_hash": "74ee7d2e4feab7734a88e9730fc29963702018cbe6f94895a4e90d78129532f1",
+    "forensics_sha256": "3ab4ad292c0021124bc396c70400731100e866aa4749c667c2a9c1850b8aaa38",
+    "full_contingent_reservation_usd": "4.292608",
+    "inspect_sha256": "a7970238ee8f78c3a41ef0c8fae836638f10986fb1cb2ad92e9f3eb97faa2838",
+    "ledger_run_id": "fee014-d6409ff93bcb-fee014-deb758472e05bb8622e9a1d6",
+    "native_sha256": "db2930e0d8240973de07f96dde9799cd23a19838d65b819c699be06384c656f8",
+    "native_status": "FUNDED_SUBMITTED_VERIFIED",
+    "pending_episodes": 3,
+    "stop_sha256": "f65fae3085a8b7cfc26da2eeb3945a982f93cdb4a770601fc3fac6c833051864",
+    "stopped_episodes": 1
+  },
+  "ledger_at_clearance": {
+    "cap_usd": "50",
+    "last_hash": "74ee7d2e4feab7734a88e9730fc29963702018cbe6f94895a4e90d78129532f1",
+    "seq": 194
+  },
+  "no_new_paid_calls_authorized_by_clearance": true,
+  "partial013_first_stop": {
+    "assignment_manifest_sha256": "e65e08ca3543ffad89d2afda23b7da8534162134925f3148fdc6c909f6e4d94a",
+    "collection_sha256": "ef5da3955cc1848b95d26ca9f0a50ecac7fad1bb5d120c45fb4be6b1fa47519e",
+    "completed_episodes": 0,
+    "forensics_sha256": "7514ee740cb19b5504ed98d6c7a94e795c06ecabeb53e39f99d1ddb0aa881127",
+    "inspect_sha256": "fdba1eaeb225a7f09ab4c7d1d6f199d8a316ee16fe7aee9c6101bbaae15f0faf",
+    "ledger_actual_usage_estimate_usd": "0.123222",
+    "ledger_run_id": "partial013-e65e08ca3543-partial013-180ff0b218ebdeed9cd48369",
+    "native_client_refund_minor": 20000000,
+    "native_provider_gain_minor": 0,
+    "native_sha256": "fb3dd3f731fb3dfb220458b85cb0633a02e832ef4b7b86db310ceb71986525cd",
+    "native_status": "COMPLETE_VERIFIED",
+    "native_terminal_verdict": "REJECT",
+    "pending_episodes": 4,
+    "stopped_episodes": 1,
+    "stopped_sha256": "a803397505f5d7c9bb9139328bdfda8def07df49b27e0fd8e1301222d1a1dec5"
+  },
+  "schema": "fee015-cross-study-clearance-v3",
+  "status": "GO_AFTER_FEE013_PARTIAL013_AND_FEE014_STOP"
+}
