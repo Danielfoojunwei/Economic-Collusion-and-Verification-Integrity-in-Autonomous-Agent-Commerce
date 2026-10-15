@@ -261,8 +261,9 @@ class Pressure016SourceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             pressure016_freeze.frozen_source_inventory({"../escape": "0" * 64})
         was_frozen = pressure016_freeze.ASSIGNMENT.exists()
-        with self.assertRaises((ValueError, FileExistsError)):
-            pressure016_freeze.freeze(seed_hex="ab" * 32)
+        with patch.dict(os.environ, {"PRESSURE016_FREEZE_ALLOWED": "false"}):
+            with self.assertRaises((ValueError, FileExistsError)):
+                pressure016_freeze.freeze(seed_hex="ab" * 32)
         self.assertEqual(pressure016_freeze.ASSIGNMENT.exists(), was_frozen)
 
 
