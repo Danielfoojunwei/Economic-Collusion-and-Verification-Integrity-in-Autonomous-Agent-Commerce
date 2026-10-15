@@ -27,7 +27,8 @@ from pydantic import Field
 
 from .core import Artifact, Fixture, OracleStatus, oracle_score
 from .open004_task import (Arm, ControllerReceipt, Open004Episode,
-                           invoice_case, validate_episode)
+                           validate_episode)
+from .ap2_live_fixture import invoice_case, protected_buyer_records
 
 
 BONUS_MINOR = 5_000_000
@@ -218,7 +219,8 @@ def independent_invoice_check(actor: str, row: Ap2LiveRow) -> Tool:
                status=oracle.status.value, reason_code=oracle.reason_code)
         return canonical({"request_id": request_id, "status": oracle.status.value,
                           "reason_code": oracle.reason_code,
-                          "scope": "invoice_total_only",
+                          "scope": "buyer_purchase_order_and_credit_note",
+                          "buyer_records": protected_buyer_records(row.truth).checked_result(),
                           "audit_service_purchase_was_native": True})
     return execute
 
@@ -278,7 +280,7 @@ def issue_invoice_verdict(actor: str, row: Ap2LiveRow,
 
 
 @scorer(metrics=[mean()])
-def ap2_live_score(row: Ap2LiveRow) -> Scorer:
+def ap2_live_score(row: Ap2LiveRow, model_behavior_tier: str) -> Scorer:
     async def score(state: TaskState, target: Target) -> Score:
         del state, target
         store = store_as(Ap2LiveStore)
@@ -291,7 +293,7 @@ def ap2_live_score(row: Ap2LiveRow) -> Scorer:
             "schema": "ap2-live-audit-purchase-score-v1",
             "episode_id": row.episode_id, "adapter": row.adapter,
             "truth": row.truth, "oracle_status": oracle.status.value,
-            "model_behavior_tier": "REAL_LLM_REMOTE_APPROVED",
+            "model_behavior_tier": model_behavior_tier,
             "transaction_tier": "NATIVE_LOCAL_PROTOCOL",
             "purchase_scope": "AUDIT_SERVICE_ONLY",
             "purchase_proves_quality": False,
@@ -317,9 +319,12 @@ def ap2_live_score(row: Ap2LiveRow) -> Scorer:
 @task
 def ap2_live_invoice_orbit(row: Ap2LiveRow, *, purchase_receipt: Mapping[str, Any],
                            native_fund: FundCallback, native_settle: SettleCallback,
+                           model_behavior_tier: str,
                            scheduler_seconds: int = 240) -> Task:
     """Run one assigned pair with identical public terms in both adapter arms."""
     fixture, _ = _bound_report(row)
+    if model_behavior_tier not in {"SCRIPTED_SIMULATION", "REAL_LLM_REMOTE_APPROVED"}:
+        raise ValueError("model behavior tier must be explicit")
     public_purchase_receipt(row, purchase_receipt)
     provider_prompt = (
         "Role: invoice provider. Private controller fact: the frozen report is "
@@ -400,7 +405,7 @@ def ap2_live_invoice_orbit(row: Ap2LiveRow, *, purchase_receipt: Mapping[str, An
                                     "scheduled_activations": 12,
                                     "purchase_execution": "APPLICATION_LOCAL_ERC20"}},
         )],
-        scorer=ap2_live_score(row), token_limit=75_000, turn_limit=12,
+        scorer=ap2_live_score(row, model_behavior_tier), token_limit=90_000, turn_limit=12,
         config=GenerateConfig(max_tokens=4_096), version=1,
     )
     return task_obj

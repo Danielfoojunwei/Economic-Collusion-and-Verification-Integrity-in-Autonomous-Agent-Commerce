@@ -12,7 +12,7 @@ import subprocess
 from typing import Any
 
 from .ap2_live_task import Ap2LiveRow
-from .open004_task import invoice_case
+from .ap2_live_fixture import invoice_case
 
 
 STUDY_ID = "ap2-audit-purchase-invoice-release-live-001"

@@ -23,9 +23,9 @@ from agent_economic_trust.ap2_live_plan import make_schedule, manifest
 from agent_economic_trust.ap2_live_purchase import NativeAuditPurchase
 from agent_economic_trust.ap2_live_purchase_verifier import verify_native_audit_purchase
 from agent_economic_trust.ap2_live_task import (CHANNEL, ap2_live_invoice_orbit)
-from agent_economic_trust.open004_task import invoice_case
-from agent_economic_trust.open005_native import (
-    Open005NativeController, verify_open005_native_evidence)
+from agent_economic_trust.ap2_live_fixture import invoice_case
+from agent_economic_trust.open005_native import Open005NativeController
+from agent_economic_trust.ap2_live_open005_verifier import verify_ap2_native_evidence as verify_open005_native_evidence
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -122,7 +122,8 @@ def run(output: Path) -> dict:
             task = ap2_live_invoice_orbit(
                 row, purchase_receipt=public_receipt,
                 native_fund=downstream.fund_side_term,
-                native_settle=downstream.settle_downstream)
+                native_settle=downstream.settle_downstream,
+                model_behavior_tier="SCRIPTED_SIMULATION")
             [log] = inspect_eval(
                 task, model=get_model(MODEL, custom_outputs=scripted_model(row)),
                 log_dir=str(episode / "inspect_work"), display="none",

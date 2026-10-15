@@ -25,9 +25,10 @@ from .ap2_live_plan import (CANONICAL_LEDGER_PATH, CONTINGENCY_USD,
 from .ap2_live_purchase import NativeAuditPurchase, validate_ap2_authorization
 from .ap2_live_purchase_verifier import verify_native_audit_purchase
 from .ap2_live_task import ap2_live_invoice_orbit
-from .open004_task import invoice_case
-from .open005_native import (Open005NativeController,
-    verify_open005_funded_evidence, verify_open005_native_evidence)
+from .ap2_live_fixture import invoice_case
+from .open005_native import Open005NativeController
+from .ap2_live_open005_verifier import (verify_ap2_funded_evidence as verify_open005_funded_evidence,
+    verify_ap2_native_evidence as verify_open005_native_evidence)
 from .remote import (REQUEST_TIMEOUT_SECONDS, RemoteBoundaryError,
     _safe_model_input_size, _usage_for, account_usage_delta_usd,
     account_usage_usd)
@@ -44,6 +45,16 @@ def file_sha(path: Path) -> str:
     if path.is_symlink() or not path.is_file():
         raise RemoteBoundaryError("saved evidence must be a regular file")
     return sha256(path.read_bytes()).hexdigest()
+
+
+def quarantine_unverified_record(directory: Path) -> None:
+    """A failed final verifier must not leave a competing COMPLETE record."""
+    proposed = directory / "episode_record.json"
+    rejected = directory / "unverified_episode_record.json"
+    if proposed.exists():
+        if rejected.exists():
+            raise RemoteBoundaryError("unverified episode record was already quarantined")
+        proposed.replace(rejected)
 
 
 def _run_id(assignment_sha: str, episode_id: str) -> str:
@@ -127,10 +138,16 @@ def guard_api(model: Any, plan: Ap2LivePlan) -> list[dict]:
 
     async def bounded(input: Any, tools: Any, tool_choice: Any, config: Any) -> Any:
         size = _safe_model_input_size(input, tools)
+        try:
+            strict_tool_schemas(tools)
+            schemas_valid = True
+        except RemoteBoundaryError:
+            schemas_valid = False
         reasoning = any(isinstance(part, ContentReasoning)
                         for message in input
                         for part in (message.content if isinstance(message.content, list) else []))
-        if (len(observed) >= plan.max_calls or size > plan.max_input_bytes or reasoning
+        if (len(observed) >= plan.max_calls or size > plan.max_input_bytes
+                or not schemas_valid or reasoning
                 or config.reasoning_effort != "high" or config.reasoning_history != "none"
                 or config.max_tokens != plan.max_output_tokens or config.max_retries != 0):
             observed.append({"call_index": len(observed) + 1,
@@ -163,12 +180,37 @@ def verify_model_boundary(log: Any, observed: list[dict], plan: Ap2LivePlan) -> 
             or any(not item["completed"] for item in calls)):
         raise RemoteBoundaryError("saved AP2 LIVE model/config differs from forwarded calls")
     for event, actual in zip(events, calls, strict=True):
+        strict_tool_schemas(event.tools)
         if (event.model != f"openrouter/{plan.model_id}" or event.error
                 or event.cache is not None or event.retries not in (None, 0)
                 or _safe_model_input_size(event.input, event.tools)
                 != actual["serialized_input_bytes"]
                 or actual["serialized_input_bytes"] > plan.max_input_bytes):
             raise RemoteBoundaryError("saved AP2 LIVE model event differs from boundary")
+
+
+def strict_tool_schemas(tools: Any) -> None:
+    """Reject non-strict object schemas before forwarding to OpenRouter/OpenAI."""
+    def check(node: Any) -> None:
+        if not isinstance(node, dict):
+            raise RemoteBoundaryError("model tool schema is not an object")
+        properties = node.get("properties")
+        if node.get("type") == "object" or properties is not None:
+            if (not isinstance(properties, dict)
+                    or node.get("additionalProperties") is not False
+                    or set(node.get("required") or []) != set(properties)):
+                raise RemoteBoundaryError("model tool object schema is not strict")
+            for child in properties.values():
+                check(child)
+        if isinstance(node.get("items"), dict):
+            check(node["items"])
+        for choice in node.get("anyOf") or []:
+            check(choice)
+    for tool in tools:
+        value = tool.model_dump(mode="json") if hasattr(tool, "model_dump") else tool
+        if not isinstance(value, dict) or not isinstance(value.get("parameters"), dict):
+            raise RemoteBoundaryError("model tool definition is malformed")
+        check(value["parameters"])
 
 
 def _enabled() -> None:
@@ -232,7 +274,8 @@ def execute_one(plan: Ap2LivePlan = Ap2LivePlan()) -> dict:
             task = ap2_live_invoice_orbit(
                 row, purchase_receipt=purchase_receipt,
                 native_fund=native.fund_side_term,
-                native_settle=native.settle_downstream)
+                native_settle=native.settle_downstream,
+                model_behavior_tier="REAL_LLM_REMOTE_APPROVED")
             before_usage = account_usage_usd()
             config = GenerateConfig(
                 reasoning_effort="high", reasoning_history="none",
@@ -303,6 +346,7 @@ def execute_one(plan: Ap2LivePlan = Ap2LivePlan()) -> dict:
         return verify_episode(row, directory, frozen=frozen,
                               assignment_sha=assignment_sha, ledger=ledger.snapshot())
     except BaseException as exc:
+        quarantine_unverified_record(directory)
         forwarded = any(x["provider_api_invoked"] for x in observed)
         if reserved and not settled and forwarded:
             try:

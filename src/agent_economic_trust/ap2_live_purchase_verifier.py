@@ -70,11 +70,14 @@ def verify_native_audit_purchase(directory: Path, authorization_path: Path, *,
     require(e.get("ap2_authorization_sha256") == sha256(authorization_path.read_bytes()).hexdigest()
             and e.get("trusted_issuer_public_sha256") == expected_issuer_public_sha256,
             "AP2 signed authorization archive differs")
+    checked_at = e.get("purchase_authorization_checked_at_unix")
+    require(type(checked_at) is int,
+            "saved AP2 purchase check requires an explicit historical timestamp")
     ap2 = validate_ap2_authorization(
         authorization_path, obligation_id=expected_obligation_id,
         artifact_digest=expected_artifact_digest,
         issuer_public_sha256=expected_issuer_public_sha256,
-        archive_at=e.get("purchase_authorization_checked_at_unix"))
+        archive_at=checked_at)
     require(e.get("ap2_authorization_reference") == ap2["authorization_reference"],
             "AP2 authorization reference differs")
     source = Path("/workspace/upstreams/erc8183")
@@ -191,6 +194,8 @@ def verify_native_audit_purchase(directory: Path, authorization_path: Path, *,
             "local client endowment mint differs")
     return {"status": "PASS", "native_purchase_verified": True,
             "ap2_signed_scope_verified": True, "ap2_cross_obligation_rejected": True,
+            "ap2_authorization_time_basis": "SAVED_PURCHASE_CHECK_TIME_NOT_CURRENT_VALIDITY",
+            "purchase_authorization_checked_at_unix": checked_at,
             "payment_execution": "APPLICATION_LOCAL_ERC20",
             "local_amount_minor": LOCAL_UNITS, "transaction_hash": e["transaction_hash"],
             "obligation_id": expected_obligation_id,

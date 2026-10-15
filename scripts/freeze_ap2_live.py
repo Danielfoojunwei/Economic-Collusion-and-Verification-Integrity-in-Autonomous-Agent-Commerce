@@ -26,7 +26,7 @@ from agent_economic_trust.ap2_live_plan import (
     manifest)
 from agent_economic_trust.remote_budget import BudgetLedger
 from agent_economic_trust.remote_pricing import pricing_snapshot, reserve_worst_case
-from agent_economic_trust.open004_task import invoice_case
+from agent_economic_trust.ap2_live_fixture import invoice_case
 from agent_economic_trust.ap2_live_purchase import validate_ap2_authorization
 from scripts.verify_ap2_live_offline import verify as verify_offline
 
@@ -35,7 +35,7 @@ ROOT = Path(__file__).resolve().parents[1]
 GATE = ROOT / "artifacts/gates/AP2_LIVE"
 ASSIGNMENT = GATE / "assignment-001"
 LOCK = GATE / "first-freeze.lock.json"
-OFFLINE = ROOT / "artifacts/prospective/ap2-live-audit-purchase/offline-003"
+OFFLINE = ROOT / "artifacts/prospective/ap2-live-audit-purchase/offline-006"
 AP2_PYTHON = Path("/workspace/upstreams/ap2-w15/.venv/bin/python")
 AP2_PIN = "b4587ac1d055888a73b4b21750973cffba961793"
 ERC8183_PIN = "142e669c1fd318486a4628395b629f033654dd06"
@@ -46,6 +46,9 @@ NEW_SOURCE = (
     "scripts/run_ap2_live.py", "scripts/collect_ap2_live.py",
     "scripts/ap2_invoice_authorization.py", "scripts/run_ap2_local.py",
     "src/agent_economic_trust/ap2_live_plan.py",
+    "src/agent_economic_trust/ap2_live_fixture.py",
+    "src/agent_economic_trust/ap2_live_native_verifier.py",
+    "src/agent_economic_trust/ap2_live_open005_verifier.py",
     "src/agent_economic_trust/ap2_live_purchase.py",
     "src/agent_economic_trust/ap2_live_purchase_verifier.py",
     "src/agent_economic_trust/ap2_live_task.py",
@@ -75,6 +78,7 @@ def _readiness(inventory: dict[str, str]) -> dict:
             or saved.get("status") != "PASS"
             or saved.get("source_sha256") != inventory
             or saved.get("offline_report_sha256") != file_sha(OFFLINE / "report.json")
+            or saved.get("public_input_equality_verified") is not True
             or saved.get("max_serialized_model_input_bytes", MAX_INPUT_BYTES + 1)
             > MAX_INPUT_BYTES or saved.get("paid_model_calls") != 0):
         raise ValueError("AP2 LIVE offline readiness/source does not match current freeze")

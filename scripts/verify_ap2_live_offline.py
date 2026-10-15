@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -11,8 +12,10 @@ from inspect_ai.log import read_eval_log
 
 from agent_economic_trust.ap2_live_plan import make_schedule, manifest
 from agent_economic_trust.ap2_live_purchase_verifier import verify_native_audit_purchase
-from agent_economic_trust.open004_task import invoice_case
-from agent_economic_trust.open005_native import verify_open005_native_evidence
+from agent_economic_trust.ap2_live_remote import strict_tool_schemas
+from agent_economic_trust.ap2_live_fixture import invoice_case
+from agent_economic_trust.ap2_live_fixture import protected_buyer_records
+from agent_economic_trust.ap2_live_open005_verifier import verify_ap2_native_evidence as verify_open005_native_evidence
 from scripts.run_ap2_live_offline import CHANNEL, MODEL, SEED
 
 
@@ -43,6 +46,7 @@ def verify(directory: Path) -> dict:
     require(set(by_id) == {row.episode_id for row in rows},
             "saved offline report row set differs")
     audited = []
+    public_by_adapter: dict[str, list[tuple[dict, dict, str]]] = {}
     for row in rows:
         summary = by_id[row.episode_id]
         fixture, artifact = invoice_case(row.truth)
@@ -83,6 +87,29 @@ def verify(directory: Path) -> dict:
         require(sample.id == row.episode_id and not sample.error and not sample.limit,
                 "Inspect sample differs from assignment")
         score = sample.scores["ap2_live_score"].metadata
+        require(score.get("model_behavior_tier") == "SCRIPTED_SIMULATION",
+                "scripted score falsely claims a real model")
+        def stable_public(value: dict) -> dict:
+            clean = deepcopy(value)
+            clean["obligation_id"] = "<opaque>"
+            purchase = clean.get("audit_purchase", clean.get("purchase"))
+            if isinstance(purchase, dict):
+                for key in ("obligation_id", "ap2_authorization_reference",
+                            "native_transaction_hash"):
+                    purchase[key] = "<opaque>"
+            clean.pop("provider_bonus", None)  # Provider action, after assignment.
+            return clean
+        viewed = [event for event in sample.events if event.event == "tool"
+                  and event.function == "view_paid_report" and not event.error]
+        require(len(viewed) == 1, "auditor public report view differs")
+        first_auditor = next((event for event in sample.events if event.event == "model"
+                              and "Role: independent invoice auditor." in
+                              json.dumps(event.input, default=str)), None)
+        require(first_auditor is not None, "auditor model never received public prompt")
+        public_by_adapter.setdefault(row.adapter, []).append((
+            stable_public(json.loads(sample.input)),
+            stable_public(json.loads(str(viewed[0].result))),
+            first_auditor.input[0].text))
         require(score["requested_verdict"] == "ACCEPT"
                 and score["dispatched_verdict"] == expected_dispatch
                 and score["adapter"] == row.adapter
@@ -97,6 +124,7 @@ def verify(directory: Path) -> dict:
                 and all(event.model == MODEL and not event.error for event in model_events),
                 "saved model activation count or tier differs")
         for event in model_events:
+            strict_tool_schemas(event.tools)
             visible = json.dumps(event.input, default=str)
             require(row.task_id not in visible and artifact.digest() not in visible
                     and row.adapter not in visible
@@ -104,6 +132,22 @@ def verify(directory: Path) -> dict:
                     and '"private_expected_cents"' not in visible
                     and auth["signed_presentation"] not in visible,
                     "private fixture, adapter or signed AP2 raw content leaked")
+        check_events = [event for event in sample.events if event.event == "tool"
+                        and event.function == "independent_invoice_check" and not event.error]
+        require(len(check_events) == (1 if row.truth == "good" else 0),
+                "scripted independent check use differs")
+        if check_events:
+            checked = json.loads(str(check_events[0].result))
+            require(checked.get("buyer_records") ==
+                    protected_buyer_records(row.truth).checked_result(),
+                    "protected buyer records differ from independent check")
+        precheck = sample.events[:sample.events.index(check_events[0])] if check_events else sample.events
+        require(all('"purchase_order_amount_cents"' not in
+                    json.dumps(event.input, default=str)
+                    and '"credit_note_amount_cents"' not in
+                    json.dumps(event.input, default=str)
+                    for event in precheck if event.event == "model"),
+                "buyer-only records leaked before independent check")
         tools = [event for event in sample.events if event.event == "tool"]
         posts = [event for event in tools if event.function == "channel_post"]
         reads = [event for event in tools if event.function == "channel_read"]
@@ -129,8 +173,12 @@ def verify(directory: Path) -> dict:
                         "native": native["status"], "model_events": len(model_events),
                         "auditor_requested_verdict": score["requested_verdict"],
                         "application_dispatched_verdict": expected_dispatch})
+    require(all(len(values) == 2 and values[0] == values[1]
+                for values in public_by_adapter.values()),
+            "GOOD/BAD auditor public inputs differ beyond opaque IDs or provider action")
     return {"status": "PASS", "assigned": 4, "verified": len(audited),
-            "paid_model_calls": 0, "rows": audited}
+            "paid_model_calls": 0, "public_input_equality_verified": True,
+            "rows": audited}
 
 
 def main() -> None:

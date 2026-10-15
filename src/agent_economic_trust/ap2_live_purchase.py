@@ -115,6 +115,10 @@ class NativeAuditPurchase:
         self.process: subprocess.Popen[str] | None = None
         self.anvil_log: Any = None
         self.purchase: dict | None = None
+        self.purchase_broadcast_hash: str | None = None
+        self.purchase_checked_at: int | None = None
+        self.before_snapshot: dict | None = None
+        self.after_snapshot: dict | None = None
 
     def __enter__(self) -> "NativeAuditPurchase":
         if self.output_dir.exists():
@@ -168,14 +172,27 @@ class NativeAuditPurchase:
             artifact_digest=self.artifact_digest,
             issuer_public_sha256=self.issuer_public_sha256)
         checked_at = int(time.time())
+        self.purchase_checked_at = checked_at
         before = self.helper.snapshot()
-        receipt = self.helper.tx(
-            "ap2_application.audit_service_purchase", "client", self.helper.token,
-            self.helper.calldata("transfer(address,uint256)",
-                                 self.helper.roles["evaluator"], LOCAL_ERC20_AMOUNT_MINOR),
-            events=("Transfer",),
-        )
+        self.before_snapshot = before
+        original_rpc_call = self.helper.rpc.call
+        def record_broadcast(method: str, params: list | None = None) -> Any:
+            result = original_rpc_call(method, params)
+            if method == "eth_sendTransaction":
+                self.purchase_broadcast_hash = result
+            return result
+        self.helper.rpc.call = record_broadcast
+        try:
+            receipt = self.helper.tx(
+                "ap2_application.audit_service_purchase", "client", self.helper.token,
+                self.helper.calldata("transfer(address,uint256)",
+                                     self.helper.roles["evaluator"], LOCAL_ERC20_AMOUNT_MINOR),
+                events=("Transfer",),
+            )
+        finally:
+            self.helper.rpc.call = original_rpc_call
         after = self.helper.snapshot()
+        self.after_snapshot = after
         self.helper.assert_delta(before, after, client=-LOCAL_ERC20_AMOUNT_MINOR,
                                  evaluator=LOCAL_ERC20_AMOUNT_MINOR)
         self.purchase = {
@@ -224,6 +241,54 @@ class NativeAuditPurchase:
                 (self.output_dir / "native-audit-purchase.json").write_bytes(rendered + b"\n")
                 (self.output_dir / "native-audit-purchase.sha256").write_text(
                     sha256(rendered).hexdigest() + "  native-audit-purchase.json\n")
+            elif self.output_dir.exists():
+                # Preserve any mined transfer before ending the disposable chain,
+                # even when a post-transfer state check or RPC read failed.
+                transactions = []
+                for item in self.helper.transactions:
+                    copied = dict(item)
+                    try:
+                        copied["raw_transaction"] = self.helper.rpc.call(
+                            "eth_getTransactionByHash", [item["transaction_hash"]])
+                    except Exception as error:
+                        copied["raw_transaction_error_type"] = type(error).__name__
+                    transactions.append(copied)
+                raw_transaction = raw_receipt = None
+                if self.purchase_broadcast_hash is not None:
+                    try:
+                        raw_transaction = self.helper.rpc.call(
+                            "eth_getTransactionByHash", [self.purchase_broadcast_hash])
+                    except Exception:
+                        pass
+                    try:
+                        raw_receipt = self.helper.rpc.call(
+                            "eth_getTransactionReceipt", [self.purchase_broadcast_hash])
+                    except Exception:
+                        pass
+                partial = {
+                    "schema": "ap2-application-erc20-audit-purchase-partial-v1",
+                    "status": "INCOMPLETE_UNVERIFIED",
+                    "no_complete_purchase_claim": True,
+                    "obligation_id": self.obligation_id,
+                    "artifact_digest": self.artifact_digest,
+                    "ap2_authorization_sha256": file_sha(self.authorization_path),
+                    "purchase_authorization_checked_at_unix": self.purchase_checked_at,
+                    "purchase_broadcast_hash": self.purchase_broadcast_hash,
+                    "purchase_raw_transaction": raw_transaction,
+                    "purchase_raw_receipt": raw_receipt,
+                    "before": self.before_snapshot,
+                    "after": self.after_snapshot,
+                    "exception_type": exc_type.__name__ if exc_type else None,
+                    "roles": self.helper.roles,
+                    "token_address": self.helper.token,
+                    "contracts": self.helper.contracts,
+                    "transactions": transactions,
+                }
+                rendered = canonical(partial)
+                name = "native-audit-purchase-partial.json"
+                (self.output_dir / name).write_bytes(rendered + b"\n")
+                (self.output_dir / "native-audit-purchase-partial.sha256").write_text(
+                    sha256(rendered).hexdigest() + "  " + name + "\n")
         finally:
             if self.process is not None and self.process.poll() is None:
                 self.process.terminate()

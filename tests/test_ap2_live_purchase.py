@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from agent_economic_trust.ap2_live_purchase import (
     NativeAuditPurchase, validate_ap2_authorization)
@@ -79,15 +81,14 @@ class Ap2LivePurchaseTests(unittest.TestCase):
             expected_issuer_public_sha256=self.issuer)
         self.assertEqual(verified["status"], "PASS")
         evidence = json.loads((output / "native-audit-purchase.json").read_text())
-        from hashlib import sha256
-
         def write_purchase(value):
             raw = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
             (output / "native-audit-purchase.json").write_bytes(raw + b"\n")
             (output / "native-audit-purchase.sha256").write_text(
                 f"{sha256(raw).hexdigest()}  native-audit-purchase.json\n")
 
-        for variant in ("forged_sender", "reversed_blocks", "forged_deployment"):
+        for variant in ("forged_sender", "reversed_blocks", "forged_deployment",
+                        "missing_archive_time"):
             forged = deepcopy(evidence)
             if variant == "forged_sender":
                 tx = forged["transactions"][-1]
@@ -102,8 +103,10 @@ class Ap2LivePurchaseTests(unittest.TestCase):
                 tx["raw_receipt"]["blockNumber"] = "0x0"
                 forged["raw_transaction"] = deepcopy(tx["raw_transaction"])
                 forged["raw_receipt"] = deepcopy(tx["raw_receipt"])
-            else:
+            elif variant == "forged_deployment":
                 forged["transactions"][0]["raw_transaction"]["input"] = "0x00"
+            else:
+                del forged["purchase_authorization_checked_at_unix"]
             write_purchase(forged)
             with self.subTest(variant=variant), self.assertRaises(ValueError):
                 verify_native_audit_purchase(
@@ -118,6 +121,40 @@ class Ap2LivePurchaseTests(unittest.TestCase):
                 output, self.auth, expected_obligation_id=OBLIGATION,
                 expected_artifact_digest=ARTIFACT,
                 expected_issuer_public_sha256=self.issuer)
+
+    def test_mined_purchase_receipt_survives_post_transfer_snapshot_error(self):
+        output = self.root / "post-transfer-partial"
+        with self.assertRaisesRegex(RuntimeError, "injected post-transfer failure"):
+            with NativeAuditPurchase(
+                output, self.auth, obligation_id=OBLIGATION,
+                artifact_digest=ARTIFACT, issuer_public_sha256=self.issuer,
+            ) as controller:
+                original = controller.helper.snapshot
+                calls = 0
+                def fail_second_snapshot():
+                    nonlocal calls
+                    calls += 1
+                    if calls == 2:
+                        raise RuntimeError("injected post-transfer failure")
+                    return original()
+                with patch.object(controller.helper, "snapshot",
+                                  side_effect=fail_second_snapshot):
+                    controller.buy()
+        self.assertFalse((output / "native-audit-purchase.json").exists())
+        partial_path = output / "native-audit-purchase-partial.json"
+        partial = json.loads(partial_path.read_text())
+        self.assertEqual(partial["status"], "INCOMPLETE_UNVERIFIED")
+        self.assertIs(partial["no_complete_purchase_claim"], True)
+        self.assertEqual(partial["exception_type"], "RuntimeError")
+        self.assertEqual(partial["transactions"][-1]["step"],
+                         "ap2_application.audit_service_purchase")
+        self.assertEqual(partial["transactions"][-1]["status"], 1)
+        self.assertEqual(partial["purchase_broadcast_hash"],
+                         partial["purchase_raw_receipt"]["transactionHash"])
+        self.assertEqual(int(partial["purchase_raw_receipt"]["status"], 16), 1)
+        rendered = partial_path.read_bytes().rstrip(b"\n")
+        self.assertEqual((output / "native-audit-purchase-partial.sha256").read_text().strip(),
+                         f"{sha256(rendered).hexdigest()}  native-audit-purchase-partial.json")
 
 
 if __name__ == "__main__":
