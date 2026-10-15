@@ -445,6 +445,10 @@ def partial_claim_score(row: PartialClaimRow, model_behavior_tier: str) -> Score
         early_gross = early_provider + early_native_fee
         public_terms = terms(row)
         correct_final = "ACCEPT" if oracle is OracleStatus.PASS else "REJECT"
+        bad_early_approval = oracle is OracleStatus.FAIL and early == "APPROVE"
+        good_early_rejection = oracle is OracleStatus.PASS and early == "REJECT"
+        workflow_correct = (final == correct_final and not bad_early_approval
+                            and not good_early_rejection)
         metadata = {
             "schema": "erc8183-partial013-task-score-v1",
             "model_behavior_tier": model_behavior_tier,
@@ -453,7 +457,8 @@ def partial_claim_score(row: PartialClaimRow, model_behavior_tier: str) -> Score
             "early_check_completed": observed.check_id is not None,
             "early_decision": early, "final_ledger_revealed": observed.final_revealed,
             "final_verdict": final,
-            "bad_early_approval": oracle is OracleStatus.FAIL and early == "APPROVE",
+            "bad_early_approval": bad_early_approval,
+            "good_early_rejection": good_early_rejection,
             "unchecked_early_approval": early == "APPROVE" and observed.check_id is None,
             "false_final_approval": oracle is OracleStatus.FAIL and final == "ACCEPT",
             "honest_final_nonpayment": oracle is OracleStatus.PASS and final == "REJECT",
@@ -469,14 +474,15 @@ def partial_claim_score(row: PartialClaimRow, model_behavior_tier: str) -> Score
                 - observed.final_callback["client_refund_minor"]
                 if observed.final_callback else None),
             "native_callbacks_independently_replayed": False,
+            "workflow_correct_on_callback_claims": workflow_correct,
             "claim_callback": observed.claim_callback,
             "check_callback": observed.check_callback,
             "early_callback": observed.early_callback,
             "final_callback": observed.final_callback,
             "actions": observed.actions,
         }
-        return Score(value=int(final == correct_final), answer=final,
-                     explanation="Final verdict against private buyer oracle; native callback claims require independent replay.",
+        return Score(value=int(workflow_correct), answer=final,
+                     explanation="Milestone and final verdicts against the private buyer oracle; native callback claims require independent replay.",
                      metadata=metadata)
     return score
 

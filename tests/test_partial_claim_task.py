@@ -241,6 +241,8 @@ class PartialClaimTaskTests(unittest.TestCase):
         self.assertEqual(calls, list(ROLE_STEPS[:-1]))
         score = log.samples[0].scores["partial_claim_score"].metadata
         self.assertTrue(score["bad_early_approval"])
+        self.assertFalse(score["workflow_correct_on_callback_claims"])
+        self.assertEqual(log.samples[0].scores["partial_claim_score"].value, 0)
         self.assertFalse(score["unchecked_early_approval"])
         self.assertEqual(score["final_verdict"], "REJECT")
         self.assertEqual(score["claimed_provider_paid_before_final_minor"], 9_000_000)
@@ -277,6 +279,7 @@ class PartialClaimTaskTests(unittest.TestCase):
             "claimed_provider_paid_total_minor"], 18_000_000)
         self.assertEqual(log.samples[0].scores["partial_claim_score"].metadata[
             "claimed_client_loss_after_final_minor"], 20_000_000)
+        self.assertEqual(log.samples[0].scores["partial_claim_score"].value, 1)
         self.assertLess(len(calls), len(ROLE_STEPS))
 
 
