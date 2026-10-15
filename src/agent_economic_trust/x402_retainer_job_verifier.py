@@ -26,11 +26,16 @@ def require(ok: object, reason: str) -> None:
         raise JobEvidenceError(reason)
 
 
-def verify_job(path: Path, assignment: RetainerAssignment) -> dict:
+def verify_job(path: Path, assignment: RetainerAssignment, *,
+               model_tier: str = "SCRIPTED_SIMULATION",
+               study_id: str = "X402_AUDIT_RETAINER_010") -> dict:
     assignment.validate()
+    require(model_tier in {"SCRIPTED_SIMULATION", "REAL_LLM_REMOTE_APPROVED"}
+            and study_id in {"X402_AUDIT_RETAINER_010", "X402_AUDIT_RETAINER_011"},
+            "unsupported native evidence tier or study")
     raw = json.loads(Path(path).read_bytes())
     require(raw.get("schema") == "x402-retainer-separate-erc8183-job-v1"
-            and raw.get("model_tier") == "SCRIPTED_SIMULATION"
+            and raw.get("model_tier") == model_tier
             and raw.get("transaction_tier") == "NATIVE_LOCAL_PROTOCOL",
             "job evidence schema/execution tier differs")
     require(raw.get("assignment") == vars(assignment)
@@ -74,7 +79,7 @@ def verify_job(path: Path, assignment: RetainerAssignment) -> dict:
             "protocol fee was not explicitly zeroed")
     create = raw_txs["x402job.create"]
     description = json.dumps({
-        "study": "X402_AUDIT_RETAINER_010", "obligation_id": assignment.obligation_id,
+        "study": study_id, "obligation_id": assignment.obligation_id,
         "artifact_digest": artifact.digest(),
         "rule": "release iff independent invoice total matches report",
     }, sort_keys=True, separators=(",", ":"))

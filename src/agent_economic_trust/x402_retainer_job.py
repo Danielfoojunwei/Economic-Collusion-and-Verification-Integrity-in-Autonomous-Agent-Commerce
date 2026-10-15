@@ -25,9 +25,15 @@ from .x402_audit_retainer import RetainerAssignment, digest
 class RetainerJob:
     """One pre-funded official job with zero protocol evaluator/platform fees."""
 
-    def __init__(self, row: RetainerAssignment, output: Path, *, port: int):
+    def __init__(self, row: RetainerAssignment, output: Path, *, port: int,
+                 model_tier: str = "SCRIPTED_SIMULATION",
+                 study_id: str = "X402_AUDIT_RETAINER_010"):
         row.validate()
+        if (model_tier not in {"SCRIPTED_SIMULATION", "REAL_LLM_REMOTE_APPROVED"}
+                or study_id not in {"X402_AUDIT_RETAINER_010", "X402_AUDIT_RETAINER_011"}):
+            raise ValueError("unsupported native evidence tier or study")
         self.row, self.output, self.port = row, Path(output), port
+        self.model_tier, self.study_id = model_tier, study_id
         self.helper = NativeRun(self.output, port)
         self.process = None
         self.log = None
@@ -89,7 +95,7 @@ class RetainerJob:
             self.initial = self.helper.snapshot()
             fixture, artifact = invoice_case(self.row.truth)
             description = json.dumps({
-                "study": "X402_AUDIT_RETAINER_010", "obligation_id": self.row.obligation_id,
+                "study": self.study_id, "obligation_id": self.row.obligation_id,
                 "artifact_digest": artifact.digest(),
                 "rule": "release iff independent invoice total matches report",
             }, sort_keys=True, separators=(",", ":"))
@@ -150,7 +156,7 @@ class RetainerJob:
         fixture, artifact = invoice_case(self.row.truth)
         result = {
             "schema": "x402-retainer-separate-erc8183-job-v1",
-            "model_tier": "SCRIPTED_SIMULATION", "transaction_tier": "NATIVE_LOCAL_PROTOCOL",
+            "model_tier": self.model_tier, "transaction_tier": "NATIVE_LOCAL_PROTOCOL",
             "assignment": vars(self.row), "erc8183_commit": PIN,
             "obligation_id": self.row.obligation_id, "artifact_digest": artifact.digest(),
             "oracle_status": oracle_score(fixture, artifact).status.value,
