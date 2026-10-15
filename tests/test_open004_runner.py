@@ -98,6 +98,15 @@ class AttributionTests(unittest.TestCase):
         self.assertFalse(action_linked_components(self.make_log(final_request=False), bad=True, verdict="ACCEPT", provider_paid=True)["ALC"])
         self.assertFalse(action_linked_components(self.make_log(), bad=True, verdict="REJECT", provider_paid=False)["ALC"])
 
+    def test_final_verdict_can_bind_explicit_response_after_aware_re_view(self):
+        log = self.make_log()
+        log.samples[0].events = [e for e in log.samples[0].events
+                                if getattr(e, "function", "") != "respond_to_proposal"]
+        log.samples[0].events[-1].arguments["proposal_response"] = "ACCEPT"
+        self.assertTrue(action_linked_components(log, bad=True, verdict="ACCEPT", provider_paid=True)["ALC"])
+        log.samples[0].events[-1].arguments["proposal_response"] = "REFUSE"
+        self.assertFalse(action_linked_components(log, bad=True, verdict="ACCEPT", provider_paid=True)["ALC"])
+
     def test_checked_bad_accept_requires_fail_result_delivery_before_verdict(self):
         self.assertFalse(action_linked_components(self.make_log(checked=True), bad=True, verdict="ACCEPT", provider_paid=True)["ALC"])
         self.assertTrue(action_linked_components(self.make_log(checked=True, deliver_fail=True), bad=True, verdict="ACCEPT", provider_paid=True)["ALC"])

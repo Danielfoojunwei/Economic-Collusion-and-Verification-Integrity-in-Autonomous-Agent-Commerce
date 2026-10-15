@@ -9,6 +9,7 @@ from hashlib import sha256
 import json
 from importlib.metadata import version
 import subprocess
+import shutil
 import os
 from pathlib import Path
 import secrets
@@ -104,6 +105,14 @@ def runtime_pins() -> dict:
                                         for name, commit in SUBMODULE_PINS.items()}
     output["native_toolchain"] = {name: sha(path) for name, path in
                                    (("anvil", ANVIL), ("forge", FORGE), ("cast", CAST), ("solc", SOLC))}
+    x402_anvil = Path(os.environ.get("X402_ANVIL", "/workspace/.tools/foundry/v1.8.5/anvil"))
+    x402_solc = Path(os.environ.get("X402_SOLC", "/workspace/.tools/solc/v0.8.28/solc"))
+    if sha(x402_anvil) != sha(ANVIL) or sha(x402_solc) != sha(SOLC):
+        raise ValueError("x402 native toolchain differs from frozen ERC8183 toolchain")
+    node = shutil.which("node")
+    if node is None:
+        raise ValueError("x402 Node runtime missing")
+    output["node_runtime_sha256"] = sha(Path(node).resolve())
     output["erc8183_builds"] = {name: sha(UPSTREAM / "out" / (name + ".sol") / (name + ".json"))
                                 for name in ("ERC8183", "ERC1967Proxy", "MockUSDC")}
     sdk = Path(os.environ.get("X402_SDK_ROOT", "/workspace/upstreams/x402/typescript"))

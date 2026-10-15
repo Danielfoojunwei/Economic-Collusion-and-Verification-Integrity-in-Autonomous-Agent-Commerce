@@ -12,8 +12,9 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 os.environ["PYTHON_DOTENV_DISABLED"] = "1"
-for kind in ("DATA", "CACHE", "CONFIG"):
-    os.environ[f"XDG_{kind}_HOME"] = str(ROOT.parent / ".local" / kind.lower())
+os.environ["XDG_DATA_HOME"] = str(ROOT.parent / ".local/share")
+os.environ["XDG_CACHE_HOME"] = str(ROOT.parent / ".cache")
+os.environ["XDG_CONFIG_HOME"] = str(ROOT.parent / ".config")
 sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 from inspect_ai import eval as inspect_eval
 from inspect_ai.log import read_eval_log
