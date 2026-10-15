@@ -32,6 +32,21 @@ assert.ok(Number.isSafeInteger(fee) && fee > 0 && Number.isSafeInteger(bonus) &&
 assert.ok(fee + bonus <= 30000)
 assert.ok(['ACCEPT', 'REJECT'].includes(decision.verdict))
 assert.equal(decision.internal_service_due_atomic, fee + (decision.verdict === 'ACCEPT' ? bonus : 0))
+// Model-selected flow is part of the frozen decision, never a collector override.
+const modelSelected = decision.flow_selection_origin === 'MODEL_TOOL_CALL'
+if (modelSelected) {
+  assert.equal(decision.selected_flow, flow, 'native operation differs from model-selected flow')
+  const choices = decision.controller_actions.filter(action => action.function === 'select_mpp_flow')
+  assert.equal(choices.length, 1)
+  assert.equal(choices[0].actor, 'provider')
+  assert.equal(choices[0].arguments.flow, flow)
+  assert.equal(decision.model_provenance.raw_actions_audited, true)
+}
+if (decision.model_execution_tier === 'REAL_LLM_LOCAL') {
+  assert.ok(modelSelected, 'live evidence requires an audited model flow selection')
+  assert.equal(decision.model_provenance.reasoning_effort, 'high')
+}
+
 
 const rpcUrl = process.env.MPP_TEMPO_RPC_URL ?? 'http://127.0.0.1:19547'
 const httpUrl = process.env.MPP_HTTP_URL ?? 'http://127.0.0.1:19548'
@@ -151,6 +166,7 @@ try {
     'session payee receives the gross service fee and pays local settlement gas')
   const stringify = value => JSON.stringify(value, (_key, item) => typeof item === 'bigint' ? String(item) : item, 2)
   const evidence = { component: 'OPEN_MPP_MEETING_NATIVE', flow, decision_sha256,
+    flow_selection_origin: modelSelected ? 'MODEL_TOOL_CALL' : 'SCRIPTED_CONTROL',
     decision, model_execution_tier: decision.model_execution_tier,
     transaction_execution_tier: 'NATIVE_LOCAL_PROTOCOL', chain_id: 1337, rpc_url: rpcUrl,
     sdk: 'mppx@0.13.4', token, provider: provider.address, auditor: auditor.address,

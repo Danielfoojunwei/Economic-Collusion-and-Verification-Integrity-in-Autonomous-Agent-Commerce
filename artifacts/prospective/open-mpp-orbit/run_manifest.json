@@ -1,0 +1,42 @@
+{
+  "dependency_base": "bc09077",
+  "model_execution_tier": "SCRIPTED_SIMULATION",
+  "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL",
+  "remote_model_calls": 0,
+  "model_spend_usd": 0,
+  "source_sha256": {
+    "src/agent_economic_trust/open_mpp_orbit.py": "b8facb98512a2988773a9aec1693a5c39b63baa0d2ca979c44303a8343b2369d",
+    "src/agent_economic_trust/open_mpp_smoke.py": "bc69a194c09eb75b691bad3dce7e3548e83f8fc9ed48c2883712b4b3974a5d7a",
+    "scripts/run_open_mpp_orbit_smoke.py": "6328cb0aae6e63e0e740ffce4f783679e16098f3cff062bf27349c0d6a987fee",
+    "scripts/collect_open_mpp_log.py": "2e2b69397bca984299997bf076192a41e7cbc1761d77fe280bab405384330214",
+    "tests/test_open_mpp_orbit.py": "85e1f8f848cb1585238f3e2589031c71c81abeacc28433676ac896125cdede79",
+    "protocols/mpp/meeting-local.mjs": "88d679658b150780f9b6531367500016f522ac47fd8c2a2f791076bb533b9469",
+    "protocols/mpp/verify-meeting-evidence.mjs": "516523436ea6c4cb35977fe89ad3911b95f1640ccc1d0ca2743a6f8fa4c67927",
+    "protocols/mpp/package-lock.json": "ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad"
+  },
+  "files_sha256": {
+    "REPORT.md": "acc4cb70ace1c109685681392a1dcfd162e13f9f550282bc845669277e581466",
+    "zero-model-001/collector-check/audit_report.json": "e6d67bc5d12ee8b86ba4b9d90924eccba72da874995467861b5c1ac918622e22",
+    "zero-model-001/collector-check/decision.json": "6690e1e4fed40584e8912ba74f9b476c4158d8fe5e893dc20cdab689d614506f",
+    "zero-model-001/collector-check/raw.eval": "199e3f76115dae953a2268c6430908abfb24a83e7bbc02100bbe75e762fd98f8",
+    "zero-model-001/control-00/2026-10-15T12-09-17-00-00_open-mpp-orbit_bJ4FJgvfAgmCNThYnFGdzk.eval": "00f9ccf927dd834a90f91cdc27590f71840fdb8b083447538bc1516991c9485b",
+    "zero-model-001/control-00/decision.json": "c28377ba493df472db914c6d4bd18f9dfa4bc9cb3a8e7e81dbb6f64751c4c835",
+    "zero-model-001/control-01/2026-10-15T12-09-18-00-00_open-mpp-orbit_gttAmnzec37XVgGS4gRP28.eval": "1e204c7f2dbd6cf5b2d19b36b5b8ca2d8d1afa1617305cc3e1e9382a5f6d2831",
+    "zero-model-001/control-01/decision.json": "3715b5cde33b16683e7223f18d89c67612b0cc4229617db0bee89488704190df",
+    "zero-model-001/control-02/2026-10-15T12-09-19-00-00_open-mpp-orbit_NBF5ShzxvAVbcy9jmLUJYP.eval": "042a52f49a3edca51297d6ef6203a0043ddb41e3a85f0ecd3f1cefb9f20f4cb9",
+    "zero-model-001/control-02/decision.json": "aee72ec35523db1575aaa534cc7c58e529f4546e23abcf73f641f5b7ae61b431",
+    "zero-model-001/control-03/2026-10-15T12-09-19-00-00_open-mpp-orbit_jdwZMDjv7fUhqsnJbV4Bce.eval": "199e3f76115dae953a2268c6430908abfb24a83e7bbc02100bbe75e762fd98f8",
+    "zero-model-001/control-03/decision.json": "6690e1e4fed40584e8912ba74f9b476c4158d8fe5e893dc20cdab689d614506f",
+    "zero-model-001/control-04/2026-10-15T12-09-20-00-00_open-mpp-orbit_ZY7MNCkzJ6uBYhfor2VkiW.eval": "d27a42c99b8b061e3e6f9d48d0e6dadcab1165a77a37baeb1a94a57b235d78ca",
+    "zero-model-001/control-04/decision.json": "980609144464b34341ae902dbe1a0a4c93079a2d9886998707136aec33f0bb8f",
+    "zero-model-001/control-05/2026-10-15T12-09-20-00-00_open-mpp-orbit_BhePyBFHB5QnnkbT78B4rM.eval": "b546fa72aef3f049d7c870fbaef9d707a7efc029ead7dd88bdc55784827301e6",
+    "zero-model-001/control-05/decision.json": "6ea44a4194d13b0eb52aae4c47aed3332d55709c04c288a4f08436f87940b143",
+    "zero-model-001/native-bad-checked-session.json": "901e0f6db9b667b488de5bb42390199a5fc2f94528011e0b36562235840f8317",
+    "zero-model-001/native-bad-unchecked-charge.json": "c094fa29a2202c1bf3277a6e74d32180eed3760555a6474f722717d0004500e2",
+    "zero-model-001/native-good-checked-charge.json": "78cbd9f779add619ba2d5ccc5878ed4ef81db9d53328f55e9ac6edafe2e6c323",
+    "zero-model-001/native-good-unchecked-session.json": "c2f0b3972ef5516eefe155346aed3aafcdb5b31d7a8460016a884122fdfde0fd",
+    "zero-model-001/negative-native-flow.json": "f7edfac6071aac2b8e183bf569a0116915cf412c20c2d92b4023a673cea8f17c",
+    "zero-model-001/summary.json": "1c4c2fe4022fc31b492ef2f0cd8a22bcfbead619af4e6ea5ac58d3c63840186f",
+    "zero-model-001/unit-tests.txt": "0224178b9c4aa7cafc5485cc6604d4dc67e7aea17ae25bf32468953aad9e104f"
+  }
+}

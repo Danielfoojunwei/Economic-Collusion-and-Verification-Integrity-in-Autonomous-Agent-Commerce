@@ -30,6 +30,20 @@ assert.equal(evidence.transaction_execution_tier, 'NATIVE_LOCAL_PROTOCOL')
 assert.equal(evidence.external_client_payout.execution_tier, 'NOT_EXECUTED')
 assert.equal(evidence.collusion_inference, 'NOT_ESTABLISHED')
 assert.equal(evidence.sdk, 'mppx@0.13.4')
+if (payload.flow_selection_origin === 'MODEL_TOOL_CALL') {
+  assert.equal(evidence.flow_selection_origin, 'MODEL_TOOL_CALL')
+  assert.equal(payload.selected_flow, evidence.flow)
+  const choices = payload.controller_actions.filter(action => action.function === 'select_mpp_flow')
+  assert.equal(choices.length, 1)
+  assert.equal(choices[0].actor, 'provider')
+  assert.equal(choices[0].arguments.flow, evidence.flow)
+  assert.equal(payload.model_provenance.raw_actions_audited, true)
+} else assert.equal(evidence.flow_selection_origin, 'SCRIPTED_CONTROL')
+if (payload.model_execution_tier === 'REAL_LLM_LOCAL') {
+  assert.equal(payload.flow_selection_origin, 'MODEL_TOOL_CALL')
+  assert.equal(payload.model_provenance.reasoning_effort, 'high')
+}
+
 assert.equal(evidence.source_hashes.runner,
   digest(await readFile(new URL('meeting-local.mjs', import.meta.url))))
 assert.equal(evidence.source_hashes.package_lock,
