@@ -44,6 +44,10 @@ SOURCE_FILES = (
     "docs/X402_LIVE011_CONTINGENT_INDEPENDENT_REVIEW.md",
     "contracts/x402/TestEIP3009Token.sol",
     "scripts/run_erc8183_local.py", "scripts/run_x402_audit_retainer.mjs",
+    "scripts/preview_x402_retainer.py",
+    "scripts/run_x402_retainer_offline.py",
+    "scripts/run_x402_live011_offline.py",
+    "scripts/verify_x402_live011_offline.py",
     "scripts/run_x402_live012_offline.py",
     "scripts/freeze_x402_live012.py",
     "scripts/run_x402_live012.py",
@@ -63,18 +67,29 @@ SOURCE_FILES = (
     "src/agent_economic_trust/x402_audit_retainer_verifier.py",
     "src/agent_economic_trust/x402_retainer_job.py",
     "src/agent_economic_trust/x402_retainer_job_verifier.py",
+    "src/agent_economic_trust/x402_live011_budget.py",
+    "src/agent_economic_trust/x402_live011_plan.py",
+    "src/agent_economic_trust/x402_live011_task.py",
+    "src/agent_economic_trust/x402_live011_native.py",
+    "src/agent_economic_trust/x402_live011_native_verifier.py",
     "src/agent_economic_trust/x402_live012_plan.py",
     "src/agent_economic_trust/x402_live012_task.py",
     "src/agent_economic_trust/x402_live012_boundary.py",
+    "src/agent_economic_trust/x402_live012_remote.py",
     "src/agent_economic_trust/x402_live012_native.py",
     "src/agent_economic_trust/x402_live012_native_verifier.py",
     "src/agent_economic_trust/x402_live012_budget.py",
+    "tests/test_x402_live012_task.py",
+    "tests/test_x402_live012_native.py",
+    "tests/test_x402_live012_collector.py",
 )
 OFFLINE_010 = ROOT / "artifacts/gates/X402_RETAINER_010/offline-native-001"
 OFFLINE_011 = ROOT / "artifacts/prospective/X402_LIVE011/offline-native-003"
 OFFLINE_012 = ROOT / "artifacts/prospective/X402_LIVE012/offline-native-001"
 OFFLINE_012_INCOMPLETE = (ROOT /
     "artifacts/prospective/X402_LIVE012/offline-incomplete-001")
+SOURCE_REVIEW = (ROOT /
+    "artifacts/prospective/X402_LIVE012/source-review-001.json")
 
 
 def sha(path: Path) -> str:
@@ -85,6 +100,32 @@ def sha(path: Path) -> str:
 
 def source_inventory() -> dict[str, str]:
     return {name: sha(ROOT / name) for name in source_file_names()}
+
+
+def source_review(sources: dict[str, str]) -> dict:
+    """Bind source GO to the named 012 closure; freeze seals every script."""
+    payload = json.loads(SOURCE_REVIEW.read_bytes())
+    named_closure = {name: sources[name] for name in SOURCE_FILES}
+    inventory_sha = sha256(json.dumps(named_closure, sort_keys=True,
+        separators=(",", ":")).encode()).hexdigest()
+    if (SOURCE_REVIEW.is_symlink()
+            or payload.get("schema") != "x402-live012-source-review-v1"
+            or payload.get("status") != "GO_SOURCE_MERGE_ONLY"
+            or payload.get("reviewed_closure_sha256") != inventory_sha
+            or payload.get("terminal_native_report_sha256") !=
+               sha(OFFLINE_012 / "report.json")
+            or payload.get("incomplete_native_report_sha256") !=
+               sha(OFFLINE_012_INCOMPLETE / "report.json")
+            or payload.get("independent_reviewed_tests") != 20
+            or payload.get("freeze_or_paid_authorization") is not False
+            or payload.get("live_collusion_observations") != 0
+            or payload.get("reviewer_id") !=
+               "/root/x402_live_prospective/x402011_independent_review"):
+        raise ValueError("independent x402012 source review is absent or stale")
+    return {"status": "GO_SOURCE_MERGE_ONLY",
+            "review_sha256": sha(SOURCE_REVIEW),
+            "reviewed_closure_sha256": inventory_sha,
+            "freeze_or_paid_authorization": False}
 
 
 def source_file_names() -> tuple[str, ...]:
@@ -148,6 +189,11 @@ def read_only_readiness(*, refresh_pricing: bool) -> dict:
         reasons.append("NONCANONICAL_WORKTREE")
     if not clean_versioned_sources():
         reasons.append("VERSIONED_SOURCE_DIRTY")
+    try:
+        reviewed = source_review(sources)
+    except (ValueError, KeyError, FileNotFoundError):
+        reviewed = {"status": "MISSING_OR_STALE"}
+        reasons.append("INDEPENDENT_SOURCE_REVIEW_NOT_RECORDED")
     if archive["status"] != "PASS" or archive["native_cells_reverified"] != 4:
         reasons.append("NATIVE_010_FOUR_CELL_ARCHIVE_FAILED")
     if (offline_011.get("status") != "PASS"
@@ -195,14 +241,13 @@ def read_only_readiness(*, refresh_pricing: bool) -> dict:
     else:
         price = {"basis": "UNREFRESHED_NO_SPEND_AUTHORIZATION"}
         reasons.append("CURRENT_PUBLIC_PRICE_REFRESH_REQUIRED")
-    reasons.extend(("PROSPECTIVE_ASSIGNMENT_NOT_FROZEN",
-                    "LIVE_RAW_MODEL_BOUNDARY_AND_COLLECTOR_NOT_YET_REVIEWED",
-                    "INDEPENDENT_GO_REVIEW_NOT_RECORDED"))
+    reasons.append("PROSPECTIVE_ASSIGNMENT_NOT_FROZEN")
     return {"schema": "x402-live012-read-only-readiness-v1",
             "would_freeze": False, "would_call_paid_model": False,
             "source_inventory_sha256": sha256(json.dumps(sources, sort_keys=True,
                 separators=(",", ":")).encode()).hexdigest(),
             "source_sha256": sources,
+            "independent_source_review": reviewed,
             "offline_010": archive,
             "offline_011": offline_011,
             "offline_012": offline_012,

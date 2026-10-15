@@ -32,7 +32,8 @@ from agent_economic_trust.x402_live012_boundary import offline_real_tool_schema_
 from scripts.verify_x402_live012_readiness import (  # noqa: E402
     OFFLINE_010, OFFLINE_011, OFFLINE_012, OFFLINE_012_INCOMPLETE,
     clean_versioned_sources,
-    native_source_readiness, source_inventory, verify_010, verify_011,
+    native_source_readiness, source_inventory, source_review,
+    verify_010, verify_011,
     verify_012, verify_012_incomplete, version)
 
 
@@ -238,7 +239,8 @@ def _budget(state: dict, rows, prices: dict) -> dict:
 
 
 def freeze_payload(seed_hex: str, rows, *, sources: dict, runtime: dict,
-                   offline: dict, prices: dict, state: dict, clearance: dict) -> dict:
+                   offline: dict, prices: dict, state: dict, clearance: dict,
+                   review: dict) -> dict:
     """Pure serializer; the fixed preview fields must match before overrides."""
     preview = prospective_manifest(seed_hex, rows)
     return {**preview,
@@ -253,6 +255,7 @@ def freeze_payload(seed_hex: str, rows, *, sources: dict, runtime: dict,
             "prior_ledger_run_ids": sorted(state["runs"]),
             "prior_ledger_runs_sha256": digest(state["runs"]),
             "cross_study_clearance": clearance,
+            "independent_source_review": review,
             "budget_gate": _budget(state, rows, prices),
             "model_tier": "REAL_LLM_REMOTE_APPROVED",
             "payment_tier": "NATIVE_LOCAL_PROTOCOL",
@@ -282,6 +285,7 @@ def freeze(*, seed_hex: str | None = None) -> dict:
     if not clean_versioned_sources():
         raise ValueError("tracked x402 012 source differs before freeze")
     sources, runtime, offline = source_inventory(), _runtime(), _offline()
+    review = source_review(sources)
     state = _ledger()
     clearance = cross_study_clearance(state, current_head=True)
     prices = pricing_snapshots()
@@ -289,7 +293,7 @@ def freeze(*, seed_hex: str | None = None) -> dict:
     rows = make_schedule(seed)
     payload = freeze_payload(seed, rows, sources=sources, runtime=runtime,
                              offline=offline, prices=prices,
-                             state=state, clearance=clearance)
+                             state=state, clearance=clearance, review=review)
     if BudgetLedger(CANONICAL_LEDGER).snapshot()["last_hash"] != state["last_hash"]:
         raise ValueError("shared ledger changed during one-time freeze preflight")
     GATE.mkdir(parents=True, exist_ok=True)
@@ -329,6 +333,8 @@ def verify_static() -> dict:
     if (frozen.get("source_sha256") != source_inventory()
             or frozen.get("source_inventory_sha256") != digest(source_inventory())):
         raise ValueError("x402 012 frozen executable source changed")
+    if frozen.get("independent_source_review") != source_review(source_inventory()):
+        raise ValueError("x402 012 independently reviewed source changed")
     clearance = frozen["cross_study_clearance"]
     if (clearance.get("sha256") != sha(CLEARANCE)
             or clearance.get("inventory_sha256") != digest(competing_gate_inventory())):
@@ -362,6 +368,8 @@ def readiness() -> dict:
                          None if clean_versioned_sources() else
                          (_ for _ in ()).throw(ValueError("tracked source dirty")))),
                      ("source_inventory", source_inventory),
+                     ("independent_source_review", lambda: source_review(
+                         source_inventory())),
                      ("pinned_runtime", _runtime),
                      ("native_controls", _offline),
                      ("shared_ledger", _ledger),

@@ -21,6 +21,7 @@ from scripts.collect_x402_live012 import (classify_improper_request, collect,
                                            verify_incomplete_conduct,
                                            verify_stopped_model_and_account,
                                            _pre_evidence_guard)
+from scripts.verify_x402_live012_readiness import source_inventory, source_review
 
 
 def _model(role: str, model: str, tool: str, arguments: dict,
@@ -107,6 +108,15 @@ def bad_scripted_case(*, exposed: bool = True, repeat_view: bool = False,
 
 
 class X402Live012CollectorTests(unittest.TestCase):
+    def test_independent_source_review_binds_exact_executable_inventory(self):
+        sources = source_inventory()
+        self.assertEqual(source_review(sources)["status"],
+                         "GO_SOURCE_MERGE_ONLY")
+        tampered = dict(sources)
+        tampered["scripts/collect_x402_live012.py"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "absent or stale"):
+            source_review(tampered)
+
     def test_bad_payout_requires_origin_and_actual_lower_trust_exposure(self):
         sample, row, bridge, native, raw = bad_scripted_case(repeat_view=True)
         result = verify_conduct(sample, row, bridge, native, raw)

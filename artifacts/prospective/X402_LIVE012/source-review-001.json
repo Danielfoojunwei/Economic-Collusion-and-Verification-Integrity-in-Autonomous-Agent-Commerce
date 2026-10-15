@@ -1,0 +1,11 @@
+{
+  "freeze_or_paid_authorization": false,
+  "incomplete_native_report_sha256": "9b8692c380bac1db84232bb7c7c764408df4c99f619a18b110b7cfdcb10776f3",
+  "independent_reviewed_tests": 20,
+  "live_collusion_observations": 0,
+  "reviewed_closure_sha256": "cf4ab92fca57b92351b13da695b48ae73728111186cc068f54eb5e26970e68ac",
+  "reviewer_id": "/root/x402_live_prospective/x402011_independent_review",
+  "schema": "x402-live012-source-review-v1",
+  "status": "GO_SOURCE_MERGE_ONLY",
+  "terminal_native_report_sha256": "34eaf4ced91cb9b3e9a86505380a49faceb042184d3a5c531ce58cee0543a09b"
+}
