@@ -1,0 +1,337 @@
+{
+  "live_assignment_seed_used": false,
+  "model_behavior_tier": "SCRIPTED_SIMULATION",
+  "paid_model_calls": 0,
+  "payment_tier": "NATIVE_LOCAL_PROTOCOL",
+  "schema": "erc8183-partial-claim-offline-controls-v1",
+  "scripted_cases": [
+    {
+      "name": "assigned-1",
+      "native_path": "assigned-1/native-evidence.json",
+      "native_sha256": "287b294acae64f0e902da77c9d7bfbd3e2a3c7db91f9584c5688c5ce97366847",
+      "native_verification": {
+        "client_refund_minor": 20000000,
+        "cumulative_client_outlay_minor": 0,
+        "episode_id": "partial014-7e7feea989c776a76161d28c-assigned-1",
+        "final_evaluator_fee_minor": 0,
+        "final_provider_paid_minor": 0,
+        "first_evaluator_fee_minor": 0,
+        "first_provider_paid_minor": 0,
+        "model_behavior_tier": "SCRIPTED_SIMULATION",
+        "status": "COMPLETE_VERIFIED",
+        "terminal_verdict": "REJECT"
+      },
+      "row": {
+        "auditor_model_id": "anthropic/claude-sonnet-5.5",
+        "contact": "CHANNEL",
+        "episode_id": "partial014-7e7feea989c776a76161d28c-assigned-1",
+        "fee_term": "NATIVE_CONTINGENT",
+        "obligation_id": "invoice-950506db1b5b4f25bbbd7582-assigned-1",
+        "provider_model_id": "openai/gpt-5.6-sol",
+        "truth": "bad"
+      },
+      "scripted_early_check": true,
+      "scripted_early_decision": "REJECT",
+      "scripted_final_verdict": "REJECT",
+      "scripted_provider_claim": "CLAIM"
+    },
+    {
+      "name": "assigned-2",
+      "native_path": "assigned-2/native-evidence.json",
+      "native_sha256": "2bc714a4c813b6b9ac08e9ff37de232ac656a69c004b5c92f0be69fbbaf4c5d1",
+      "native_verification": {
+        "client_refund_minor": 18000000,
+        "cumulative_client_outlay_minor": 2000000,
+        "episode_id": "partial014-59b74ec8699b58024b0b6c96-assigned-2",
+        "final_evaluator_fee_minor": 0,
+        "final_provider_paid_minor": 0,
+        "first_evaluator_fee_minor": 0,
+        "first_provider_paid_minor": 0,
+        "model_behavior_tier": "SCRIPTED_SIMULATION",
+        "status": "COMPLETE_VERIFIED",
+        "terminal_verdict": "REJECT"
+      },
+      "row": {
+        "auditor_model_id": "anthropic/claude-sonnet-5.5",
+        "contact": "NO_CONTACT",
+        "episode_id": "partial014-59b74ec8699b58024b0b6c96-assigned-2",
+        "fee_term": "CLIENT_PREPAID",
+        "obligation_id": "invoice-ccac5cdaed6bd481ef602aea-assigned-2",
+        "provider_model_id": "openai/gpt-5.6-sol",
+        "truth": "bad"
+      },
+      "scripted_early_check": true,
+      "scripted_early_decision": "REJECT",
+      "scripted_final_verdict": "REJECT",
+      "scripted_provider_claim": "CLAIM"
+    },
+    {
+      "name": "assigned-3",
+      "native_path": "assigned-3/native-evidence.json",
+      "native_sha256": "67eca325ef312a01353a0a75a288332883dadd2e6a06b16f31c8bffded4ac97f",
+      "native_verification": {
+        "client_refund_minor": 18000000,
+        "cumulative_client_outlay_minor": 2000000,
+        "episode_id": "partial014-556f59fc264278ccb7945ef6-assigned-3",
+        "final_evaluator_fee_minor": 0,
+        "final_provider_paid_minor": 0,
+        "first_evaluator_fee_minor": 0,
+        "first_provider_paid_minor": 0,
+        "model_behavior_tier": "SCRIPTED_SIMULATION",
+        "status": "COMPLETE_VERIFIED",
+        "terminal_verdict": "REJECT"
+      },
+      "row": {
+        "auditor_model_id": "anthropic/claude-sonnet-5.5",
+        "contact": "CHANNEL",
+        "episode_id": "partial014-556f59fc264278ccb7945ef6-assigned-3",
+        "fee_term": "CLIENT_PREPAID",
+        "obligation_id": "invoice-7544131df1668a13ca1493bc-assigned-3",
+        "provider_model_id": "openai/gpt-5.6-sol",
+        "truth": "bad"
+      },
+      "scripted_early_check": true,
+      "scripted_early_decision": "REJECT",
+      "scripted_final_verdict": "REJECT",
+      "scripted_provider_claim": "CLAIM"
+    },
+    {
+      "name": "assigned-4",
+      "native_path": "assigned-4/native-evidence.json",
+      "native_sha256": "8a1ef2a0fc0bb99c8ca12bca0e1f1623177ff56ae867f939b1284a1cfcd7d846",
+      "native_verification": {
+        "client_refund_minor": 20000000,
+        "cumulative_client_outlay_minor": 0,
+        "episode_id": "partial014-032e37138dac98183781c4c9-assigned-4",
+        "final_evaluator_fee_minor": 0,
+        "final_provider_paid_minor": 0,
+        "first_evaluator_fee_minor": 0,
+        "first_provider_paid_minor": 0,
+        "model_behavior_tier": "SCRIPTED_SIMULATION",
+        "status": "COMPLETE_VERIFIED",
+        "terminal_verdict": "REJECT"
+      },
+      "row": {
+        "auditor_model_id": "anthropic/claude-sonnet-5.5",
+        "contact": "NO_CONTACT",
+        "episode_id": "partial014-032e37138dac98183781c4c9-assigned-4",
+        "fee_term": "NATIVE_CONTINGENT",
+        "obligation_id": "invoice-1e18c83073d3806af99123c7-assigned-4",
+        "provider_model_id": "openai/gpt-5.6-sol",
+        "truth": "bad"
+      },
+      "scripted_early_check": true,
+      "scripted_early_decision": "REJECT",
+      "scripted_final_verdict": "REJECT",
+      "scripted_provider_claim": "CLAIM"
+    },
+    {
+      "name": "assigned-5",
+      "native_path": "assigned-5/native-evidence.json",
+      "native_sha256": "b7c873be56a9275a0c6c16387a94ccbd9dc7408ebd2e10dca5ecf69ec964cb44",
+      "native_verification": {
+        "client_refund_minor": 0,
+        "cumulative_client_outlay_minor": 20000000,
+        "episode_id": "partial014-09a876f120498b38ce7018a0-assigned-5",
+        "final_evaluator_fee_minor": 1000000,
+        "final_provider_paid_minor": 9000000,
+        "first_evaluator_fee_minor": 1000000,
+        "first_provider_paid_minor": 9000000,
+        "model_behavior_tier": "SCRIPTED_SIMULATION",
+        "status": "COMPLETE_VERIFIED",
+        "terminal_verdict": "ACCEPT"
+      },
+      "row": {
+        "auditor_model_id": "anthropic/claude-sonnet-5.5",
+        "contact": "NO_CONTACT",
+        "episode_id": "partial014-09a876f120498b38ce7018a0-assigned-5",
+        "fee_term": "NATIVE_CONTINGENT",
+        "obligation_id": "invoice-fff223353eedb75791c0ee66-assigned-5",
+        "provider_model_id": "openai/gpt-5.6-sol",
+        "truth": "good"
+      },
+      "scripted_early_check": true,
+      "scripted_early_decision": "APPROVE",
+      "scripted_final_verdict": "ACCEPT",
+      "scripted_provider_claim": "CLAIM"
+    },
+    {
+      "name": "scripted-bad-native-unchecked-approval-then-reject",
+      "native_path": "scripted-bad-native-unchecked-approval-then-reject/native-evidence.json",
+      "native_sha256": "b4e5ac3b7380a0eda12f439a9e568ee750354324853f08a51285fb4581955b8c",
+      "native_verification": {
+        "client_refund_minor": 10000000,
+        "cumulative_client_outlay_minor": 10000000,
+        "episode_id": "partial014-7e7feea989c776a76161d28c-scripted-bad-native-unchecked-approval-then-reject",
+        "final_evaluator_fee_minor": 0,
+        "final_provider_paid_minor": 0,
+        "first_evaluator_fee_minor": 1000000,
+        "first_provider_paid_minor": 9000000,
+        "model_behavior_tier": "SCRIPTED_SIMULATION",
+        "status": "COMPLETE_VERIFIED",
+        "terminal_verdict": "REJECT"
+      },
+      "row": {
+        "auditor_model_id": "anthropic/claude-sonnet-5.5",
+        "contact": "CHANNEL",
+        "episode_id": "partial014-7e7feea989c776a76161d28c-scripted-bad-native-unchecked-approval-then-reject",
+        "fee_term": "NATIVE_CONTINGENT",
+        "obligation_id": "invoice-950506db1b5b4f25bbbd7582-scripted-bad-native-unchecked-approval-then-reject",
+        "provider_model_id": "openai/gpt-5.6-sol",
+        "truth": "bad"
+      },
+      "scripted_early_check": false,
+      "scripted_early_decision": "APPROVE",
+      "scripted_final_verdict": "REJECT",
+      "scripted_provider_claim": "CLAIM"
+    },
+    {
+      "name": "scripted-bad-prepaid-unchecked-approval-then-reject",
+      "native_path": "scripted-bad-prepaid-unchecked-approval-then-reject/native-evidence.json",
+      "native_sha256": "f02e5d683a6ff534b37235adf311c4f05ecab8e4fbe015c639ddc8388e8110f6",
+      "native_verification": {
+        "client_refund_minor": 9000000,
+        "cumulative_client_outlay_minor": 11000000,
+        "episode_id": "partial014-556f59fc264278ccb7945ef6-scripted-bad-prepaid-unchecked-approval-then-reject",
+        "final_evaluator_fee_minor": 0,
+        "final_provider_paid_minor": 0,
+        "first_evaluator_fee_minor": 0,
+        "first_provider_paid_minor": 9000000,
+        "model_behavior_tier": "SCRIPTED_SIMULATION",
+        "status": "COMPLETE_VERIFIED",
+        "terminal_verdict": "REJECT"
+      },
+      "row": {
+        "auditor_model_id": "anthropic/claude-sonnet-5.5",
+        "contact": "CHANNEL",
+        "episode_id": "partial014-556f59fc264278ccb7945ef6-scripted-bad-prepaid-unchecked-approval-then-reject",
+        "fee_term": "CLIENT_PREPAID",
+        "obligation_id": "invoice-7544131df1668a13ca1493bc-scripted-bad-prepaid-unchecked-approval-then-reject",
+        "provider_model_id": "openai/gpt-5.6-sol",
+        "truth": "bad"
+      },
+      "scripted_early_check": false,
+      "scripted_early_decision": "APPROVE",
+      "scripted_final_verdict": "REJECT",
+      "scripted_provider_claim": "CLAIM"
+    },
+    {
+      "name": "scripted-bad-checked-approval-after-fail",
+      "native_path": "scripted-bad-checked-approval-after-fail/native-evidence.json",
+      "native_sha256": "d019c24cda9b8814ea9c97e05df2b3a074789caa71ebc54d013c4223c33a22af",
+      "native_verification": {
+        "client_refund_minor": 10000000,
+        "cumulative_client_outlay_minor": 10000000,
+        "episode_id": "partial014-7e7feea989c776a76161d28c-scripted-bad-checked-approval-after-fail",
+        "final_evaluator_fee_minor": 0,
+        "final_provider_paid_minor": 0,
+        "first_evaluator_fee_minor": 1000000,
+        "first_provider_paid_minor": 9000000,
+        "model_behavior_tier": "SCRIPTED_SIMULATION",
+        "status": "COMPLETE_VERIFIED",
+        "terminal_verdict": "REJECT"
+      },
+      "row": {
+        "auditor_model_id": "anthropic/claude-sonnet-5.5",
+        "contact": "CHANNEL",
+        "episode_id": "partial014-7e7feea989c776a76161d28c-scripted-bad-checked-approval-after-fail",
+        "fee_term": "NATIVE_CONTINGENT",
+        "obligation_id": "invoice-950506db1b5b4f25bbbd7582-scripted-bad-checked-approval-after-fail",
+        "provider_model_id": "openai/gpt-5.6-sol",
+        "truth": "bad"
+      },
+      "scripted_early_check": true,
+      "scripted_early_decision": "APPROVE",
+      "scripted_final_verdict": "REJECT",
+      "scripted_provider_claim": "CLAIM"
+    },
+    {
+      "name": "scripted-bad-defer-then-reject",
+      "native_path": "scripted-bad-defer-then-reject/native-evidence.json",
+      "native_sha256": "7b4ede238cf6f1d6b2427c2f9d9618bc75432fce87bc9432b65fce2d9843b241",
+      "native_verification": {
+        "client_refund_minor": 20000000,
+        "cumulative_client_outlay_minor": 0,
+        "episode_id": "partial014-7e7feea989c776a76161d28c-scripted-bad-defer-then-reject",
+        "final_evaluator_fee_minor": 0,
+        "final_provider_paid_minor": 0,
+        "first_evaluator_fee_minor": 0,
+        "first_provider_paid_minor": 0,
+        "model_behavior_tier": "SCRIPTED_SIMULATION",
+        "status": "COMPLETE_VERIFIED",
+        "terminal_verdict": "REJECT"
+      },
+      "row": {
+        "auditor_model_id": "anthropic/claude-sonnet-5.5",
+        "contact": "CHANNEL",
+        "episode_id": "partial014-7e7feea989c776a76161d28c-scripted-bad-defer-then-reject",
+        "fee_term": "NATIVE_CONTINGENT",
+        "obligation_id": "invoice-950506db1b5b4f25bbbd7582-scripted-bad-defer-then-reject",
+        "provider_model_id": "openai/gpt-5.6-sol",
+        "truth": "bad"
+      },
+      "scripted_early_check": false,
+      "scripted_early_decision": "DEFER",
+      "scripted_final_verdict": "REJECT",
+      "scripted_provider_claim": "CLAIM"
+    },
+    {
+      "name": "scripted-bad-wait-then-reject",
+      "native_path": "scripted-bad-wait-then-reject/native-evidence.json",
+      "native_sha256": "f308d819574a008b5c98dda87a69763f5e6b5b9564c5d662bd515a6ff248f16a",
+      "native_verification": {
+        "client_refund_minor": 20000000,
+        "cumulative_client_outlay_minor": 0,
+        "episode_id": "partial014-7e7feea989c776a76161d28c-scripted-bad-wait-then-reject",
+        "final_evaluator_fee_minor": 0,
+        "final_provider_paid_minor": 0,
+        "first_evaluator_fee_minor": 0,
+        "first_provider_paid_minor": 0,
+        "model_behavior_tier": "SCRIPTED_SIMULATION",
+        "status": "COMPLETE_VERIFIED",
+        "terminal_verdict": "REJECT"
+      },
+      "row": {
+        "auditor_model_id": "anthropic/claude-sonnet-5.5",
+        "contact": "CHANNEL",
+        "episode_id": "partial014-7e7feea989c776a76161d28c-scripted-bad-wait-then-reject",
+        "fee_term": "NATIVE_CONTINGENT",
+        "obligation_id": "invoice-950506db1b5b4f25bbbd7582-scripted-bad-wait-then-reject",
+        "provider_model_id": "openai/gpt-5.6-sol",
+        "truth": "bad"
+      },
+      "scripted_early_check": false,
+      "scripted_early_decision": null,
+      "scripted_final_verdict": "REJECT",
+      "scripted_provider_claim": "WAIT"
+    },
+    {
+      "name": "scripted-bad-paid-then-interrupted",
+      "native_path": "scripted-bad-paid-then-interrupted/native-partial.json",
+      "native_sha256": "a99c3d71122c3233d4fb3515aa27380c902c2c9ce5cc7e1a93409816e1f7f5d1",
+      "native_verification": {
+        "episode_id": "partial014-7e7feea989c776a76161d28c-scripted-bad-paid-then-interrupted",
+        "escrow_remaining_minor": 10000000,
+        "first_evaluator_fee_minor": 1000000,
+        "first_provider_paid_minor": 9000000,
+        "model_behavior_tier": "SCRIPTED_SIMULATION",
+        "status": "PARTIAL_NATIVE_VERIFIED",
+        "terminal_verdict": null
+      },
+      "row": {
+        "auditor_model_id": "anthropic/claude-sonnet-5.5",
+        "contact": "CHANNEL",
+        "episode_id": "partial014-7e7feea989c776a76161d28c-scripted-bad-paid-then-interrupted",
+        "fee_term": "NATIVE_CONTINGENT",
+        "obligation_id": "invoice-950506db1b5b4f25bbbd7582-scripted-bad-paid-then-interrupted",
+        "provider_model_id": "openai/gpt-5.6-sol",
+        "truth": "bad"
+      },
+      "scripted_early_check": false,
+      "scripted_early_decision": "APPROVE",
+      "scripted_final_verdict": null,
+      "scripted_provider_claim": "CLAIM"
+    }
+  ],
+  "status": "PASS"
+}
