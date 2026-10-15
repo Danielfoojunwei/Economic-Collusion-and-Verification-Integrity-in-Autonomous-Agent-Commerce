@@ -1,0 +1,45 @@
+test_check_replay_charged_once_and_no_check_false_approval (tests.test_protected_receipts.ProtectedReceiptTests.test_check_replay_charged_once_and_no_check_false_approval) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f28e4431e80>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f28e2840110>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_identical_auditor_view_before_paid_check_opposite_truth (tests.test_protected_receipts.ProtectedReceiptTests.test_identical_auditor_view_before_paid_check_opposite_truth) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f28e286a9c0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f28e27d8b90>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_pending_reference_is_inconclusive_after_paid_check (tests.test_protected_receipts.ProtectedReceiptTests.test_pending_reference_is_inconclusive_after_paid_check) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f28e25c5f70>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_private_warehouse_calibration_and_feasible_check (tests.test_protected_receipts.ProtectedReceiptTests.test_private_warehouse_calibration_and_feasible_check) ... ok
+test_role_tool_probes_denied_without_oracle_charge (tests.test_protected_receipts.ProtectedReceiptTests.test_role_tool_probes_denied_without_oracle_charge) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f28e256a870>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f28e27a43b0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 3.806s
+
+OK

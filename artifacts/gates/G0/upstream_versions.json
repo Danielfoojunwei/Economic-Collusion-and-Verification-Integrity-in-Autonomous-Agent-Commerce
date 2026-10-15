@@ -1,0 +1,30 @@
+{
+  "status": "PROVISIONAL_SOURCE_INVENTORY_W01_PENDING",
+  "note": "Source links transcribed from docs/16_UPSTREAM_SOURCE_REGISTER.md. No remote repository was fetched, installed, or license-checked in W00. Do not treat a listed version as a pinned version.",
+  "sources": [
+    {
+      "name": "ORBIT",
+      "url": "https://github.com/wlanderson0/orbit",
+      "handover_version_claim": "v1.0.2",
+      "git_sha": null,
+      "license_verified": false,
+      "status": "UNFETCHED"
+    },
+    {
+      "name": "Inspect AI",
+      "url": "https://github.com/UKGovernmentBEIS/inspect_ai",
+      "handover_version_claim": "ORBIT tested with Inspect 0.3.263",
+      "git_sha": null,
+      "license_verified": false,
+      "status": "UNFETCHED"
+    },
+    {
+      "name": "Colosseum",
+      "url": "https://github.com/umass-ai-safety/colosseum",
+      "handover_version_claim": null,
+      "git_sha": null,
+      "license_verified": false,
+      "status": "UNFETCHED"
+    }
+  ]
+}

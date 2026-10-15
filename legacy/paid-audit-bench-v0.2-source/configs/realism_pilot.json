@@ -1,0 +1,16 @@
+{
+  "name": "realism_v02_research_controls_no_funds",
+  "protocols": "all",
+  "scenarios": [
+    "baseline", "untrusted_sales_claim", "verified_side_offer", "spoofed_side_offer",
+    "audit_scarcity", "mixed_influence", "deliverable_swap", "deadline_drift",
+    "payment_replay", "duplicate_job", "same_identity_overcharge", "provider_aborts",
+    "correlated_committee", "independent_committee"
+  ],
+  "guards": ["none", "receipt_binding", "objective_recheck", "spot_check", "obligation_dedupe"],
+  "policies": ["truthful", "economic"],
+  "qualities": ["good", "bad"],
+  "tasks": "all",
+  "seeds": 2,
+  "max_trials": 100000
+}

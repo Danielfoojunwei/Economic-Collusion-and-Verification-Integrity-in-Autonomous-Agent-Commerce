@@ -1,0 +1,134 @@
+{
+  "study": "PaidAuditBench v0.2 matched-world realistic workflow (OFFLINE MOCK)",
+  "version": "0.2.0",
+  "created_utc": "2026-10-14T20:50:44.012389+00:00",
+  "full_config": {
+    "name": "realism_v02_research_controls_no_funds",
+    "protocols": "all",
+    "scenarios": [
+      "baseline",
+      "untrusted_sales_claim",
+      "verified_side_offer",
+      "spoofed_side_offer",
+      "audit_scarcity",
+      "mixed_influence",
+      "deliverable_swap",
+      "deadline_drift",
+      "payment_replay",
+      "duplicate_job",
+      "same_identity_overcharge",
+      "provider_aborts",
+      "correlated_committee",
+      "independent_committee"
+    ],
+    "guards": [
+      "none",
+      "receipt_binding",
+      "objective_recheck",
+      "spot_check",
+      "obligation_dedupe"
+    ],
+    "policies": [
+      "truthful",
+      "economic"
+    ],
+    "qualities": [
+      "good",
+      "bad"
+    ],
+    "tasks": "all",
+    "seeds": 2,
+    "max_trials": 100000
+  },
+  "protocols": [
+    "x402_v2",
+    "x402_v2_upfront",
+    "x402_v2_escrow",
+    "mpp",
+    "ap2_v02",
+    "ucp_ap2",
+    "erc8183_draft",
+    "virtuals_acp_v2",
+    "openai_stripe_acp",
+    "a2a_x402",
+    "a2a_erc8183",
+    "erc8183_erc8004"
+  ],
+  "scenarios": [
+    "baseline",
+    "untrusted_sales_claim",
+    "verified_side_offer",
+    "spoofed_side_offer",
+    "audit_scarcity",
+    "mixed_influence",
+    "deliverable_swap",
+    "deadline_drift",
+    "payment_replay",
+    "duplicate_job",
+    "same_identity_overcharge",
+    "provider_aborts",
+    "correlated_committee",
+    "independent_committee"
+  ],
+  "guards": [
+    "none",
+    "receipt_binding",
+    "objective_recheck",
+    "spot_check",
+    "obligation_dedupe"
+  ],
+  "task_ids": [
+    "code-tax-01",
+    "code-refund-02",
+    "reconcile-01",
+    "reconcile-02",
+    "evidence-01",
+    "evidence-02",
+    "procure-sensor-01",
+    "procure-damaged-02",
+    "api-telemetry-01",
+    "api-research-02"
+  ],
+  "policies": [
+    "truthful",
+    "economic"
+  ],
+  "seed_count": 2,
+  "trial_count": 67200,
+  "model": "none scripted policies",
+  "loopback_model_endpoint_trials": 0,
+  "research_methods": {
+    "2609.33102": "ORBIT: layer-by-layer attacks, roles, topologies, defenses and controlled ablation",
+    "2609.35886": "Agentic Commerce Bench: observation layers, legitimate-identity fraud and history-aware controls",
+    "2602.15198": "Colosseum: distinguish action-based coalition effects from collusion-on-paper",
+    "2609.05227": "CABAL: matched reviewer assignments and unchanged environment across worlds",
+    "2406.13352": "AgentDojo: separate untrusted content, attacker objectives, legitimate utility and environment state",
+    "2406.12045": "tau-bench: executable end-state scoring and repeated reliability",
+    "2602.00213": "TessPay: execution evidence before paid settlement, without assuming semantic proof",
+    "2610.05840": "Paired replay: freeze decisions across guards and distinguish compromise from consequences",
+    "2607.19545": "x402 security: /verify vs /settle, freshness and time-dependent state",
+    "2609.00595": "SoK MAS security: log principal/trust interfaces and demonstrate genuine interaction effects",
+    "2610.01756": "SoK agent infrastructure: distinguish evaluator integrity, receipt soundness and acceptance liveness"
+  },
+  "analysis": {
+    "factorial_effect_rows": 0,
+    "reliability_rows": 6720,
+    "bootstrap_unit": "task cluster with within-task seed replicates",
+    "bootstrap_repetitions": 400,
+    "warning": "CIs quantify synthetic across-task/seed variation, not epistemic real-model uncertainty"
+  },
+  "limitations": [
+    "No real money or real crypto SDK/contract; all protocol adapters are local simulations",
+    "Provider and requester negotiation scripted; verifier may use optional loopback LLM",
+    "No collusion conclusion can follow from scripted relationships or common errors",
+    "Oracle ground truth depends on precisely defined artificial task acceptance rules",
+    "Frozen-decision replay isolates downstream guards, not policy-induced changes to verifier decisions",
+    "No explicit blockchain fees, dispute adjudication markets or cryptographic receipts"
+  ],
+  "artifact_sha256": {
+    "trials.jsonl": "63b0b9ad28b8154d0f6d93d054261789d470102cc9060efc9d4f567fcb4d2d27",
+    "summary.csv": "fc41c2d244cae8069dc8f7aa57253ec105dba322fee594f1373d0d2703f46d9d",
+    "paired_defense_contrasts.csv": "11b1219a462b46c5267e65fa1e24c8d1f76a1c6c31831410ff7be4f313715a6f",
+    "reliability.csv": "96af0efc5935bd6fc76710c6354b2601a6a42e4bf4cee6a1f7a56da30e674b5b"
+  }
+}

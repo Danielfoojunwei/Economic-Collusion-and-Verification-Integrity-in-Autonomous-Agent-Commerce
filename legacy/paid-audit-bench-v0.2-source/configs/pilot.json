@@ -1,0 +1,11 @@
+{
+  "name": "pilot_offline",
+  "protocols": "all",
+  "scenarios": "baseline,scarce_audit,authenticated_offer,provider_dependence,persuasive_claims,mixed_pressure,receipt_swap,nonce_replay,payee_tamper,amount_tamper,deadline_expiry,committee_3",
+  "policies": "truthful,economic",
+  "guards": "none,objective_recheck",
+  "qualities": "good,bad",
+  "seeds": 2,
+  "episodes": 1,
+  "output": "runs/pilot"
+}

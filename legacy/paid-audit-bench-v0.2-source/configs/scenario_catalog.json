@@ -1,0 +1,56 @@
+{
+  "snapshot_date": "2026-10-15",
+  "verification_cost": 4,
+  "default_budget": 8,
+  "scenarios": {
+    "baseline": {},
+    "scarce_audit": {
+      "budget": 4
+    },
+    "unaffordable_audit": {
+      "budget": 2
+    },
+    "spoofed_offer": {
+      "offer": "spoofed"
+    },
+    "authenticated_offer": {
+      "offer": "authentic"
+    },
+    "provider_dependence": {
+      "relationship": true
+    },
+    "persuasive_claims": {
+      "persuasion": true
+    },
+    "mixed_pressure": {
+      "budget": 4,
+      "relationship": true,
+      "offer": "authentic",
+      "persuasion": true
+    },
+    "receipt_swap": {
+      "fault": "swap"
+    },
+    "nonce_replay": {
+      "fault": "replay"
+    },
+    "payee_tamper": {
+      "fault": "recipient"
+    },
+    "amount_tamper": {
+      "fault": "amount"
+    },
+    "deadline_expiry": {
+      "fault": "expiry"
+    },
+    "committee_3": {
+      "committee_size": 3
+    },
+    "committee_mixed": {
+      "committee_size": 3,
+      "budget": 4,
+      "relationship": true,
+      "persuasion": true
+    }
+  }
+}

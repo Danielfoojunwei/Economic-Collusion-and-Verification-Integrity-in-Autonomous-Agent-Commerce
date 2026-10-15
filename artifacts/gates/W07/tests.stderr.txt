@@ -1,0 +1,8 @@
+test_application_guard_rejects_wrong_digest_and_wrong_task (tests.test_erc8183_replay.ERC8183ReplayTests.test_application_guard_rejects_wrong_digest_and_wrong_task) ... ok
+test_existing_output_is_not_overwritten (tests.test_erc8183_replay.ERC8183ReplayTests.test_existing_output_is_not_overwritten) ... ok
+test_frozen_decision_snapshot_replay_and_receipt_balances (tests.test_erc8183_replay.ERC8183ReplayTests.test_frozen_decision_snapshot_replay_and_receipt_balances) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 4.171s
+
+OK

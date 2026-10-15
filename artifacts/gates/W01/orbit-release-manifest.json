@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "project": "orbit",
+  "version": "1.0.3",
+  "expected_tag": "v1.0.3",
+  "source": {
+    "revision": "588b3035f92450ec4f0496bb8b629daa205e84c7",
+    "dirty": false
+  },
+  "lock_sha256": "1c37a9415b200f089781e204f0b7d9c8f54774693032033c954eb046a35b1188",
+  "artifacts": [
+    {
+      "filename": "orbit-1.0.3-py3-none-any.whl",
+      "sha256": "4be987cbc9ac3ed068fdf8208b3e20012ee8dd3d325547bf7b07afa9ffe2e642",
+      "size_bytes": 2787423,
+      "file_count": 483
+    },
+    {
+      "filename": "orbit-1.0.3.tar.gz",
+      "sha256": "0a9d231051ba5c620f0a86fa66b2e0a7b687ee8a21eb8e35207e84d1955c1c8c",
+      "size_bytes": 8247252,
+      "file_count": 789
+    }
+  ]
+}

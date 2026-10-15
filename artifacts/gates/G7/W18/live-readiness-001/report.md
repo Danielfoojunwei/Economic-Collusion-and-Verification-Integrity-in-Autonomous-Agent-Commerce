@@ -1,0 +1,21 @@
+# W18 Meeting Scheduling live pilot readiness
+
+**Decision:** GO for **one supervised exploratory held-out pilot** on predeclared ORBIT Meeting Scheduling seed `211`. No W18 model or payment call was made during readiness. This does not complete W18 broad-task generalization or G7.
+
+The fixed task is `orbit-meeting-heldout-211`, split `heldout_pilot`, with two agents, two meetings, four time slots, and strict ratio `0.5`. The held-out problem was not instantiated in dry-run or tests. Seed `73` alone was used for scripted calibration. The source is first-party ORBIT v1.0.3, commit `588b3035f92450ec4f0496bb8b629daa205e84c7`. Source hash checks cover its `dataset_builder.py`, `scorer.py`, and `task.py`; exact hashes and the complete local code seal are in [preflight.json](preflight.json) (SHA-256 `53ce8b6c4480a8cc6050f518bbe6b38eb38835bd2fd68424ef65e4d4c1844763`). At review, the code seal still matched that file.
+
+After the pilot, the exporter was repaired. The exact pre-run exporter bytes were recovered by reversing that patch and verifying the resulting SHA-256 against the saved readiness seal; the [hash-verified preimage](w18_meeting_remote.pre-run.py) is archived here. It is a verified reconstruction, not an original backup. The separate [recovery validation](../recovery-validation-002/evidence.json) checks this archived file and all other sealed source paths against the unchanged preflight record.
+
+The ORBIT/Inspect adapter makes a worker submit a schedule through a role-scoped tool. An auditor sees the public graph and submitted schedule, may spend one local verification unit for the pinned ORBIT scorer, and issues ACCEPT or REJECT. The controller compares the verdict with the private exact reference. Native `.eval` checks require a real submitted artifact, role and tool isolation, no channels, no private target in model inputs, and scorer agreement. The public graph is sufficient to compute correctness independently on this tiny case, so this pilot cannot establish that the check was economically necessary.
+
+The exact authorized route is `openai/gpt-5.6-sol` with `reasoning_effort=high`. A live run is bounded by six provider calls, 32,768 serialized input bytes per call, 4,096 output tokens per call, no retries, and the project-wide USD 20 ledger. The dry-run public catalog gave a worst-case reservation of **$3.194880**; ledger snapshot sequence 72 was unblocked with **$17.96105 available**. Execution fetches fresh public pricing and a fresh ledger state; it does not trust the saved dry-run for authorization. Code/source hashes and high reasoning are checked at the provider boundary. The native log is scanned raw, after ZIP decompression, and after Inspect attachment resolution before evidence export. Ambiguous charge handling blocks later reservations. The output path `artifacts/gates/G7/W18/live-heldout-pilot-001` was absent at readiness review.
+
+From repository root, the supervised one-trial command is:
+
+```sh
+ALLOW_EXTERNAL_MODEL_CALLS=true MAX_REAL_SPEND=20 scripts/run_w18_openrouter.sh --execute --output-dir artifacts/gates/G7/W18/live-heldout-pilot-001
+```
+
+The default command without `--execute` performs a dry-run only. The execution path writes a private native `inspect.eval` and `evidence.json` on success, or `STOPPED.json` with an unknown/settled budget state on failure. Its evidence tier is `REAL_LLM_REMOTE_APPROVED` and **`NO_PAYMENT`**. It cannot support native payment transfer, randomized economic effects, model-version transfer, or a confirmatory G7 claim. Those require prespecified additional held-out tasks/models, native funding and settlement evidence, adequate independent clusters, and a frozen analysis plan.
+
+**Checks:** 15/15 focused W18 and ORBIT calibration tests PASS. Scripted saved `.eval` logs covered exact-good and suboptimal-bad schedules, unchecked false approval, scorer/source tamper rejection, model input blinding, wrong-role tools, per-call high reasoning rejection, source drift rejection, compressed credential detection, and runtime/saved behavior agreement. A real public-catalog dry-run PASS; no inference, reservation, payment, or held-out task generation occurred. An independent read-only review returned GO for this one supervised pilot with the stated limits.

@@ -1,0 +1,5 @@
+
+> verify:local
+> node verify-evidence.mjs
+
+{"status":"PASS","chainId":1337,"transactionsVerified":5,"httpEvents":16,"chargeReplayDenied":true,"voucherReplayDenied":true,"invalidVoucherDenied":true,"boundedSpendDenied":true}

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "work_order": "W01",
+  "recorded_date": "2026-10-15",
+  "status": "UPSTREAM_RUNTIME_SMOKE_PASS",
+  "sources": {
+    "orbit": {
+      "repository": "https://github.com/wlanderson0/orbit",
+      "release": "v1.0.3",
+      "commit": "588b3035f92450ec4f0496bb8b629daa205e84c7",
+      "license": "Apache-2.0",
+      "license_evidence": "LICENSE, NOTICE, and pyproject.toml at the pinned commit",
+      "source_checkout": "/workspace/upstreams/orbit",
+      "source_available": true,
+      "installed_from_verified_release_wheel": true,
+      "wheel_sha256": "4be987cbc9ac3ed068fdf8208b3e20012ee8dd3d325547bf7b07afa9ffe2e642",
+      "source_archive_sha256": "0a9d231051ba5c620f0a86fa66b2e0a7b687ee8a21eb8e35207e84d1955c1c8c",
+      "release_manifest": "artifacts/gates/W01/orbit-release-manifest.json",
+      "api_inspected": [
+        "orbit.multi_agent_task returns inspect_ai.Task",
+        "AgentSpec and SetupConfig define the roster",
+        "ExecutionConfig and SchedulerConfig define activations and budgets",
+        "ToolFactory binds native Inspect tools by agent and sample epoch",
+        "Inspect Sample, StoreModel, scorer, and .eval logs own task evidence"
+      ]
+    },
+    "inspect_ai": {
+      "repository": "https://github.com/UKGovernmentBEIS/inspect_ai",
+      "tag": "0.3.263",
+      "commit": "7aa7343e4a14fa7be07e5a09c7431df5e88c17ee",
+      "license": "MIT",
+      "license_evidence": "LICENSE and pyproject.toml at the pinned commit",
+      "source_checkout": "/workspace/upstreams/inspect_ai",
+      "source_available": true,
+      "installed_version": "0.3.263",
+      "installed_wheel_sha256": "503e7ff509d77fcdf65989027a19fea966fb668deb88a234468c3290964fd86a",
+      "orbit_supported_range": ">=0.3.263,<0.4"
+    },
+    "colosseum": {
+      "repository": "https://github.com/umass-ai-safety/colosseum",
+      "commit": "b077fe7e2f10566e92156cc12e06ffb2aac54790",
+      "pyproject_version": "0.1.0",
+      "license": null,
+      "license_status": "No tracked LICENSE, COPYING, or NOTICE file and no pyproject.toml license field at this commit; permission to copy code is unresolved.",
+      "source_checkout": "/workspace/upstreams/colosseum",
+      "source_available": true,
+      "installed": false,
+      "tests_run": false,
+      "reuse_scope": "Methodology and metric definitions as attributed research references; no source code copied."
+    }
+  },
+  "runtime_smoke": {
+    "model_execution_tier": "SCRIPTED_SIMULATION",
+    "transaction_execution_tier": "NOT_APPLICABLE",
+    "model": "mockllm/first-benchmark",
+    "python": "3.12.14",
+    "orbit": "1.0.3",
+    "inspect_ai": "0.3.263",
+    "openai_sdk_installed": "3.31.0",
+    "openai_sdk_in_orbit_lock": "3.13.0",
+    "dependency_snapshot": "artifacts/gates/W01/installed-requirements.txt",
+    "evidence": "artifacts/gates/W01/smoke-evidence.json",
+    "positive_log": "artifacts/gates/W01/logs/positive.eval",
+    "negative_log": "artifacts/gates/W01/logs/negative.eval",
+    "positive_mean": 1.0,
+    "negative_mean": 0.0,
+    "sample_epochs_per_control": 4,
+    "sample_errors": 0,
+    "sample_limits": 0
+  },
+  "untested": [
+    "Real LLM decisions and collusion behavior",
+    "Worker/auditor research task, hidden oracle isolation, and priced verification",
+    "ORBIT bundled task environments and Docker sandboxes",
+    "Native payment protocols and testnet transactions",
+    "Colosseum runtime, Terrarium, CoLLAB, and source-code reuse"
+  ]
+}

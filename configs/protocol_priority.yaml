@@ -1,0 +1,19 @@
+# Reference coverage plan, not protocol API configuration.
+version: "proposal-1"
+native_first:
+  - {name: erc8183, component_type: evaluator_escrow, integration_stage: G2, status: NOT_STARTED}
+  - {name: x402_v2, component_type: http_payment, integration_stage: G3, status: NOT_STARTED}
+expand:
+  - {name: mpp_charge, component_type: http_payment, integration_stage: G6, status: NOT_STARTED}
+  - {name: mpp_session, component_type: http_payment, integration_stage: G6, status: NOT_STARTED}
+  - {name: ap2_v02, component_type: delegated_authorization, integration_stage: G6, status: NOT_STARTED}
+  - {name: virtuals_acp_v2, component_type: commerce_job_sdk, integration_stage: G6, status: NOT_STARTED}
+  - {name: openai_stripe_acp, component_type: checkout, integration_stage: G6, status: NOT_STARTED}
+  - {name: ucp_ap2, component_type: checkout_authorization_composition, integration_stage: G6, status: NOT_STARTED}
+overlays_not_standalone_payment:
+  - {name: a2a_v1, component_type: agent_communication, integration_stage: G6, status: NOT_STARTED}
+  - {name: erc8004, component_type: identity_reputation, integration_stage: G6, status: NOT_STARTED}
+never_use:
+  - "production_payment_accounts"
+  - "mainnet_assets"
+  - "real_commercial_customer_data"

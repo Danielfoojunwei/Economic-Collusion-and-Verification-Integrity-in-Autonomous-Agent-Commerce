@@ -1,0 +1,178 @@
+{
+  "snapshot_date": "2026-10-15",
+  "execution_tier": "OFFLINE_EVENT_SIMULATOR_ONLY",
+  "adapters": [
+    {
+      "name": "x402_v2",
+      "kind": "payment rail",
+      "foundation": "x402",
+      "payment_stage": "after_service",
+      "source": "https://github.com/x402-foundation/x402/blob/main/specs/x402-specification-v2.md",
+      "note": "HTTP 402 + PAYMENT-REQUIRED/PAYMENT-SIGNATURE; models v2 authorization flow, not every scheme",
+      "local_status": "protocol-shaped simulation only",
+      "real_sdk": false,
+      "cryptographic_validity": false
+    },
+    {
+      "name": "mpp",
+      "kind": "payment rail",
+      "foundation": "MPP",
+      "payment_stage": "before_service",
+      "source": "https://github.com/tempoxyz/mpp-specs",
+      "note": "HTTP 402 WWW-Authenticate: Payment / Authorization: Payment; modeled charge route",
+      "local_status": "protocol-shaped simulation only",
+      "real_sdk": false,
+      "cryptographic_validity": false
+    },
+    {
+      "name": "ap2_v02",
+      "kind": "payment authorization",
+      "foundation": "AP2",
+      "payment_stage": "before_service",
+      "source": "https://github.com/google-agentic-commerce/AP2/blob/main/docs/ap2/specification.md",
+      "note": "Simulated mandate/receipt flow; genuine SD-JWT and ES256 omitted",
+      "local_status": "protocol-shaped simulation only",
+      "real_sdk": false,
+      "cryptographic_validity": false
+    },
+    {
+      "name": "ucp_ap2",
+      "kind": "commerce composition",
+      "foundation": "AP2",
+      "payment_stage": "before_service",
+      "source": "https://github.com/universal-commerce-protocol/ucp",
+      "note": "UCP checkout orchestration over simulated AP2 mandates, not standalone payment rail",
+      "local_status": "protocol-shaped simulation only",
+      "real_sdk": false,
+      "cryptographic_validity": false
+    },
+    {
+      "name": "erc8183_draft",
+      "kind": "work escrow",
+      "foundation": "ERC-8183",
+      "payment_stage": "on_evaluator_approval",
+      "source": "https://eips.ethereum.org/EIPS/eip-8183",
+      "note": "Client funds escrow; provider submits; single evaluator completes/rejects; no real EVM",
+      "local_status": "protocol-shaped simulation only",
+      "real_sdk": false,
+      "cryptographic_validity": false
+    },
+    {
+      "name": "virtuals_acp_v2",
+      "kind": "work escrow",
+      "foundation": "ERC-8183",
+      "payment_stage": "on_evaluator_approval",
+      "source": "https://whitepaper.virtuals.io/acp/acp-changelogs",
+      "note": "Virtuals Agent Commerce Protocol v2; modeled ERC-8183 jobs and hooks",
+      "local_status": "protocol-shaped simulation only",
+      "real_sdk": false,
+      "cryptographic_validity": false
+    },
+    {
+      "name": "openai_stripe_acp",
+      "kind": "retail checkout",
+      "foundation": "OpenAI/Stripe ACP",
+      "payment_stage": "before_service",
+      "source": "https://github.com/agentic-commerce-protocol/agentic-commerce-protocol",
+      "note": "OpenAI/Stripe ACP 2026-04-17 checkout; not Virtuals ACP, no auditor escrow",
+      "local_status": "protocol-shaped simulation only",
+      "real_sdk": false,
+      "cryptographic_validity": false
+    },
+    {
+      "name": "a2a_x402",
+      "kind": "transport + payment",
+      "foundation": "x402",
+      "payment_stage": "after_service",
+      "source": "https://github.com/a2aproject/A2A",
+      "note": "A2A v1.0 task transport with separate x402 v2 rail; A2A itself is not payment",
+      "local_status": "protocol-shaped simulation only",
+      "real_sdk": false,
+      "cryptographic_validity": false
+    },
+    {
+      "name": "a2a_erc8183",
+      "kind": "transport + escrow",
+      "foundation": "ERC-8183",
+      "payment_stage": "on_evaluator_approval",
+      "source": "https://github.com/a2aproject/A2A",
+      "note": "A2A v1.0 messages with ERC-8183 evaluator-settled escrow",
+      "local_status": "protocol-shaped simulation only",
+      "real_sdk": false,
+      "cryptographic_validity": false
+    },
+    {
+      "name": "erc8183_erc8004",
+      "kind": "identity overlay + escrow",
+      "foundation": "ERC-8183",
+      "payment_stage": "on_evaluator_approval",
+      "source": "https://eips.ethereum.org/EIPS/eip-8004",
+      "note": "ERC-8004 draft identity/reputation/validation overlay, not an independent payment rail",
+      "local_status": "protocol-shaped simulation only",
+      "real_sdk": false,
+      "cryptographic_validity": false
+    }
+  ],
+  "not_integrated": [
+    {
+      "name": "OpenAI/Stripe ACP wire-level merchant integration",
+      "status": "SKIP",
+      "reason": "requires installed reference server, MCP/payment token provider and full checkout schema conformance"
+    },
+    {
+      "name": "Virtuals ACP v2 SDK / ERC-8183 EVM",
+      "status": "SKIP",
+      "reason": "requires contract ABI, local Anvil/EVM chain, wallet and signed tx; local state machine only"
+    },
+    {
+      "name": "x402 v2 real facilitator",
+      "status": "SKIP",
+      "reason": "requires scheme SDK and valid EIP-712/EIP-3009 or equivalent testnet payment signature"
+    },
+    {
+      "name": "MPP real Tempo / Stripe",
+      "status": "SKIP",
+      "reason": "requires official SDK payment-method credential validation and test merchant account"
+    },
+    {
+      "name": "AP2 full SD-JWT / VDC",
+      "status": "SKIP",
+      "reason": "requires standards-conformant mandate schemas, signature chains and credential provider"
+    },
+    {
+      "name": "Visa Trusted Agent Protocol (TAP)",
+      "status": "SKIP",
+      "reason": "agent identity and transaction trust layer, not standalone escrow payment protocol; network access/partner spec needed"
+    },
+    {
+      "name": "Mastercard Agent Pay",
+      "status": "SKIP",
+      "reason": "network/tokenization product; integration would require provider credentials and documented test environment"
+    },
+    {
+      "name": "L402 / Lightning",
+      "status": "SKIP",
+      "reason": "distinct Lightning payment method; requires local regtest Lightning node and macaroon check"
+    },
+    {
+      "name": "A402 research prototype",
+      "status": "SKIP",
+      "reason": "research architecture requires TEE/channel setup; not an interoperable baseline without its implementation"
+    },
+    {
+      "name": "ASP/RAILS/TessPay research proposals",
+      "status": "SKIP",
+      "reason": "research mechanisms, separate experimental track from deployed payment standard comparisons"
+    },
+    {
+      "name": "ERC-8004 standalone payment",
+      "status": "NOT_PAYMENT",
+      "reason": "identity/reputation/validation registry, explicitly states payments are orthogonal"
+    },
+    {
+      "name": "A2A standalone payment",
+      "status": "NOT_PAYMENT",
+      "reason": "agent communication and tasks standard, not money movement"
+    }
+  ]
+}

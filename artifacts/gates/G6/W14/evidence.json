@@ -1,0 +1,890 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "W14",
+  "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+  "model_execution_tier": "NOT_APPLICABLE",
+  "chainId": 1337,
+  "rpcUrl": "http://127.0.0.1:18547",
+  "httpUrl": "http://127.0.0.1:18548",
+  "token": "0x20c0000000000000000000000000000000000000",
+  "payer": "0x8C8d35429F74ec245F8Ef2f4Fd1e551cFF97d650",
+  "payee": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+  "imageDigest": "sha256:86f199f161be85d3610d990e5bc2653ece29de3ee9c91e8c8e768cf2b8c05c3b",
+  "sdk": "mppx@0.13.4",
+  "upstream": {
+    "mppx": "d8d800f101ba1568f0d737e12574c0ae8f6b6e93",
+    "specs": "50309c8e67e6d64b5547f1cc354fb327bda1301e",
+    "docs": "39ec9f1b9f6f121d7c0920833476ce66186394c4"
+  },
+  "startedAt": "2026-10-15T05:50:38.991Z",
+  "events": [
+    {
+      "at": "2026-10-15T05:50:39.067Z",
+      "type": "LOCAL_FAUCET",
+      "account": "0x8C8d35429F74ec245F8Ef2f4Fd1e551cFF97d650",
+      "hashes": [
+        "0xdc4249cfe7794e2177a4dca344cbe17295807e80aeeb8f4cb166a43720bd6d71",
+        "0xd414ed6d1ee3ea40a1cebfa80b7ea66e63a68b1dd262a2de75b631b7a7cdcc91",
+        "0x49c79ec16bac5b7db12fdd3c4677346c4fa5e70bdb436a5efe75e2fb80dc0bbe",
+        "0xbb59f7545dcaa54ca92778f3617a61ebf889576b51ff8f904ca51d0df9b5761f"
+      ]
+    },
+    {
+      "at": "2026-10-15T05:50:39.105Z",
+      "type": "LOCAL_FAUCET",
+      "account": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+      "hashes": [
+        "0xca945abc78503e037a1cae1c8c4f534b40468b1528cbacf3567324febec2254d",
+        "0xbac9998d24aef356435d66a530a57024c9100e7538d36402c80baaa80de5c07f",
+        "0x170c032aa80e23a970048a71fec415f0b3c19cfe7238c080aba45f9f350f11c9",
+        "0x2839e8cce7510d2f5fcf933dde8302040a93ffe605030a28548746697f2de1f9"
+      ]
+    },
+    {
+      "at": "2026-10-15T05:50:39.141Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/charge",
+      "credentialHash": null,
+      "status": 402,
+      "challenge": {
+        "id": "3rO7tZ966k9fUFndor2KtyAvQ3tVfJ7-DjyFKjV2YxQ",
+        "method": "tempo",
+        "intent": "charge",
+        "request": {
+          "amount": "10000",
+          "currency": "0x20c0000000000000000000000000000000000000",
+          "methodDetails": {
+            "chainId": 1337
+          },
+          "recipient": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46"
+        },
+        "expires": "2026-10-15T05:55:39.130Z"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.145Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/charge",
+      "credentialHash": null,
+      "status": 402,
+      "challenge": {
+        "id": "At17MDxLWKgOUddS7MzedjvXfS6Al-EVJrCQdXzockk",
+        "method": "tempo",
+        "intent": "charge",
+        "request": {
+          "amount": "10000",
+          "currency": "0x20c0000000000000000000000000000000000000",
+          "methodDetails": {
+            "chainId": 1337
+          },
+          "recipient": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46"
+        },
+        "expires": "2026-10-15T05:55:39.144Z"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.211Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/charge",
+      "credentialHash": "sha256:87555ea134efc6fae5f18fc435d7250eb641fde9233a1cf1547f946346a2ea51",
+      "intent": "charge",
+      "challengeId": "At17MDxLWKgOUddS7MzedjvXfS6Al-EVJrCQdXzockk",
+      "credentialAction": "hash",
+      "credentialPayload": {
+        "hash": "0x006b45bfc49cb4c7384fecb4dcc34acb0dc33769bde805892eb361128332a6af"
+      },
+      "status": 200,
+      "receipt": {
+        "fundingCurrency": "0x20c0000000000000000000000000000000000000",
+        "method": "tempo",
+        "reference": "0x006b45bfc49cb4c7384fecb4dcc34acb0dc33769bde805892eb361128332a6af",
+        "status": "success",
+        "timestamp": "2026-10-15T05:50:39.209Z"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.235Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/charge",
+      "credentialHash": "sha256:87555ea134efc6fae5f18fc435d7250eb641fde9233a1cf1547f946346a2ea51",
+      "intent": "charge",
+      "challengeId": "At17MDxLWKgOUddS7MzedjvXfS6Al-EVJrCQdXzockk",
+      "credentialAction": "hash",
+      "credentialPayload": {
+        "hash": "0x006b45bfc49cb4c7384fecb4dcc34acb0dc33769bde805892eb361128332a6af"
+      },
+      "status": 402,
+      "challenge": {
+        "id": "K767lcvjWJxJIHhqvxbUyXhncXpgS7RSZH01bE7t79M",
+        "method": "tempo",
+        "intent": "charge",
+        "request": {
+          "amount": "10000",
+          "currency": "0x20c0000000000000000000000000000000000000",
+          "methodDetails": {
+            "chainId": 1337
+          },
+          "recipient": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46"
+        },
+        "expires": "2026-10-15T05:55:39.225Z"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.254Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/session",
+      "credentialHash": null,
+      "status": 402,
+      "challenge": {
+        "id": "8V5UYYM79J7MMpp53v3COPNsXKzTEFiErbotYbcu1CI",
+        "method": "tempo",
+        "intent": "session",
+        "request": {
+          "amount": "10000",
+          "currency": "0x20c0000000000000000000000000000000000000",
+          "methodDetails": {
+            "chainId": 1337,
+            "escrowContract": "0x4d50500000000000000000000000000000000000",
+            "sessionProtocol": "v2"
+          },
+          "recipient": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+          "suggestedDeposit": "50000",
+          "unitType": "request"
+        },
+        "expires": "2026-10-15T05:55:39.251Z"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.259Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/session",
+      "credentialHash": null,
+      "status": 402,
+      "challenge": {
+        "id": "x1bKrtdMRjhw2xK5spP6jghL1KCELuh7AguLLMIT9dA",
+        "method": "tempo",
+        "intent": "session",
+        "request": {
+          "amount": "10000",
+          "currency": "0x20c0000000000000000000000000000000000000",
+          "methodDetails": {
+            "chainId": 1337,
+            "escrowContract": "0x4d50500000000000000000000000000000000000",
+            "sessionProtocol": "v2"
+          },
+          "recipient": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+          "suggestedDeposit": "50000",
+          "unitType": "request"
+        },
+        "expires": "2026-10-15T05:55:39.257Z"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.323Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/session",
+      "credentialHash": "sha256:c4a6ea2da47dd826ec3426b8b8f93d5e7052dac83ef8f6eb94768214c08eede8",
+      "intent": "session",
+      "challengeId": "x1bKrtdMRjhw2xK5spP6jghL1KCELuh7AguLLMIT9dA",
+      "credentialAction": "open",
+      "credentialPayload": null,
+      "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+      "cumulativeAmount": "10000",
+      "status": 200,
+      "receipt": {
+        "method": "tempo",
+        "reference": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+        "status": "success",
+        "timestamp": "2026-10-15T05:50:39.320Z",
+        "intent": "session",
+        "challengeId": "x1bKrtdMRjhw2xK5spP6jghL1KCELuh7AguLLMIT9dA",
+        "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+        "acceptedCumulative": "10000",
+        "spent": "10000",
+        "units": 1,
+        "txHash": "0x8e382c13f9ff97e0ec87bbfcaabd3284001d731d772c246364010afb4714c7b2"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.338Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/session",
+      "credentialHash": null,
+      "status": 402,
+      "challenge": {
+        "id": "_mB4eRdgprfZXWAMA1f8SsFQR2drWBjc2Ac04G7nbnc",
+        "method": "tempo",
+        "intent": "session",
+        "request": {
+          "amount": "10000",
+          "currency": "0x20c0000000000000000000000000000000000000",
+          "methodDetails": {
+            "chainId": 1337,
+            "escrowContract": "0x4d50500000000000000000000000000000000000",
+            "sessionProtocol": "v2"
+          },
+          "recipient": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+          "suggestedDeposit": "50000",
+          "unitType": "request"
+        },
+        "expires": "2026-10-15T05:55:39.337Z"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.359Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/session",
+      "credentialHash": "sha256:e1a99a45010f2c76ba151e5df4b7fe3283bf191afbea1e3b59896fe25300a7d7",
+      "intent": "session",
+      "challengeId": "_mB4eRdgprfZXWAMA1f8SsFQR2drWBjc2Ac04G7nbnc",
+      "credentialAction": "voucher",
+      "credentialPayload": null,
+      "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+      "cumulativeAmount": "20000",
+      "status": 200,
+      "receipt": {
+        "method": "tempo",
+        "reference": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+        "status": "success",
+        "timestamp": "2026-10-15T05:50:39.358Z",
+        "intent": "session",
+        "challengeId": "_mB4eRdgprfZXWAMA1f8SsFQR2drWBjc2Ac04G7nbnc",
+        "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+        "acceptedCumulative": "20000",
+        "spent": "20000",
+        "units": 2
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.378Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/session",
+      "credentialHash": "sha256:2ca97227ce6ff8aedd470c1c71de17a2585ef01d39795035225f3cc54344a90d",
+      "intent": "session",
+      "challengeId": "_mB4eRdgprfZXWAMA1f8SsFQR2drWBjc2Ac04G7nbnc",
+      "credentialAction": "voucher",
+      "credentialPayload": null,
+      "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+      "cumulativeAmount": "30000",
+      "status": 402,
+      "challenge": {
+        "id": "rGI95cojiHYubcll5Xv9tTxzlRvlYyAZ1NDTINvyDW4",
+        "method": "tempo",
+        "intent": "session",
+        "request": {
+          "amount": "10000",
+          "currency": "0x20c0000000000000000000000000000000000000",
+          "methodDetails": {
+            "chainId": 1337,
+            "escrowContract": "0x4d50500000000000000000000000000000000000",
+            "sessionProtocol": "v2"
+          },
+          "recipient": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+          "suggestedDeposit": "50000",
+          "unitType": "request"
+        },
+        "expires": "2026-10-15T05:55:39.370Z"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.398Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/session",
+      "credentialHash": "sha256:e1a99a45010f2c76ba151e5df4b7fe3283bf191afbea1e3b59896fe25300a7d7",
+      "intent": "session",
+      "challengeId": "_mB4eRdgprfZXWAMA1f8SsFQR2drWBjc2Ac04G7nbnc",
+      "credentialAction": "voucher",
+      "credentialPayload": null,
+      "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+      "cumulativeAmount": "20000",
+      "status": 402,
+      "challenge": {
+        "id": "PmdNbry_dLkm0uh5Jll-swprBq7Cl8Zo2UNPIZcerxs",
+        "method": "tempo",
+        "intent": "session",
+        "request": {
+          "amount": "10000",
+          "currency": "0x20c0000000000000000000000000000000000000",
+          "methodDetails": {
+            "chainId": 1337,
+            "escrowContract": "0x4d50500000000000000000000000000000000000",
+            "sessionProtocol": "v2"
+          },
+          "recipient": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+          "suggestedDeposit": "50000",
+          "unitType": "request"
+        },
+        "expires": "2026-10-15T05:55:39.380Z"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.474Z",
+      "type": "HTTP",
+      "method": "POST",
+      "path": "/session",
+      "credentialHash": "sha256:e7022263dee3968a06dc95bda2dc521c2b5dddfa71e2a788693ff82cb693f62b",
+      "intent": "session",
+      "challengeId": "_mB4eRdgprfZXWAMA1f8SsFQR2drWBjc2Ac04G7nbnc",
+      "credentialAction": "close",
+      "credentialPayload": null,
+      "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+      "cumulativeAmount": "20000",
+      "status": 204,
+      "receipt": {
+        "method": "tempo",
+        "reference": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+        "status": "success",
+        "timestamp": "2026-10-15T05:50:39.473Z",
+        "intent": "session",
+        "challengeId": "_mB4eRdgprfZXWAMA1f8SsFQR2drWBjc2Ac04G7nbnc",
+        "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+        "acceptedCumulative": "20000",
+        "spent": "20000",
+        "units": 2,
+        "txHash": "0xa07dd180454a41bbde085e7a8a992250da2724173ad824dc0098c01da58f89ad"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.493Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/session",
+      "credentialHash": null,
+      "status": 402,
+      "challenge": {
+        "id": "kGrAvXAiUJ6OCtipEeY9lpp5T2lu1j4Gx1Nsfr5NnfU",
+        "method": "tempo",
+        "intent": "session",
+        "request": {
+          "amount": "10000",
+          "currency": "0x20c0000000000000000000000000000000000000",
+          "methodDetails": {
+            "chainId": 1337,
+            "escrowContract": "0x4d50500000000000000000000000000000000000",
+            "sessionProtocol": "v2"
+          },
+          "recipient": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+          "suggestedDeposit": "50000",
+          "unitType": "request"
+        },
+        "expires": "2026-10-15T05:55:39.492Z"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.562Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/session",
+      "credentialHash": "sha256:9a0130d2e5bcd881bcbe0293866aca79a3a7d8577541bd518b622c08bbbd2427",
+      "intent": "session",
+      "challengeId": "kGrAvXAiUJ6OCtipEeY9lpp5T2lu1j4Gx1Nsfr5NnfU",
+      "credentialAction": "open",
+      "credentialPayload": null,
+      "channelId": "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+      "cumulativeAmount": "10000",
+      "status": 200,
+      "receipt": {
+        "method": "tempo",
+        "reference": "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+        "status": "success",
+        "timestamp": "2026-10-15T05:50:39.560Z",
+        "intent": "session",
+        "challengeId": "kGrAvXAiUJ6OCtipEeY9lpp5T2lu1j4Gx1Nsfr5NnfU",
+        "channelId": "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+        "acceptedCumulative": "10000",
+        "spent": "10000",
+        "units": 1,
+        "txHash": "0xef00b3b3c8975e7b771423da2f62f43195cc445ab38ca0b9a2c5fb1545432613"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.573Z",
+      "type": "HTTP",
+      "method": "GET",
+      "path": "/session",
+      "credentialHash": null,
+      "status": 402,
+      "challenge": {
+        "id": "59vWimgrbrKgLZq6rEdlDLdVchobANameagCSZUqclY",
+        "method": "tempo",
+        "intent": "session",
+        "request": {
+          "amount": "10000",
+          "currency": "0x20c0000000000000000000000000000000000000",
+          "methodDetails": {
+            "chainId": 1337,
+            "escrowContract": "0x4d50500000000000000000000000000000000000",
+            "sessionProtocol": "v2"
+          },
+          "recipient": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+          "suggestedDeposit": "50000",
+          "unitType": "request"
+        },
+        "expires": "2026-10-15T05:55:39.572Z"
+      }
+    },
+    {
+      "at": "2026-10-15T05:50:39.634Z",
+      "type": "HTTP",
+      "method": "POST",
+      "path": "/session",
+      "credentialHash": "sha256:0f44481f24851c15310f7e63319fd7d02d287be7b1d4006445df5197482af689",
+      "intent": "session",
+      "challengeId": "59vWimgrbrKgLZq6rEdlDLdVchobANameagCSZUqclY",
+      "credentialAction": "close",
+      "credentialPayload": null,
+      "channelId": "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+      "cumulativeAmount": "10000",
+      "status": 204,
+      "receipt": {
+        "method": "tempo",
+        "reference": "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+        "status": "success",
+        "timestamp": "2026-10-15T05:50:39.633Z",
+        "intent": "session",
+        "challengeId": "59vWimgrbrKgLZq6rEdlDLdVchobANameagCSZUqclY",
+        "channelId": "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+        "acceptedCumulative": "10000",
+        "spent": "10000",
+        "units": 1,
+        "txHash": "0x16fadbe98e4d1dd7b5ad21113c49c4917fbc69da932d17b645ddf90251e317d7"
+      }
+    }
+  ],
+  "charge": {
+    "challenge": {
+      "description": "local audit",
+      "expires": "2026-10-15T05:55:39.130Z",
+      "id": "3rO7tZ966k9fUFndor2KtyAvQ3tVfJ7-DjyFKjV2YxQ",
+      "intent": "charge",
+      "method": "tempo",
+      "opaque": "eyJfbXBweF9ub25jZSI6IjB4NGRmOTAwNWRmZjcyZTUzNmQyMTY4NThmMTM2MTgyNDZhZWU4YTcyZDQ0NDMzZTVhOWE3NmRhZTJhODQzYmRjNiJ9",
+      "realm": "local.mpp.dev",
+      "request": {
+        "amount": "10000",
+        "currency": "0x20c0000000000000000000000000000000000000",
+        "methodDetails": {
+          "chainId": 1337
+        },
+        "recipient": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46"
+      }
+    },
+    "receipt": {
+      "fundingCurrency": "0x20c0000000000000000000000000000000000000",
+      "method": "tempo",
+      "reference": "0x006b45bfc49cb4c7384fecb4dcc34acb0dc33769bde805892eb361128332a6af",
+      "status": "success",
+      "timestamp": "2026-10-15T05:50:39.209Z"
+    },
+    "payerBefore": "1000000000000000",
+    "payerAfter": "999999999989971",
+    "payeeBefore": "1000000000000000",
+    "payeeAfter": "1000000000010000",
+    "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+    "transfer": {
+      "hash": "0x006b45bfc49cb4c7384fecb4dcc34acb0dc33769bde805892eb361128332a6af",
+      "blockNumber": "9687",
+      "status": "success",
+      "logs": [
+        {
+          "address": "0x20c0000000000000000000000000000000000000",
+          "logIndex": 0,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x0000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650",
+            "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46"
+          ],
+          "data": "0x0000000000000000000000000000000000000000000000000000000000002710"
+        },
+        {
+          "address": "0x20c0000000000000000000000000000000000000",
+          "logIndex": 1,
+          "topics": [
+            "0x57bc7354aa85aed339e000bccffabbc529466af35f0772c8f8ee1145927de7f0",
+            "0x0000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650",
+            "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46",
+            "0xef1ed71201370c6619eb11ca4e652a0000000000000000000026b3989b5b533b"
+          ],
+          "data": "0x0000000000000000000000000000000000000000000000000000000000002710"
+        },
+        {
+          "address": "0x20c0000000000000000000000000000000000000",
+          "logIndex": 2,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x0000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650",
+            "0x000000000000000000000000feec000000000000000000000000000000000000"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000000000000000001d"
+        }
+      ]
+    },
+    "transferEvent": {
+      "name": "Transfer",
+      "args": {
+        "from": "0x8C8d35429F74ec245F8Ef2f4Fd1e551cFF97d650",
+        "to": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+        "amount": "10000"
+      },
+      "logIndex": 0
+    },
+    "credentialHash": "sha256:87555ea134efc6fae5f18fc435d7250eb641fde9233a1cf1547f946346a2ea51",
+    "replay": {
+      "status": 402,
+      "message": "{\"type\":\"https://paymentauth.org/problems/verification-failed\",\"title\":\"Verification Failed\",\"status\":402,\"detail\":\"Payment verification failed: Transaction hash has already been used.\",\"challengeId\":\"K767lcvjWJxJIHhqvxbUyXhncXpgS7RSZH01bE7t79M\"}"
+    }
+  },
+  "session": {
+    "challenge": {
+      "expires": "2026-10-15T05:55:39.251Z",
+      "id": "8V5UYYM79J7MMpp53v3COPNsXKzTEFiErbotYbcu1CI",
+      "intent": "session",
+      "method": "tempo",
+      "opaque": "eyJfbXBweF9ub25jZSI6IjB4Yzg3YWQyZjhlZjcxYjM5Mjg3N2NiOTUxYzdmYmU4OWVlZWE4M2NhN2JhN2U1NjJhYjk2OWZmYWFiZWE0ZTJjYyJ9",
+      "realm": "local.mpp.dev",
+      "request": {
+        "amount": "10000",
+        "currency": "0x20c0000000000000000000000000000000000000",
+        "methodDetails": {
+          "chainId": 1337,
+          "escrowContract": "0x4d50500000000000000000000000000000000000",
+          "sessionProtocol": "v2"
+        },
+        "recipient": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+        "suggestedDeposit": "50000",
+        "unitType": "request"
+      }
+    },
+    "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+    "firstReceipt": {
+      "method": "tempo",
+      "intent": "session",
+      "status": "success",
+      "timestamp": "2026-10-15T05:50:39.320Z",
+      "reference": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+      "challengeId": "x1bKrtdMRjhw2xK5spP6jghL1KCELuh7AguLLMIT9dA",
+      "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+      "acceptedCumulative": "10000",
+      "spent": "10000",
+      "units": 1,
+      "txHash": "0x8e382c13f9ff97e0ec87bbfcaabd3284001d731d772c246364010afb4714c7b2"
+    },
+    "secondReceipt": {
+      "method": "tempo",
+      "intent": "session",
+      "status": "success",
+      "timestamp": "2026-10-15T05:50:39.358Z",
+      "reference": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+      "challengeId": "_mB4eRdgprfZXWAMA1f8SsFQR2drWBjc2Ac04G7nbnc",
+      "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+      "acceptedCumulative": "20000",
+      "spent": "20000",
+      "units": 2
+    },
+    "closeReceipt": {
+      "method": "tempo",
+      "intent": "session",
+      "status": "success",
+      "timestamp": "2026-10-15T05:50:39.473Z",
+      "reference": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+      "challengeId": "_mB4eRdgprfZXWAMA1f8SsFQR2drWBjc2Ac04G7nbnc",
+      "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+      "acceptedCumulative": "20000",
+      "spent": "20000",
+      "units": 2,
+      "txHash": "0xa07dd180454a41bbde085e7a8a992250da2724173ad824dc0098c01da58f89ad"
+    },
+    "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+    "openState": {
+      "settled": "0",
+      "deposit": "50000",
+      "closeRequestedAt": 0
+    },
+    "beforeCloseState": {
+      "settled": "0",
+      "deposit": "50000",
+      "closeRequestedAt": 0
+    },
+    "finalState": {
+      "settled": "0",
+      "deposit": "0",
+      "closeRequestedAt": 0
+    },
+    "escrowAfterOpen": "50000",
+    "payerBefore": "999999999989971",
+    "payerAfter": "999999999969637",
+    "payeeBefore": "1000000000010000",
+    "payeeAfter": "1000000000029948",
+    "payeeBeforeClose": "1000000000010000",
+    "settlementTx": {
+      "hash": "0xa07dd180454a41bbde085e7a8a992250da2724173ad824dc0098c01da58f89ad",
+      "blockNumber": "9795",
+      "status": "success",
+      "logs": [
+        {
+          "address": "0x20c0000000000000000000000000000000000000",
+          "logIndex": 0,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x0000000000000000000000004d50500000000000000000000000000000000000",
+            "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46"
+          ],
+          "data": "0x0000000000000000000000000000000000000000000000000000000000004e20"
+        },
+        {
+          "address": "0x20c0000000000000000000000000000000000000",
+          "logIndex": 1,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x0000000000000000000000004d50500000000000000000000000000000000000",
+            "0x0000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650"
+          ],
+          "data": "0x0000000000000000000000000000000000000000000000000000000000007530"
+        },
+        {
+          "address": "0x4d50500000000000000000000000000000000000",
+          "logIndex": 2,
+          "topics": [
+            "0x5613aed96d5bf39f928408dbe1d4143490b9bb5957eac2dd8e69b5dc4b2206e6",
+            "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+            "0x0000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650",
+            "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46"
+          ],
+          "data": "0x0000000000000000000000000000000000000000000000000000000000004e200000000000000000000000000000000000000000000000000000000000007530"
+        },
+        {
+          "address": "0x20c0000000000000000000000000000000000000",
+          "logIndex": 3,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46",
+            "0x000000000000000000000000feec000000000000000000000000000000000000"
+          ],
+          "data": "0x0000000000000000000000000000000000000000000000000000000000000034"
+        }
+      ]
+    },
+    "openTx": {
+      "hash": "0x8e382c13f9ff97e0ec87bbfcaabd3284001d731d772c246364010afb4714c7b2",
+      "blockNumber": "9739",
+      "status": "success",
+      "logs": [
+        {
+          "address": "0x20c0000000000000000000000000000000000000",
+          "logIndex": 0,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x0000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650",
+            "0x0000000000000000000000004d50500000000000000000000000000000000000"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000000000000000c350"
+        },
+        {
+          "address": "0x4d50500000000000000000000000000000000000",
+          "logIndex": 1,
+          "topics": [
+            "0xdebaba36f0e9c7978f536fed432d9360b1f9646d7ca88531c34c3eae43f154a7",
+            "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+            "0x0000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650",
+            "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020c00000000000000000000000000000000000000000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650935011871089290527ab0bbded14823b3c4143926b38d208c30c5ed83c4812c5d4c806e98f16fe6bc65db2a8be0898f7335e044fa4ad4e4601e9a5d90ed79e0a000000000000000000000000000000000000000000000000000000000000c350"
+        },
+        {
+          "address": "0x20c0000000000000000000000000000000000000",
+          "logIndex": 2,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x0000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650",
+            "0x000000000000000000000000feec000000000000000000000000000000000000"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000000000000000014e"
+        }
+      ]
+    },
+    "openEvents": [
+      {
+        "name": "ChannelOpened",
+        "args": {
+          "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+          "payer": "0x8C8d35429F74ec245F8Ef2f4Fd1e551cFF97d650",
+          "payee": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+          "operator": "0x0000000000000000000000000000000000000000",
+          "token": "0x20C0000000000000000000000000000000000000",
+          "authorizedSigner": "0x8C8d35429F74ec245F8Ef2f4Fd1e551cFF97d650",
+          "salt": "0x935011871089290527ab0bbded14823b3c4143926b38d208c30c5ed83c4812c5",
+          "expiringNonceHash": "0xd4c806e98f16fe6bc65db2a8be0898f7335e044fa4ad4e4601e9a5d90ed79e0a",
+          "deposit": "50000"
+        },
+        "logIndex": 1
+      }
+    ],
+    "closeEvents": [
+      {
+        "name": "ChannelClosed",
+        "args": {
+          "channelId": "0x87f8072d6020a97b0210fd6668b627c2d77f048f031ef8f144790d664050cd56",
+          "payer": "0x8C8d35429F74ec245F8Ef2f4Fd1e551cFF97d650",
+          "payee": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+          "settledToPayee": "20000",
+          "refundedToPayer": "30000"
+        },
+        "logIndex": 2
+      }
+    ],
+    "replay": {
+      "status": 402,
+      "message": "{\"type\":\"https://paymentauth.org/problems/session/delta-too-small\",\"title\":\"Delta Too Small\",\"status\":402,\"detail\":\"Delta too small: voucher does not add new funds for this request.\",\"challengeId\":\"PmdNbry_dLkm0uh5Jll-swprBq7Cl8Zo2UNPIZcerxs\"}"
+    },
+    "invalidSignature": {
+      "status": 402,
+      "message": "{\"type\":\"https://paymentauth.org/problems/session/invalid-signature\",\"title\":\"Invalid Signature\",\"status\":402,\"detail\":\"Invalid signature: invalid voucher signature.\",\"challengeId\":\"rGI95cojiHYubcll5Xv9tTxzlRvlYyAZ1NDTINvyDW4\"}"
+    }
+  },
+  "boundedSession": {
+    "channelId": "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+    "openState": {
+      "settled": "0",
+      "deposit": "10000",
+      "closeRequestedAt": 0
+    },
+    "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+    "finalState": {
+      "settled": "0",
+      "deposit": "0",
+      "closeRequestedAt": 0
+    },
+    "firstReceipt": {
+      "method": "tempo",
+      "intent": "session",
+      "status": "success",
+      "timestamp": "2026-10-15T05:50:39.560Z",
+      "reference": "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+      "challengeId": "kGrAvXAiUJ6OCtipEeY9lpp5T2lu1j4Gx1Nsfr5NnfU",
+      "channelId": "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+      "acceptedCumulative": "10000",
+      "spent": "10000",
+      "units": 1,
+      "txHash": "0xef00b3b3c8975e7b771423da2f62f43195cc445ab38ca0b9a2c5fb1545432613"
+    },
+    "blockedStatus": null,
+    "blockedError": "Error: requested voucher amount 20000 exceeds local maxDeposit 10000",
+    "closeReceipt": {
+      "method": "tempo",
+      "intent": "session",
+      "status": "success",
+      "timestamp": "2026-10-15T05:50:39.633Z",
+      "reference": "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+      "challengeId": "59vWimgrbrKgLZq6rEdlDLdVchobANameagCSZUqclY",
+      "channelId": "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+      "acceptedCumulative": "10000",
+      "spent": "10000",
+      "units": 1,
+      "txHash": "0x16fadbe98e4d1dd7b5ad21113c49c4917fbc69da932d17b645ddf90251e317d7"
+    },
+    "boundedOpenTx": {
+      "hash": "0xef00b3b3c8975e7b771423da2f62f43195cc445ab38ca0b9a2c5fb1545432613",
+      "blockNumber": "9825",
+      "status": "success",
+      "logs": [
+        {
+          "address": "0x20c0000000000000000000000000000000000000",
+          "logIndex": 0,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x0000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650",
+            "0x0000000000000000000000004d50500000000000000000000000000000000000"
+          ],
+          "data": "0x0000000000000000000000000000000000000000000000000000000000002710"
+        },
+        {
+          "address": "0x4d50500000000000000000000000000000000000",
+          "logIndex": 1,
+          "topics": [
+            "0xdebaba36f0e9c7978f536fed432d9360b1f9646d7ca88531c34c3eae43f154a7",
+            "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+            "0x0000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650",
+            "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020c00000000000000000000000000000000000000000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650e0c2742f811e0914cb95c3650e37a85d01ffab740d27ec3e639a613a3ed58d2c8693d020930550713e6c98c2c9111a292126f8063b4d911ddff80f97796a5c480000000000000000000000000000000000000000000000000000000000002710"
+        },
+        {
+          "address": "0x20c0000000000000000000000000000000000000",
+          "logIndex": 2,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x0000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650",
+            "0x000000000000000000000000feec000000000000000000000000000000000000"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000000000000000002b"
+        }
+      ]
+    },
+    "boundedCloseTx": {
+      "hash": "0x16fadbe98e4d1dd7b5ad21113c49c4917fbc69da932d17b645ddf90251e317d7",
+      "blockNumber": "9850",
+      "status": "success",
+      "logs": [
+        {
+          "address": "0x20c0000000000000000000000000000000000000",
+          "logIndex": 0,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x0000000000000000000000004d50500000000000000000000000000000000000",
+            "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46"
+          ],
+          "data": "0x0000000000000000000000000000000000000000000000000000000000002710"
+        },
+        {
+          "address": "0x4d50500000000000000000000000000000000000",
+          "logIndex": 1,
+          "topics": [
+            "0x5613aed96d5bf39f928408dbe1d4143490b9bb5957eac2dd8e69b5dc4b2206e6",
+            "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+            "0x0000000000000000000000008c8d35429f74ec245f8ef2f4fd1e551cff97d650",
+            "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46"
+          ],
+          "data": "0x00000000000000000000000000000000000000000000000000000000000027100000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+          "address": "0x20c0000000000000000000000000000000000000",
+          "logIndex": 2,
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x00000000000000000000000098e503f35d0a019cb0a251ad243a4ccfcf371f46",
+            "0x000000000000000000000000feec000000000000000000000000000000000000"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000000000000000002e"
+        }
+      ]
+    },
+    "boundedClosedEvent": {
+      "name": "ChannelClosed",
+      "args": {
+        "channelId": "0xf41a43bf565659d5e967b395cf4337b4efd6b420527524939bf567eb9d993f8a",
+        "payer": "0x8C8d35429F74ec245F8Ef2f4Fd1e551cFF97d650",
+        "payee": "0x98e503f35D0a019cB0a251aD243a4cCFCF371F46",
+        "settledToPayee": "10000",
+        "refundedToPayer": "0"
+      },
+      "logIndex": 1
+    }
+  },
+  "finishedAt": "2026-10-15T05:50:39.642Z",
+  "sourceHashes": {
+    "packageLock": "sha256:ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad",
+    "runner": "sha256:72cccc156652c9303e988a74136888a7d8cb4e162c17d421ac7aaaac5bf40c54",
+    "verifier": "sha256:77e668ca78bf7404f35e4c991b8a6d54b3f3824ec2f03b3c99e6b143d8a8af6b"
+  }
+}

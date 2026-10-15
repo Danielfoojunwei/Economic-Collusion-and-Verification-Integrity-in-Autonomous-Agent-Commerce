@@ -1,0 +1,28 @@
+{
+  "archive_path": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15/legacy/raw-results/PaidAuditBench_v0.2_results_full.zip",
+  "archive_sha256": "6738ae52499039f515dc0f721cb45ba11213935d480510205ed53bcd8790677b",
+  "members": [
+    {
+      "zip_member": "paid-audit-bench/runs/realism_factorial/trials.jsonl",
+      "uncompressed_bytes": 104525181,
+      "line_count": 17280,
+      "manifest_trial_count": 17280,
+      "sha256": "a59d24afd3838fef330f75db6f1013cc3fe4281390a202f6d7d8161d69c89cdd",
+      "manifest_sha256": "a59d24afd3838fef330f75db6f1013cc3fe4281390a202f6d7d8161d69c89cdd",
+      "count_matches": true,
+      "hash_matches": true
+    },
+    {
+      "zip_member": "paid-audit-bench/runs/realism_pilot/trials.jsonl",
+      "uncompressed_bytes": 408620697,
+      "line_count": 67200,
+      "manifest_trial_count": 67200,
+      "sha256": "63b0b9ad28b8154d0f6d93d054261789d470102cc9060efc9d4f567fcb4d2d27",
+      "manifest_sha256": "63b0b9ad28b8154d0f6d93d054261789d470102cc9060efc9d4f567fcb4d2d27",
+      "count_matches": true,
+      "hash_matches": true
+    }
+  ],
+  "total_trace_lines": 84480,
+  "elapsed_seconds": 1.182
+}

@@ -1,0 +1,120 @@
+{
+  "study": "PaidAuditBench v0.2 matched-world realistic workflow (OFFLINE MOCK)",
+  "version": "0.2.0",
+  "created_utc": "2026-10-14T20:50:54.227656+00:00",
+  "full_config": {
+    "name": "factorial_r_s_p_no_funds",
+    "protocols": [
+      "erc8183_draft",
+      "x402_v2",
+      "mpp",
+      "ap2_v02",
+      "virtuals_acp_v2",
+      "openai_stripe_acp"
+    ],
+    "scenarios": [
+      "factor_r0_s0_p0",
+      "factor_r0_s0_p1",
+      "factor_r0_s1_p0",
+      "factor_r0_s1_p1",
+      "factor_r1_s0_p0",
+      "factor_r1_s0_p1",
+      "factor_r1_s1_p0",
+      "factor_r1_s1_p1"
+    ],
+    "guards": [
+      "none",
+      "receipt_binding",
+      "objective_recheck"
+    ],
+    "policies": [
+      "truthful",
+      "economic"
+    ],
+    "qualities": [
+      "good",
+      "bad"
+    ],
+    "tasks": "all",
+    "seeds": 3,
+    "max_trials": 100000
+  },
+  "protocols": [
+    "erc8183_draft",
+    "x402_v2",
+    "mpp",
+    "ap2_v02",
+    "virtuals_acp_v2",
+    "openai_stripe_acp"
+  ],
+  "scenarios": [
+    "factor_r0_s0_p0",
+    "factor_r0_s0_p1",
+    "factor_r0_s1_p0",
+    "factor_r0_s1_p1",
+    "factor_r1_s0_p0",
+    "factor_r1_s0_p1",
+    "factor_r1_s1_p0",
+    "factor_r1_s1_p1"
+  ],
+  "guards": [
+    "none",
+    "receipt_binding",
+    "objective_recheck"
+  ],
+  "task_ids": [
+    "code-tax-01",
+    "code-refund-02",
+    "reconcile-01",
+    "reconcile-02",
+    "evidence-01",
+    "evidence-02",
+    "procure-sensor-01",
+    "procure-damaged-02",
+    "api-telemetry-01",
+    "api-research-02"
+  ],
+  "policies": [
+    "truthful",
+    "economic"
+  ],
+  "seed_count": 3,
+  "trial_count": 17280,
+  "model": "none scripted policies",
+  "loopback_model_endpoint_trials": 0,
+  "research_methods": {
+    "2609.33102": "ORBIT: layer-by-layer attacks, roles, topologies, defenses and controlled ablation",
+    "2609.35886": "Agentic Commerce Bench: observation layers, legitimate-identity fraud and history-aware controls",
+    "2602.15198": "Colosseum: distinguish action-based coalition effects from collusion-on-paper",
+    "2609.05227": "CABAL: matched reviewer assignments and unchanged environment across worlds",
+    "2406.13352": "AgentDojo: separate untrusted content, attacker objectives, legitimate utility and environment state",
+    "2406.12045": "tau-bench: executable end-state scoring and repeated reliability",
+    "2602.00213": "TessPay: execution evidence before paid settlement, without assuming semantic proof",
+    "2610.05840": "Paired replay: freeze decisions across guards and distinguish compromise from consequences",
+    "2607.19545": "x402 security: /verify vs /settle, freshness and time-dependent state",
+    "2609.00595": "SoK MAS security: log principal/trust interfaces and demonstrate genuine interaction effects",
+    "2610.01756": "SoK agent infrastructure: distinguish evaluator integrity, receipt soundness and acceptance liveness"
+  },
+  "analysis": {
+    "factorial_effect_rows": 2016,
+    "reliability_rows": 1728,
+    "bootstrap_unit": "task cluster with within-task seed replicates",
+    "bootstrap_repetitions": 400,
+    "warning": "CIs quantify synthetic across-task/seed variation, not epistemic real-model uncertainty"
+  },
+  "limitations": [
+    "No real money or real crypto SDK/contract; all protocol adapters are local simulations",
+    "Provider and requester negotiation scripted; verifier may use optional loopback LLM",
+    "No collusion conclusion can follow from scripted relationships or common errors",
+    "Oracle ground truth depends on precisely defined artificial task acceptance rules",
+    "Frozen-decision replay isolates downstream guards, not policy-induced changes to verifier decisions",
+    "No explicit blockchain fees, dispute adjudication markets or cryptographic receipts"
+  ],
+  "artifact_sha256": {
+    "trials.jsonl": "a59d24afd3838fef330f75db6f1013cc3fe4281390a202f6d7d8161d69c89cdd",
+    "summary.csv": "d22810c52564f8b7dbc5db4638f2272b0706923e099871238fa458e3c9864e8f",
+    "paired_defense_contrasts.csv": "4733111d86119db56af3ed88386eed7e29c80dc899216376887acb3e94a874b5",
+    "factorial_effects.csv": "a1c4a9c496da482ff0ae401d82821bf54aa1451f9aaae4f92e26c30eafcb1ff4",
+    "reliability.csv": "94c712f7226f4ab5bcb513fc0e785843c60071eeca05f8a3b7190465f4735b1b"
+  }
+}

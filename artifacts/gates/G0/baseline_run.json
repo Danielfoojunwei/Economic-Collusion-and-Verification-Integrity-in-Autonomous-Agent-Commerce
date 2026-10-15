@@ -1,0 +1,47 @@
+[
+  {
+    "name": "handover_selfcheck",
+    "command": "python scripts/validate_handover.py",
+    "cwd": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15",
+    "exit_code": 0,
+    "elapsed_seconds": 0.586,
+    "stdout_path": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15/artifacts/gates/G0/handover_selfcheck.stdout.txt",
+    "stderr_path": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15/artifacts/gates/G0/handover_selfcheck.stderr.txt"
+  },
+  {
+    "name": "sha256sums_check",
+    "command": "sha256sum -c SHA256SUMS.txt",
+    "cwd": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15",
+    "exit_code": 0,
+    "elapsed_seconds": 0.026,
+    "checked_lines": 111,
+    "stdout_path": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15/artifacts/gates/G0/sha256sums.stdout.txt",
+    "stderr_path": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15/artifacts/gates/G0/sha256sums.stderr.txt"
+  },
+  {
+    "name": "legacy_unittest",
+    "command": "python -m unittest discover -s tests -v",
+    "cwd": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15/legacy/paid-audit-bench-v0.2-source",
+    "exit_code": 0,
+    "elapsed_seconds": 1.823,
+    "stdout_path": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15/artifacts/gates/G0/legacy_unittest.stdout.txt",
+    "stderr_path": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15/artifacts/gates/G0/legacy_unittest.stderr.txt"
+  },
+  {
+    "name": "legacy_wire_smoke",
+    "command": "python -m paidaudit wire-smoke",
+    "cwd": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15/legacy/paid-audit-bench-v0.2-source",
+    "exit_code": 0,
+    "elapsed_seconds": 0.61,
+    "stdout_path": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15/artifacts/gates/G0/legacy_wire_smoke.stdout.txt",
+    "stderr_path": "/workspace/handover-staging/Agent_Economic_Trust_Codex_Handover_2026-10-15/artifacts/gates/G0/legacy_wire_smoke.stderr.txt"
+  },
+  {
+    "legacy_manifest_files_hashed": 55,
+    "legacy_files_changed": [],
+    "python_version": "3.12.14",
+    "python_executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+    "manifest_sha256": "cc013a0d84dfda0cd19ed31ba9da526c455e7dbc8baa3c1d264ca7108bc8698f",
+    "sha256sums_sha256": "50a1e7d5b8b7efd80763d494f02b8f297f7a2962842e1926eae6d6c67830bb9c"
+  }
+]

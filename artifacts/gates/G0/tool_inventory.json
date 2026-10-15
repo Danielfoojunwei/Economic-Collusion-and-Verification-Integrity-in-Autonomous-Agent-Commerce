@@ -1,0 +1,56 @@
+{
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "python_runtime": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "tools": [
+    {
+      "tool": "python",
+      "path": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+      "available": true,
+      "version_output": "Python 3.12.14",
+      "version_exit_code": 0
+    },
+    {
+      "tool": "uv",
+      "path": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/uv",
+      "available": true,
+      "version_output": "uv 0.12.23 (x86_64-unknown-linux-gnu)",
+      "version_exit_code": 0
+    },
+    {
+      "tool": "node",
+      "path": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "available": true,
+      "version_output": "v24.19.0",
+      "version_exit_code": 0
+    },
+    {
+      "tool": "docker",
+      "path": "/usr/local/bin/docker",
+      "available": true,
+      "version_output": "Docker version 28.4.0, build d8eb465",
+      "version_exit_code": 0
+    },
+    {
+      "tool": "forge",
+      "path": null,
+      "available": false
+    },
+    {
+      "tool": "anvil",
+      "path": null,
+      "available": false
+    },
+    {
+      "tool": "git",
+      "path": "/usr/local/bin/git",
+      "available": true,
+      "version_output": "git version 2.52.0",
+      "version_exit_code": 0
+    },
+    {
+      "tool": "pytest",
+      "path": null,
+      "available": false
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "files": {
+    "artifacts/gates/G6/W15/base-python-skip.log": "67fa05d7a9600c1185cebaea7f55c3256c2da1cbd5caa618a419dc011d7691ac",
+    "artifacts/gates/G6/W15/conformance-run.log": "fe773112ef65cfd6153171149f996dc2dd7aa680a4fb81c547aa625ac9823a30",
+    "artifacts/gates/G6/W15/conformance.json": "b81f9db2b4fb6a919ffe2dff60fbdc612cbb58c99d9210907c805605e8abf6fe",
+    "artifacts/gates/G6/W15/dependency-freeze.txt": "93f92cf762c097562b328f859f3637cbab3db1a2c96e4ef41771971903b97f82",
+    "artifacts/gates/G6/W15/local-unittest.log": "28e4e067c5a187b035199881d3ddc13f7394eed024ca75ebd362ceef68c15923",
+    "artifacts/gates/G6/W15/report.md": "1b3e6a2b2bf99293ee57400ee5558263aac2405e5b2bd14978ed1b8e754ba3b8",
+    "artifacts/gates/G6/W15/upstream-focused.log": "1aa0e443d6a2862389f7bee3ed0eda88e529d0c587a357ebc29f39d56207d12e",
+    "scripts/run_ap2_local.py": "5a988925645b59f872863ddced2e346f2d614a54d3a415cbc580095c64b8d0c6",
+    "tests/test_ap2_local.py": "72093258e57dea08ea8c8a6f7bbff6d006f3a9b5729b79317a699bc68ede8f38"
+  },
+  "generated_utc": "2026-10-15T05:41:32.555315+00:00",
+  "python": "3.12.14",
+  "upstream_commit": "b4587ac1d055888a73b4b21750973cffba961793",
+  "work_order": "W15"
+}

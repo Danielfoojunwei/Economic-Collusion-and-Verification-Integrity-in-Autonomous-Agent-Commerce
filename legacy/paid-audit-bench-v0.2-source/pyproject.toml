@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=65"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "paid-audit-bench"
+version = "0.2.0"
+description = "No-funds, protocol-shaped research simulator for economic verification of agent work"
+requires-python = ">=3.10"
+
+[project.scripts]
+paidaudit = "paidaudit.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["paidaudit*"]
