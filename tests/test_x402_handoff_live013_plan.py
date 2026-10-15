@@ -70,6 +70,9 @@ class X402HandoffLive013PlanTest(unittest.TestCase):
             self.assertFalse(intake["source_paid_report"]["new_x402_payment_for_this_live_row"])
             self.assertEqual(intake["independent_check_price_minor"], 200_000)
             self.assertEqual(intake["auditor_check_endowment_minor"], 500_000)
+            self.assertEqual(intake["client_funded_job_budget_minor"], 20_000_000)
+            self.assertEqual(intake["auditor_fee_minor"], 2_000_000)
+            self.assertFalse(intake["source_payment_proves_invoice_quality"])
 
     def test_same_digest_does_not_hide_cross_obligation_mismatch(self) -> None:
         rows = make_schedule(SEED, self.sources)

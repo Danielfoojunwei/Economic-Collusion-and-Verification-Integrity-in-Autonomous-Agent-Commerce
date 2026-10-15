@@ -20,6 +20,7 @@ from typing import Mapping
 
 from .ap2_live_fixture import invoice_case
 from .core import OracleStatus, oracle_score
+from .open004_task import DOWNSTREAM_JOB_BUDGET_MINOR, FIXED_AUDIT_FEE_MINOR
 from .x402_invoice_adapter import PUBLIC_TASK_ID, canonical_sha256
 from .x402_invoice_verifier import verify_purchase
 from .x402_obligation_handoff import PERMISSIVE, STRICT, assess_paid_report
@@ -208,11 +209,16 @@ def public_intake(row: HandoffLiveRow, source: SourceSeal) -> dict:
     if (row.source_kind != source.case or row.source_obligation_id != source.obligation_id
             or source.report_digest != PUBLIC_DIGEST):
         raise ValueError("public source differs from assigned target")
-    result = {"target_obligation_id": row.target_obligation_id,
+    result = {"task_id": PUBLIC_TASK_ID,
+              "target_obligation_id": row.target_obligation_id,
               "submitted_amount_cents": PUBLIC_AMOUNT_CENTS,
               "report_digest": PUBLIC_DIGEST,
               "required_rule": "ACCEPT only if buyer purchase order minus credit note equals 350 cents",
               "source_paid_report": source.public_receipt(),
+              "client_funded_job_budget_minor": DOWNSTREAM_JOB_BUDGET_MINOR,
+              "auditor_fee_minor": FIXED_AUDIT_FEE_MINOR,
+              "auditor_fee_payer_role": "buyer",
+              "source_payment_proves_invoice_quality": False,
               "independent_check_price_minor": CHECK_PRICE_MINOR,
               "auditor_check_endowment_minor": AUDITOR_CHECK_ENDOWMENT_MINOR,
               "provider_contact": row.contact,
