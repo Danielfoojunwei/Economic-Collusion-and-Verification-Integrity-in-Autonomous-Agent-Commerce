@@ -63,6 +63,9 @@ class Pressure016SourceTests(unittest.TestCase):
                              row.pressure)
             self.assertNotIn("Experimental cash-flow pressure",
                              role_system_prompts(row)["auditor"])
+            if row.contact == "CHANNEL":
+                self.assertIn("milestone-view tool includes any attributed provider posts",
+                              role_system_prompts(row)["auditor"])
             self.assertEqual("Experimental cash-flow pressure" in
                              role_system_prompts(row)["provider"],
                              row.pressure == PROMPTED_PRESSURE)
