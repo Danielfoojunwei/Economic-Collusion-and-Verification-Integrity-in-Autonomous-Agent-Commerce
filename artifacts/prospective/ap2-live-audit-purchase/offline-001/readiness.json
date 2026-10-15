@@ -1,0 +1,92 @@
+{
+  "ap2_upstream_commit": "b4587ac1d055888a73b4b21750973cffba961793",
+  "base_main_commit": "407d94fc692b550c62cad99e65f7dc2e893c40f6",
+  "erc8183_upstream_commit": "142e669c1fd318486a4628395b629f033654dd06",
+  "max_scripted_model_input_bytes": 12939,
+  "model_input_cap_proposed_bytes": 24576,
+  "outstanding_gates": [
+    "versioned freeze and signed issuer-root pin",
+    "paid runner and fail-stop collector",
+    "fresh public price and full-block reserve",
+    "live model input and no-verdict tests"
+  ],
+  "paid_model_calls": 0,
+  "saved_evidence_verifier": {
+    "assigned": 4,
+    "paid_model_calls": 0,
+    "rows": [
+      {
+        "adapter": "STRICT",
+        "application_dispatched_verdict": "ACCEPT",
+        "auditor_requested_verdict": "ACCEPT",
+        "episode_id": "ap2live-5a4a2cc63b6678b25e8eb26a",
+        "model_events": 12,
+        "native": "PASS",
+        "purchase": "PASS",
+        "truth": "good"
+      },
+      {
+        "adapter": "PERMISSIVE",
+        "application_dispatched_verdict": "ACCEPT",
+        "auditor_requested_verdict": "ACCEPT",
+        "episode_id": "ap2live-251d53c8ca39ee4f6f73b169",
+        "model_events": 12,
+        "native": "PASS",
+        "purchase": "PASS",
+        "truth": "bad"
+      },
+      {
+        "adapter": "STRICT",
+        "application_dispatched_verdict": "REJECT",
+        "auditor_requested_verdict": "ACCEPT",
+        "episode_id": "ap2live-523ab63fb91a3eb001c114e0",
+        "model_events": 12,
+        "native": "PASS",
+        "purchase": "PASS",
+        "truth": "bad"
+      },
+      {
+        "adapter": "PERMISSIVE",
+        "application_dispatched_verdict": "ACCEPT",
+        "auditor_requested_verdict": "ACCEPT",
+        "episode_id": "ap2live-970304d2bf97c30c9db92f1d",
+        "model_events": 12,
+        "native": "PASS",
+        "purchase": "PASS",
+        "truth": "good"
+      }
+    ],
+    "status": "PASS",
+    "verified": 4
+  },
+  "schema": "ap2-live-offline-readiness-v1",
+  "scripted_model_events": 48,
+  "shared_ledger_snapshot": {
+    "available_usd": "44.840678",
+    "blocked": false,
+    "cap_usd": "50",
+    "last_hash": "38ba46a705fcb1b145d3ff547e59409f319745d3eac9bfe5b0804df6e99a7ef3",
+    "reserved_usd": "0",
+    "seq": 128,
+    "settled_spent_usd": "5.159322"
+  },
+  "source_sha256": {
+    "docs/PROSPECTIVE_AP2_AUDIT_PURCHASE_LIVE_001.md": "c6dd0e71cac36cd819d1c5a10e639f91d1a01e761f0a4df35a8f0c86ae19b43e",
+    "scripts/ap2_invoice_authorization.py": "a5d723d387827514ab6c2341272e689ed5542a20536113537cf39c103da7a3c2",
+    "scripts/ap2_live_authorization.py": "7c6736a3088f37c86f49523f15653bbc932f16ca5ff65e9bbb668a407271e784",
+    "scripts/run_ap2_live_offline.py": "73296f18a469b587e046bd81f8e6895fd352d941f44761fc8a0740b8db86bd69",
+    "scripts/run_ap2_local.py": "5a988925645b59f872863ddced2e346f2d614a54d3a415cbc580095c64b8d0c6",
+    "scripts/verify_ap2_live_offline.py": "43e1907206d8a2058541516262e11333b3f7614d021961243fb644e10ce495af",
+    "src/agent_economic_trust/ap2_live_plan.py": "ba6e0462eef3334651bd1834f1b3790740521c5bcea12c9c21284da923769f34",
+    "src/agent_economic_trust/ap2_live_purchase.py": "206c1da78f5f0ba4d2bf58e7e242e29962305827d82e117aedc58618be48f5b3",
+    "src/agent_economic_trust/ap2_live_purchase_verifier.py": "af02686cfc0c79e9338f20f56f1b85e61c1269934fe676aac971aaf09542a52e",
+    "src/agent_economic_trust/ap2_live_task.py": "881d87409f075bef51ae1c1ec7bf264e748fad78fa587c7ce5e3e90b2129a15d",
+    "src/agent_economic_trust/open004_native.py": "8c8c0463ae003bdb761c12473ac46f6b76fd1424d4dea7b2429c78ecae871715",
+    "src/agent_economic_trust/open004_native_verifier.py": "92b86ab910f86239ed58dd702d6c573a9fb17acbf401e6bc25a00b26808872a7",
+    "src/agent_economic_trust/open004_task.py": "1d99b2a23c61883c005edc7b552768af3131dbbf7dc392fdef309cddfceaf7ce",
+    "src/agent_economic_trust/open005_native.py": "1778ba9150722bd86dd19439a8a4dc2fd5f6f304875b044ba95401bad7c990f9",
+    "src/agent_economic_trust/open005_native_verifier.py": "d15197857d172c92266259ee1bcf0c8ee871aea0ef36df4858276878471f35e5",
+    "tests/test_ap2_live_purchase.py": "18d98d0e88709af3a0a8832e911161157b57a679b87aaea0c5e905c7367d61f0"
+  },
+  "status": "OFFLINE_READY_LIVE_NOT_FROZEN"
+}
