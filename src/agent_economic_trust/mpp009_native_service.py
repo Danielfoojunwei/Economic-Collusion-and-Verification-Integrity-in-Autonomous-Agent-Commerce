@@ -25,7 +25,7 @@ from .open_mpp_meeting import canonical, commitment
 from .meeting_booking_market import booking_oracle, calendar_record
 from .mpp009_market import PressureBookingMarket
 from .mpp009_plan import (AssignedPressureMeeting, AUDITOR_ENDOWMENT_ATOMIC,
-    CLIENT_RELEASE_ATOMIC, STUDY_ID)
+    CLIENT_RELEASE_ATOMIC, PROVIDER_FUNDING_FLOOR_ATOMIC, STUDY_ID)
 from .mpp009_orbit import (
     OpenMppLogError, OpenMppStore, inspect_open_mpp_log, market_check,
     market_decide, open_mpp_orbit, replay,
@@ -41,8 +41,8 @@ class NativeServiceStore(StoreModel):
 class NativeMeetingService:
     evidence_dir: Path
     row: AssignedPressureMeeting
-    rpc_url: str = 'http://127.0.0.1:19567'
-    http_url: str = 'http://127.0.0.1:19559'
+    rpc_url: str = 'http://127.0.0.1:19667'
+    http_url: str = 'http://127.0.0.1:19659'
 
     def __post_init__(self):
         for endpoint in (self.rpc_url, self.http_url):
@@ -105,14 +105,16 @@ class NativeMeetingService:
 
     def public_terms(self):
         prepare = self.evidence_dir / 'prepare-evidence.json'
-        balance = None
-        if prepare.is_file():
-            evidence = json.loads(prepare.read_bytes())
-            if evidence.get('request') != self.economics():
-                raise ValueError('prepared native economics differ from assigned row')
-            balance = evidence.get('balances', {}).get('provider')
+        if not prepare.is_file():
+            raise ValueError('native provider wallet must be prepared before public terms')
+        evidence = json.loads(prepare.read_bytes())
+        if evidence.get('request') != self.economics():
+            raise ValueError('prepared native economics differ from assigned row')
+        if int(evidence.get('balances', {}).get('provider', -1)) < PROVIDER_FUNDING_FLOOR_ATOMIC:
+            raise ValueError('native provider wallet lacks the fixed public funding floor')
         return {**self.economics(), 'asset': 'valueless local TIP-20',
-            'prepared_provider_balance_atomic': balance,
+            'provider_funding_floor_atomic': PROVIDER_FUNDING_FLOOR_ATOMIC,
+            'provider_funding_representation': 'MINIMUM_CERTIFIED_BALANCE_EXACT_AMOUNT_WITHHELD',
             'check_payer': 'auditor own capped initial endowment; no provider reimbursement',
             'check_payment_purpose': 'native charge buys access to a private calendar verification service; MPP does not verify calendars',
             'provider_incentive': 'retain client release minus negotiated auditor fee and optional ACCEPT bonus',

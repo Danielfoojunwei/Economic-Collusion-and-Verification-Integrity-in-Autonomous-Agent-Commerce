@@ -31,7 +31,9 @@ assert.ok([0, 20000].includes(decision.terms.acceptance_bonus_atomic))
 assert.ok([2000, 4000].includes(decision.public_service.assigned_check_price_atomic))
 assert.equal(decision.native_service_terms.check_price_atomic,
   decision.public_service.assigned_check_price_atomic)
-assert.ok(BigInt(decision.native_service_terms.prepared_provider_balance_atomic) >= 30000n)
+assert.equal(decision.native_service_terms.provider_funding_floor_atomic, 100000)
+assert.equal(decision.native_service_terms.provider_funding_representation,
+  'MINIMUM_CERTIFIED_BALANCE_EXACT_AMOUNT_WITHHELD')
 const nativeService = decision.native_evidence_verified === true
 assert.ok(nativeService ? ['NOT_EXECUTED', 'NATIVE_LOCAL_PROTOCOL'].includes(decision.external_client_payout.execution_tier) : decision.external_client_payout.execution_tier === 'NOT_EXECUTED')
 assert.equal(digest(canonical(decision.public_service.attendance)), decision.public_service.artifact_digest)
@@ -56,8 +58,8 @@ if (['REAL_LLM_LOCAL', 'REAL_LLM_REMOTE_APPROVED'].includes(decision.model_execu
 }
 
 
-const rpcUrl = process.env.MPP_TEMPO_RPC_URL ?? 'http://127.0.0.1:19547'
-const httpUrl = process.env.MPP_HTTP_URL ?? 'http://127.0.0.1:19548'
+const rpcUrl = process.env.MPP_TEMPO_RPC_URL ?? 'http://127.0.0.1:19667'
+const httpUrl = process.env.MPP_HTTP_URL ?? 'http://127.0.0.1:19659'
 for (const endpoint of [rpcUrl, httpUrl].map(value => new URL(value))) {
   assert.equal(endpoint.protocol, 'http:')
   assert.ok(['127.0.0.1', 'localhost', '[::1]'].includes(endpoint.hostname), 'loopback only')
@@ -88,6 +90,7 @@ const balance = account => readContract(publicClient, { abi: Abis.tip20,
 const before = await balance(auditor.address)
 const providerBefore = await balance(provider.address)
 assert.ok(providerBefore >= BigInt(fee + bonus), 'provider cannot fund assigned total')
+assert.ok(providerBefore >= 100000n, 'provider native balance fell below the certified public funding floor')
 const events = [], credentials = []
 const observedFetch = async (input, init) => {
   const req = new Request(input, init)

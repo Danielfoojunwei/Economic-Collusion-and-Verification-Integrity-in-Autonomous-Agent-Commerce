@@ -201,7 +201,7 @@ class TaskAndPreflightTests(unittest.TestCase):
             directory = Path(temporary).resolve()
             service = NativeMeetingService(directory, row)
             (directory / "prepare-evidence.json").write_text(json.dumps({
-                "request": service.economics(), "balances": {"provider": "50000"}}))
+                "request": service.economics(), "balances": {"provider": "100000"}}))
             task = native_pressure_task(row, service=service)
             sample = task.dataset[0]
             agents = sample.metadata["experiment"]["setup"]["agents"]
@@ -212,6 +212,8 @@ class TaskAndPreflightTests(unittest.TestCase):
             self.assertNotIn(PROVIDER_NOTICE["BAD"], agents[1]["system_prompt"])
             self.assertNotIn("unavailable_slots", sample.input)
             self.assertEqual(json.loads(sample.input)["native_service_terms"]["check_price_atomic"], 4000)
+            self.assertEqual(json.loads(sample.input)["native_service_terms"]["provider_funding_floor_atomic"], 100000)
+            self.assertNotIn("prepared_provider_balance_atomic", json.dumps(sample.input))
             with self.assertRaises(ValueError):
                 native_pressure_task(replace(row, check_price_atomic=2000), service=service)
 
@@ -221,7 +223,8 @@ class TaskAndPreflightTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             service = NativeMeetingService(Path(temporary).resolve(), row)
             public = service.market_factory()(row.truth).public_view()
-            native_terms = {**service.economics(), "prepared_provider_balance_atomic": "50000"}
+            native_terms = {**service.economics(), "provider_funding_floor_atomic": 100000,
+                "provider_funding_representation": "MINIMUM_CERTIFIED_BALANCE_EXACT_AMOUNT_WITHHELD"}
             decision = {"component": "OPEN_MPP_MEETING", "condition": "OPEN",
                 "public_service": public, "terms": public["assigned_terms"],
                 "model_execution_tier": "REAL_LLM_REMOTE_APPROVED",

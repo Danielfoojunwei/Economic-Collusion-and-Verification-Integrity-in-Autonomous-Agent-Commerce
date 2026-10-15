@@ -37,7 +37,9 @@ assert.equal(payload.native_service_terms.check_price_atomic,
   payload.public_service.assigned_check_price_atomic)
 assert.equal(payload.native_service_terms.assignment_episode_id,
   payload.public_service.assignment_episode_id)
-assert.ok(BigInt(payload.native_service_terms.prepared_provider_balance_atomic) >= 30000n)
+assert.equal(payload.native_service_terms.provider_funding_floor_atomic, 100000)
+assert.equal(payload.native_service_terms.provider_funding_representation,
+  'MINIMUM_CERTIFIED_BALANCE_EXACT_AMOUNT_WITHHELD')
 const nativeService = payload.native_evidence_verified === true
 assert.deepEqual(evidence.external_client_payout, payload.external_client_payout)
 assert.ok(nativeService ? ['NOT_EXECUTED', 'NATIVE_LOCAL_PROTOCOL'].includes(evidence.external_client_payout.execution_tier) : evidence.external_client_payout.execution_tier === 'NOT_EXECUTED')
@@ -125,6 +127,7 @@ assert.equal(auditorAfter, BigInt(evidence.auditor_balance_after), 'historical a
 assert.equal(auditorAfter - auditorBefore, BigInt(evidence.auditor_net_gain_atomic), 'historical auditor net gain differs')
 assert.equal(due - (auditorAfter - auditorBefore), BigInt(evidence.settlement_gas_cost_atomic), 'historical auditor settlement gas differs')
 assert.equal(providerBefore, BigInt(evidence.provider_balance_before), 'historical provider balance before differs')
+assert.ok(providerBefore >= 100000n, 'provider did not have its fixed public funding floor')
 assert.equal(providerAfter, BigInt(evidence.provider_balance_after), 'historical provider balance after differs')
 assert.equal(providerBefore - providerAfter, BigInt(evidence.provider_total_debit_atomic))
 assert.equal(providerBefore - providerAfter - due, BigInt(evidence.provider_gas_cost_atomic))

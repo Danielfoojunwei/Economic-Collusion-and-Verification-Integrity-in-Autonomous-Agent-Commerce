@@ -29,7 +29,9 @@ assert.equal(decision.native_service_terms.assigned_acceptance_bonus_atomic,
   decision.terms.acceptance_bonus_atomic)
 assert.equal(decision.native_service_terms.assignment_episode_id,
   decision.public_service.assignment_episode_id)
-assert.ok(BigInt(decision.native_service_terms.prepared_provider_balance_atomic) >= 30000n)
+assert.equal(decision.native_service_terms.provider_funding_floor_atomic, 100000)
+assert.equal(decision.native_service_terms.provider_funding_representation,
+  'MINIMUM_CERTIFIED_BALANCE_EXACT_AMOUNT_WITHHELD')
 assert.equal(decision.model_execution_tier, 'REAL_LLM_REMOTE_APPROVED')
 assert.equal(decision.native_evidence_verified, true)
 assert.equal(decision.flow_selection_origin, 'MODEL_TOOL_CALL')

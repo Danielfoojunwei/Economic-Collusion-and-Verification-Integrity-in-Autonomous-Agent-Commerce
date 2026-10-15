@@ -58,12 +58,22 @@ if (operation === 'prepare') {
   assert.equal(request.assigned_base_fee_atomic, 10000)
   assert.ok([0, 20000].includes(request.assigned_acceptance_bonus_atomic))
   const funding = []
-  const localFunding = { provider: 100000n, auditor: 20000n,
-    oracle: 20000n, client: 200000n }
+  const preBalances = Object.fromEntries(await Promise.all(
+    ['provider', 'auditor', 'oracle', 'client'].map(async role => [role, await balance(role)])))
+  // Each fresh model pair sees the same funding floor. The valueless local
+  // wallets and chain persist so every earlier receipt remains verifiable.
+  const floors = { provider: 100000n, oracle: 20000n, client: 200000n }
+  const shortfall = (role, floor) => preBalances[role] < floor ? floor - preBalances[role] : 0n
+  const topups = { provider: shortfall('provider', floors.provider),
+    auditor: preBalances.auditor < 20000n ? 20000n - preBalances.auditor : 1000n,
+    oracle: shortfall('oracle', floors.oracle), client: shortfall('client', floors.client) }
+  assert.ok(topups.auditor > 0n, 'every preparation needs a distinct funding transaction')
   const funderBalance = await readContract(rpc, { abi: Abis.tip20,
     address: token, functionName: 'balanceOf', args: [funder.address] })
-  assert.ok(funderBalance >= 500000n, 'isolated bare localnet needs its funded test genesis account')
-  for (const [role, amount] of Object.entries(localFunding)) {
+  assert.ok(funderBalance >= Object.values(topups).reduce((a, b) => a + b, 0n) + 1000n,
+    'isolated bare localnet test genesis account cannot cover assigned top-ups')
+  for (const [role, amount] of Object.entries(topups)) {
+    if (amount === 0n) continue
     const tx = await transaction(await writeContract(funderClient, { abi: Abis.tip20,
       address: token, functionName: 'transfer', args: [accounts[role].address, amount] }))
     funding.push({ role, amount_atomic: amount, transaction: tx })
@@ -76,12 +86,15 @@ if (operation === 'prepare') {
     address: token, functionName: 'balanceOf', args: [funder.address] })
   assert.ok(balances.auditor >= BigInt(request.check_price_atomic) + 1000n)
   assert.ok(balances.auditor <= BigInt(request.auditor_endowment_atomic))
-  assert.ok(balances.provider >= 30000n, 'provider fee and conditional bonus must be pre-funded')
+  assert.ok(balances.provider >= floors.provider, 'provider payment must meet public funding floor')
+  assert.ok(balances.oracle >= floors.oracle && balances.client >= floors.client,
+    'independent check and separate client release must be funded')
   await write({ ...header, funding, funding_source: funder.address,
     funding_mode: 'ISOLATED_BARE_LOCALNET_GENESIS_TEST_ACCOUNT',
-    funder_initial_balance_atomic: funderBalance,
+    funding_policy: 'PERSISTENT_ISOLATED_CHAIN_FLOOR_TOPUP', funding_floors_atomic: floors,
+    balances_before_funding: preBalances, funder_initial_balance_atomic: funderBalance,
     funder_final_balance_atomic: funderAfter, reduction, balances,
-    limitation: 'All actors funded from an isolated bare localnet test genesis account using valueless TIP-20; auditor endowment capped before the trial.' })
+    limitation: 'Fresh role contexts share valueless local-chain wallets. Actor funding floors are restored per row; historical receipts remain available for read-only collection.' })
   console.log(JSON.stringify({ status: 'PASS', operation, auditor_balance_atomic: String(balances.auditor) }))
   process.exit(0)
 }

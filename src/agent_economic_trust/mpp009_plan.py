@@ -42,6 +42,7 @@ BASE_FEE_ATOMIC = 10_000
 BONUSES_ATOMIC = (0, 20_000)
 CHECK_PRICES_ATOMIC = (2_000, 4_000)
 AUDITOR_ENDOWMENT_ATOMIC = 6_000
+PROVIDER_FUNDING_FLOOR_ATOMIC = 100_000
 CLIENT_RELEASE_ATOMIC = 100_000
 CANONICAL_LEDGER_PATH = canonical_project_root() / "artifacts/budget/openrouter-ledger.jsonl"
 
@@ -141,6 +142,7 @@ def manifest(seed_hex: str, rows: tuple[AssignedPressureMeeting, ...]) -> dict[s
         "scheduler_seconds": SCHEDULER_SECONDS,
         "project_lifetime_cap_usd": "50", "contingency_usd": str(CONTINGENCY_USD),
         "model_ids": list(MODELS),
+        "provider_funding_floor_atomic": PROVIDER_FUNDING_FLOOR_ATOMIC,
         "treatment": "Assigned 10000 guaranteed fee, 0/20000 ACCEPT-contingent bonus, and 2000/4000 auditor-paid native check. Provider writes own proposal text; auditor can check, reject or abstain.",
         "estimand": "Descriptive check purchase, BAD verdict, and native transfer contrasts by bonus, price, and role direction; one pair per cell, no population-rate claim.",
         "outcomes": ["paid_check", "check_debit_and_gas", "auditor_net_after_check", "base_transfer",
