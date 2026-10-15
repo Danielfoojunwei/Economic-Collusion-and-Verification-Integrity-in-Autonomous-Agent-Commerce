@@ -1,0 +1,110 @@
+{
+  "budget_at_review": {
+    "affordable_now": false,
+    "available_usd": "0",
+    "lifetime_cap_usd": "50",
+    "settled_spent_usage_estimate_usd": "10.096926",
+    "total_reserved_usd": "39.903074",
+    "two_row_plus_contingency_and_residual_usd": "11.4372182",
+    "xhigh018_per_row_worst_case_usd": "4.718592"
+  },
+  "design": {
+    "assigned_rows_if_frozen": 2,
+    "assignment_state": "UNFROZEN",
+    "auditor_efforts": [
+      "high",
+      "xhigh"
+    ],
+    "auditor_model": "openai/gpt-5.6-sol",
+    "contact": "CHANNEL",
+    "fee_term": "NATIVE_CONTINGENT",
+    "max_output_tokens_both_rows": 8192,
+    "one_pair_per_effort_is_not_powered": true,
+    "provider_effort": "high",
+    "provider_model": "anthropic/claude-sonnet-5.5",
+    "study": "erc8183-native-evaluator-fee-auditor-effort-live-018",
+    "truth": "BAD"
+  },
+  "freeze_or_paid_authorization": false,
+  "hold_reason": "The unguarded MPP012 source test may have caused unattributed OpenRouter charges. Its full USD 12.816262 headroom hold is UNKNOWN, leaving the USD50 project ledger blocked with zero available. XHIGH018 source fails closed and has no assignment or paid call.",
+  "incident": {
+    "artifact_sha256": "320a0cd74b72efb850402c1bb3bc22ed5a28e80c076775f5c34f3f736ea80d79",
+    "independent_budget_review_sha256": "dc64326b09c3ab0a82154c367e78dde1918c6082e7421fd319b80554f226963c",
+    "ledger_run_id": "mpp012-unguarded-source-test-20261015-221720",
+    "ledger_seq": 226,
+    "request_level_billing_available": false,
+    "reserve_is_attributable_charge": false,
+    "reserved_usd": "12.816262",
+    "status": "UNKNOWN"
+  },
+  "limitations": [
+    "The incident hold is a precautionary exposure reserve, not an attributable provider invoice or scientific result.",
+    "The fake HTTP transport proves local forwarding of xhigh, not router acceptance or more private reasoning.",
+    "One pair per effort cannot estimate population collusion prevalence or a powered causal effect.",
+    "The official ERC-8183 local receipts are valueless destroyed-chain records, not production payment attestations."
+  ],
+  "predecessor": {
+    "no_frozen_row_rerun_or_outcome_selected_replacement": true,
+    "pressure016_billing_evidence_sha256": "704486b9214558eebafb18d86027666bcab898e897cf1e061cf8af0f6584b9f0",
+    "pressure016_collection_sha256": "9527c5dde417a2bd5c4c1949f9c18f97684494d8106be91510990f3965ac5035",
+    "pressure016_contingent_transition": {
+      "hash": "e02531523015f58b36f8c86d9217d7684f536960dcbdb17cded74ac0ae77381f",
+      "seq": 224
+    },
+    "pressure016_denominator": {
+      "complete": 2,
+      "pending": 1,
+      "planned": 4,
+      "stopped": 1
+    },
+    "pressure016_full_contingent_hold_usd": "3.981312",
+    "pressure016_independent_billing_review_sha256": "6e9d04c69365f80fec35857916c98baad70e06259ec5b4a620a4762294b38384",
+    "pressure016_row_reviews_sha256": [
+      "ddda784d7002091e360dc92d50db87db072e7f41145031c0d524ba9cbae52a89",
+      "da2efaf83e8a2ad2924aebf5794a2ea7cc759a5695763f1018653f94c2d146c6"
+    ],
+    "pressure016_stop_forensics_sha256": "694aadd385e5949bc291498775ad1b8c65c9f0c9597fc28f5659eadc9fa4d0eb",
+    "pressure016_terminal_review_sha256": "13181768f8231f8e242612dd4bfaa7ed8fc73f474d420af86f7c221fc5b253ec",
+    "six_historical_holds_retained_usd": "27.086812",
+    "xhigh017_denominator": {
+      "complete": 0,
+      "pending": 1,
+      "planned": 2,
+      "stopped": 1
+    },
+    "xhigh017_full_contingent_hold_usd": "4.718592"
+  },
+  "reviewed_source_commit": "46a4e1b2c28c608d63ca542c7d8300168e44e477",
+  "reviewed_utc": "2026-10-15T22:29:27.563749Z",
+  "reviewer_id": "/root/xhigh018_independent_source",
+  "schema": "xhigh018-independent-source-review-v1",
+  "selected_source_sha256": {
+    "docs/PROSPECTIVE_XHIGH_SENSITIVITY018_DESIGN.md": "778475468d398610094a9bcdedbb898b8ba273788b04f9eea2630b839ab722bb",
+    "scripts/xhigh018_collect.py": "1c0d903c07b7e0f2d51fe15b81ecb65530d09d2062bb826d228d7f45e6155100",
+    "scripts/xhigh018_freeze.py": "8f33be184e97d1805fc4d87d464b6125442625dce0c1e7725609c3e755da7ef6",
+    "src/agent_economic_trust/xhigh018_boundary.py": "1d7137161c89781e27d670a4023db90b8f197ebad6c06b5b1005bc9b192f7500",
+    "src/agent_economic_trust/xhigh018_budget.py": "88a30da2226ebaa58339e4a8225d23667ddd0fea2fcc8ecbd4893d090b6506e6",
+    "src/agent_economic_trust/xhigh018_plan.py": "0e7c5a8bb65311aae08642f187ad4a0fe0aeb247ea86a0a83fb028aa4f4ac6d9",
+    "src/agent_economic_trust/xhigh018_remote.py": "b7be51cb6a4274a848229cd69f4fbcaad93d9ea8862ca902448dce7be0c1377e",
+    "src/agent_economic_trust/xhigh018_task.py": "ceebf4bd49b96a47ce4532ab5ee853995540434691316ac9570a7167fd996727",
+    "tests/test_xhigh018_source.py": "5a06d0450c2286d24762a1e22addc37f8ad6ef3ce9d9f47e2884153af468c0f1"
+  },
+  "source_file_count": 52,
+  "source_inventory_sha256": "1ce74277fedc5538d38fa9722e069d82be1054e9f679a9a329f823d8aacc040f",
+  "status": "HOLD_SOURCE_ONLY_INCIDENT_BILLING_UNKNOWN",
+  "supersedes_review_sha256": "010d2cd7d10ceef94ad1f94aeb87252aa46efe3f2501d9702f215906f955dd9b",
+  "verification": {
+    "assignment_freeze_by_review": false,
+    "focused_offline_tests": "13_PASS_0_FAIL on canonical source and blocked seq226 incident ledger",
+    "historical_transition_hash_tests": "PASS: with read-only projected snapshot, exact XHIGH017 and PRESSURE016 hash mutations produce specific mismatch errors; correct hashes reach the incident hard stop",
+    "inspect_openrouter_adapter": "PASS: (ModelOutput | Exception, ModelCall) preserved including handled HTTP error",
+    "ledger_mutations_by_review": 0,
+    "official_native_controls": "PASS: eight scripted cases including BAD ACCEPT and no-verdict prefix, seven tamper negatives; zero paid models",
+    "outbound_model_body": "PASS: Sonnet high and Sol high/xhigh with exact tools and 8192-token cap",
+    "paid_model_calls_by_review": 0,
+    "pressure016_archive_and_terminal_review": "PASS: two complete raw/native rows, stopped raw/native prefix, untouched pending fourth row, row/forensic/billing/terminal reviews",
+    "provider_text": "PASS: attributed untrusted inbox, later auditor model exposure, human review for all exposed posts",
+    "read_only_readiness": "BLOCKED: predecessor, source, runtime, pricing and offline native PASS; ledger blocked at seq226 by UNKNOWN full-headroom MPP012 hold; no assignment or paid call",
+    "six_historical_open_holds": "PASS: test first asserts real seq226 UNKNOWN and $0 available, then uses read-only six-hold projection solely for predecessor tamper checks"
+  }
+}
