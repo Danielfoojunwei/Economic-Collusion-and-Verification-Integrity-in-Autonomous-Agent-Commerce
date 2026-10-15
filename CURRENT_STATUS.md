@@ -1,5 +1,53 @@
 # Current research build status — 2026-10-15
 
+## Latest evidence snapshot (13:30 UTC)
+
+The owner raised the **lifetime OpenRouter ceiling to USD 50**. The shared
+hash-chained ledger is unblocked at sequence 128 with USD 5.159322 committed,
+USD 44.840678 available, and no outstanding reservation or unknown charge.
+Most settled amounts are conservative model-use estimates, not provider billing
+exports. All live calls so far used `openai/gpt-5.6-sol` with high reasoning;
+actual reasoning-token counts are in the saved Inspect logs.
+
+- The separately frozen [OPEN005 invoice study](artifacts/gates/OPEN005/collection-invoice-001-after-first-stop.json)
+  remains **0 complete, 1 failed/incomplete, 7 pending**. Its first row stopped
+  on a string-format billing comparison (`0.256890` versus `0.25689`), after
+  twelve real model calls and verified local payment components. The [read-only
+  billing forensics](artifacts/prospective/open005-first-row-forensics-001/report.json)
+  do not reclassify or retry that row.
+- A new [OPEN006 freeze](artifacts/gates/OPEN006/assignment-invoice-001/assignment_manifest.json)
+  repaired that comparison prospectively and passed eight scripted cells,
+  three native payment controls, three regression flows, 24 tests, and
+  independent source review. Its [stopped collection](artifacts/gates/OPEN006/collection-invoice-001-after-first-stop.json)
+  is **2 complete, 1 failed/incomplete, 5 pending**. The two completed BAD
+  reports were checked and rejected; local x402 charged for report access and
+  ERC-8183 refunded the client. The third BAD payment-only row had a recoverable
+  failed tool call and triggered the frozen hard stop. Its [separate forensic
+  note](docs/OPEN006_STOPPED_PAYMENT_ONLY_FORENSICS.md) verifies a correct
+  rejection, an unconditional 1,000-unit provider-to-auditor side payment,
+  and the native refund without treating the row as a complete study outcome.
+- The [MPP private-calendar service controls](artifacts/prospective/mpp-booking-service-stress-corrected/REPORT.md)
+  have genuine localhost auditor-paid checks and separately verified client
+  releases; their agent choices are scripted. The [MPP005 same-model live runner](artifacts/prospective/mpp005-live-runner-readiness/REPORT.md)
+  passed offline readiness but remains **unfrozen and unpaid**. A fresh
+  provider/auditor model-role comparison is under construction; its role models,
+  price bounds, and native evidence must pass a separate gate before execution.
+  The [MPP007 factorial memo](artifacts/prospective/MPP007-design/DESIGN.md)
+  is design only.
+- The [AP2 audit-purchase to ERC-8183 control](docs/AP2_INVOICE_ERC8183_LOCAL_CONTROL.md)
+  used signed AP2 mandates and actual local ERC-8183 job settlements, with
+  scripted choices. The audit-service purchase was authorized but not paid;
+  AP2 itself did not execute a payment.
+  Its permissive-versus-strict BAD outcome illustrates a policy boundary, not
+  a live model collusion result or a flaw in a named protocol.
+
+There is **no verified live-agent collusion finding** in these completed
+observations. The strongest current mechanism questions concern a genuine
+auditor-paid verification debit, provider-funded terms, late term funding, and
+whether an application incorrectly promotes a valid payment proof into quality
+or cross-obligation authority. The earlier time-stamped budget figures below
+are historical snapshots and must not be used to authorize new spending.
+
 The root `README.md` is the immutable handover snapshot covered by
 `SHA256SUMS.txt`. This page records implementation evidence created after that
 snapshot. The project reuses pinned ORBIT/Inspect, Colosseum methods and
