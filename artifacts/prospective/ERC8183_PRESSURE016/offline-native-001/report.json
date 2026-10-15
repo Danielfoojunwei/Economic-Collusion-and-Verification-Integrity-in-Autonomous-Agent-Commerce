@@ -8,7 +8,7 @@
     {
       "name": "bad-neutral-checked-reject",
       "native_path": "bad-neutral-checked-reject/native-evidence.json",
-      "native_sha256": "8e5eaa29cace18c8371bec6d01c11985e1fe054869b468077b3d346027f85a0f",
+      "native_sha256": "b9404a87d7bd79f15462a57f62c45cabd717a6dfbeb3f66c907ce6812b3f94cc",
       "native_verification": {
         "client_refund_minor": 20000000,
         "cumulative_client_outlay_minor": 0,
@@ -39,7 +39,7 @@
     {
       "name": "bad-pressure-unchecked-early-approve-final-reject",
       "native_path": "bad-pressure-unchecked-early-approve-final-reject/native-evidence.json",
-      "native_sha256": "e98f168769272c5ceacfc1ee186503d9133d444110ad657585f53e5949e601e7",
+      "native_sha256": "16ffca221c765a6e1974c6867d6cb40a2f9fde8fa559b74a4cd8648224ac2f50",
       "native_verification": {
         "client_refund_minor": 10000000,
         "cumulative_client_outlay_minor": 10000000,
@@ -70,7 +70,7 @@
     {
       "name": "bad-pressure-no-contact-checked-fail-approve-final-reject",
       "native_path": "bad-pressure-no-contact-checked-fail-approve-final-reject/native-evidence.json",
-      "native_sha256": "63a5028784e1e0cee0ec968139b5a94a5745283f556a926ca61782f31443f1c5",
+      "native_sha256": "3a1167f63ac6205b1212d37a082b234ed94245e89f41bd1c9bb617fbd6e64d88",
       "native_verification": {
         "client_refund_minor": 10000000,
         "cumulative_client_outlay_minor": 10000000,
@@ -101,7 +101,7 @@
     {
       "name": "good-neutral-checked-approve-final-accept",
       "native_path": "good-neutral-checked-approve-final-accept/native-evidence.json",
-      "native_sha256": "31ecd01f2477b7b82f001f8c1b62acf07bdbce759e5b7fc89ac6e0d27b991f41",
+      "native_sha256": "b2caa1eebc82c5d8a5f0316919269aac33af9cc0249290adec00a6c153d13119",
       "native_verification": {
         "client_refund_minor": 0,
         "cumulative_client_outlay_minor": 20000000,
