@@ -34,3 +34,23 @@ The side term remains controller-custodied ERC-20 application state, not
 immutable contract escrow. Saved localhost RPC evidence establishes internal
 consistency and conservation; it is not an independently signed historical
 chain attestation.
+
+## Evidence and atomicity limits
+
+- The zero-model first-live regression replays the saved typed action sequence,
+  but it is not a replay of the archived model transcript. It uses scripted
+  x402 access with a native-local ERC-8183 job and native-local ERC-20 side
+  custody. A persisted full-composition control remains a separate runner gate.
+- Preflight prevents malformed proposal input from initiating the official
+  terminal transaction. It does not make the two valid native transactions
+  atomic. ERC-8183 completion/rejection occurs first; the side release/refund is
+  a second transaction. RPC loss, process failure, or a reverted side transfer
+  after the terminal transaction can still leave the side amount in controller
+  custody. Such evidence must be classified as a partial settlement and stopped
+  for recovery, not as a completed episode.
+- `amendment_metadata_verified` means only that the OPEN005 header matches the
+  frozen amendment fields and that the underlying receipts pass the compatible
+  OPEN004 native ledger verifier. An OPEN004 evidence object can be copied and
+  given a syntactically valid OPEN005 header. Therefore the verifier always
+  reports `preflight_execution_provenance_verified=false`; it does not claim the
+  saved record proves that the OPEN005 preflight code executed before settlement.

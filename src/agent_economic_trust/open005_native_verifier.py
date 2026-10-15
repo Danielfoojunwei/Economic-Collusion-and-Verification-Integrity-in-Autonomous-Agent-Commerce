@@ -57,12 +57,20 @@ def _verify(path_or_dict: Path | str | Mapping[str, Any], *, terminal: bool,
         if not report["ok"]:
             return report
         return {**report, "experiment_version": "OPEN005",
-                "amendment_verified": True,
+                "amendment_metadata_verified": True,
+                "preflight_execution_provenance_verified": False,
+                "amendment_claim_scope": (
+                    "HEADER_METADATA_AND_OPEN004_COMPATIBLE_NATIVE_LEDGER_ONLY"),
+                "amendment_evidence_limit": (
+                    "A compatible OPEN004 evidence record can be relabeled with the OPEN005 "
+                    "header; saved receipts do not prove that preflight code executed before "
+                    "the official terminal transaction."),
                 "checks": checks + list(report.get("checks", []))}
     except (ValueError, KeyError, TypeError, OSError, json.JSONDecodeError) as error:
         return {"ok": False, "status": "FAIL", "errors": [str(error)],
                 "checks": [], "experiment_version": "OPEN005",
-                "amendment_verified": False}
+                "amendment_metadata_verified": False,
+                "preflight_execution_provenance_verified": False}
 
 
 def verify_native_evidence(path_or_dict: Path | str | Mapping[str, Any], *,

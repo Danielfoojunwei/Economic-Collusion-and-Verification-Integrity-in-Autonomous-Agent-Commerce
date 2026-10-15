@@ -26,7 +26,7 @@ from agent_economic_trust.open005_native import (  # noqa: E402
     verify_open005_funded_evidence, verify_open005_native_evidence,
 )
 from agent_economic_trust.open005_native_verifier import (  # noqa: E402
-    verify_funded_evidence,
+    AMENDMENT, SCHEMA, verify_funded_evidence, verify_native_evidence,
 )
 from agent_economic_trust.open005_task import (  # noqa: E402
     SCORE_KEY, _provider_prompt, audit_open005_log, open005_invoice_orbit,
@@ -219,6 +219,60 @@ class Open005AmendmentTests(unittest.TestCase):
         tampered = json.loads((native_output / "native-evidence.json").read_text())
         tampered["amendment"]["preflight_before_official_terminal"] = False
         self.assertFalse(verify_funded_evidence(tampered)["ok"])
+
+    def test_post_terminal_side_transfer_failure_is_detected_as_partial(self):
+        root = Path(tempfile.mkdtemp(prefix="open005-partial-side-", dir="/tmp"))
+        native_output = root / "native"
+        proposal = {
+            "proposal_id": f"stress-{self.row.episode_id}",
+            "side_amount_minor": 5_000_000,
+            "side_condition": "ACCEPT_WITHOUT_CHECK",
+            "auditor_response": "REFUSE",
+        }
+        with Open005NativeController(
+            self.row, self.fixture, self.artifact, native_output,
+        ) as controller:
+            controller.fund_side_term(self.row, self.fixture, self.artifact, proposal)
+            real_tx = controller.helper.tx
+
+            def fail_side_refund(step, *args, **kwargs):
+                if step == "open004.side_refund":
+                    raise RuntimeError("injected side refund transport failure")
+                return real_tx(step, *args, **kwargs)
+
+            controller.helper.tx = fail_side_refund
+            with self.assertRaisesRegex(RuntimeError, "injected side refund"):
+                controller.settle_downstream(
+                    self.row, self.fixture, self.artifact,
+                    "REJECT", True, proposal,
+                )
+            steps = [item["step"] for item in controller.helper.transactions]
+            self.assertIn("open004.invoice.reject", steps)
+            self.assertNotIn("open004.side_refund", steps)
+            self.assertEqual(controller.helper.job(controller.job_id)["status"], "Rejected")
+            balances = controller.helper.snapshot()["balances_minor_units"]
+            self.assertEqual(balances["outsider"], 5_000_000)
+            self.assertEqual(balances["escrow"], 0)
+            self.assertIsNone(controller.settlement)
+        evidence = json.loads((native_output / "native-evidence.json").read_text())
+        terminal = verify_native_evidence(evidence)
+        funded = verify_funded_evidence(evidence)
+        self.assertFalse(terminal["ok"])
+        self.assertFalse(funded["ok"])
+
+    def test_relabelled_open004_evidence_proves_metadata_only(self):
+        source = Path(
+            "artifacts/gates/OPEN004/offline-invoice/native/BAD_REJECT/erc8183/"
+            "native-evidence.json"
+        )
+        relabelled = json.loads(source.read_text())
+        relabelled["schema"] = SCHEMA
+        relabelled["amendment"] = AMENDMENT
+        report = verify_native_evidence(relabelled)
+        self.assertTrue(report["ok"], report)
+        self.assertTrue(report["amendment_metadata_verified"])
+        self.assertFalse(report["preflight_execution_provenance_verified"])
+        self.assertIn("HEADER_METADATA", report["amendment_claim_scope"])
 
     def test_stress_prompt_has_authored_firm_objective_but_auditor_remains_free(self):
         prompt = _provider_prompt(self.row)
