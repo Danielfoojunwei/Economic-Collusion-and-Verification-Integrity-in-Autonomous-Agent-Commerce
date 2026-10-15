@@ -1,0 +1,67 @@
+{
+  "account_aggregate_delta_usd": "0E-7",
+  "account_delta_is_per_request_evidence": false,
+  "account_usage_after_usd": "3.1852534",
+  "account_usage_before_usd": "3.1852534",
+  "attributable_final_provider_bill_usd": null,
+  "episode_id": "fee014-deb758472e05bb8622e9a1d6",
+  "failed_http_400_requests": 1,
+  "failed_request_provider_charge_usd": null,
+  "failed_request_reason_class": "UNSUPPORTED_ASSISTANT_PREFILL",
+  "final_settlement_requires": "attributable provider final billing for four successful and one failed request",
+  "frozen_artifacts_sha256": {
+    "anchor": "a5f56167c710258f64531377b3087a3999a3b670b164358d48f5dd64412cbb0b",
+    "assignment": "d6409ff93bcbd1332aba4ad90b19953c045e9a3136383ea6fa30fe76ece3bfed",
+    "collection": "e929867f0e327bba854be8a53d8949ee097a1677adda4e7eb96f98d9ce38444f",
+    "freeze": "acdb7050d3dae0bdfd341ffdde22d20c86ff8c939fd8ced470f1ecf766eb4cbf",
+    "independent_review": "3ab4ad292c0021124bc396c70400731100e866aa4749c667c2a9c1850b8aaa38",
+    "inspect": "a7970238ee8f78c3a41ef0c8fae836638f10986fb1cb2ad92e9f3eb97faa2838",
+    "ledger": "62bd28a529e6cc003ad4094c13925cbe3c1c717f55f470bd5331ef94b987b8b2",
+    "native": "db2930e0d8240973de07f96dde9799cd23a19838d65b819c699be06384c656f8",
+    "owner_request_csv": "f1e30259ab4c3a22576ee79906fc7d61ffff4708f689d6b6b2a9b3620d576372",
+    "owner_usage_csv": "900a5135005e16e5aee31eb2d6f0cd96da714e6ddba47cca898323310377fdc3",
+    "stopped": "f65fae3085a8b7cfc26da2eeb3945a982f93cdb4a770601fc3fac6c833051864"
+  },
+  "frozen_row_disposition": "STOPPED_NO_RETRY_THREE_PENDING",
+  "guard_completed_flags_reliable_for_billing": false,
+  "inspect_model_event_indices": [
+    20,
+    37,
+    54,
+    66,
+    82
+  ],
+  "intended_transition": "UNKNOWN_TO_CONTINGENT_WITH_FULL_HOLD",
+  "ledger_mutations_by_assessment": 0,
+  "ledger_prestate": {
+    "available_usd": "22.780558",
+    "blocked": true,
+    "cap_usd": "50",
+    "last_hash": "a26c433d9a01cfcb2f06297b15d77b1c8eecc78e2f21a2f13a759db11962712c",
+    "reserved_usd": "18.386908",
+    "seq": 193,
+    "settled_spent_usd": "8.832534",
+    "unknown_run_ids": [
+      "fee014-d6409ff93bcb-fee014-deb758472e05bb8622e9a1d6"
+    ]
+  },
+  "owner_csv_covers_episode_at_20h_utc": false,
+  "owner_csv_is_signed_provider_invoice": false,
+  "owner_csv_latest_hour_utc": "2026-10-15 13:00:00",
+  "owner_csv_row_counts": {
+    "owner_request_csv": 9,
+    "owner_usage_csv": 9
+  },
+  "paid_model_calls": 0,
+  "per_request_billing_ids_saved": false,
+  "result": "PROVISIONAL_HOLD_RETAINED_FINAL_CHARGE_UNKNOWN",
+  "retained_run_reservation_usd": "4.292608",
+  "run_id": "fee014-d6409ff93bcb-fee014-deb758472e05bb8622e9a1d6",
+  "sample_completed_at_utc": "2026-10-15T20:15:13.272904+00:00",
+  "sample_started_at_utc": "2026-10-15T20:14:53.413232+00:00",
+  "sample_uuid": "ZTgAqEy5v89cAe76NHLZEt",
+  "schema": "fee014-first-stop-provisional-billing-v1",
+  "successful_model_completions": 4,
+  "successful_usage_estimate_is_provider_invoice": false,
+  "successful_usage_estimate_usd": "0.036636"
+}
