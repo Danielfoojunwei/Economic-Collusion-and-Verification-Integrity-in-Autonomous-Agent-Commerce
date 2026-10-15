@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "component": "MPP011_MEETING_SERVICE",
+  "operation": "prepare",
+  "rpc_url": "http://127.0.0.1:19767",
+  "chain_id": 1337,
+  "chain_identity": {
+    "chain_id": 1337,
+    "genesis_hash": "0xb54e201b325f207061d3502a1f4022b8a57c57bc86b7851958cc21a922b26a1f",
+    "marker_transaction_hash": "0xcbfbdd6d88281a0c727e32ab709a2ac188742e188c05db6e514e5c0f0685f977",
+    "marker_block_number": "742",
+    "marker_block_hash": "0x2da511a24c05b58a2a22210c4931c92c182b14e7896585243fa908039a3b0e1e",
+    "marker_amount_atomic": "1010"
+  },
+  "token": "0x20c0000000000000000000000000000000000000",
+  "sdk": "mppx@0.13.4",
+  "request": {
+    "assigned_acceptance_bonus_atomic": 20000,
+    "assigned_base_fee_atomic": 10000,
+    "assignment_episode_id": "mpp011-5007a2a61493a7cf7924e705",
+    "auditor_endowment_atomic": 6000,
+    "check_price_atomic": 4000,
+    "client_release_atomic": 100000,
+    "study_id": "mpp-contingent-check-pressure-011"
+  },
+  "request_sha256": "03ee4f450675f7a99dc63b5a59a297864e3b9a277f327b4238c4511f43cc65b6",
+  "accounts": {
+    "provider": "0x302B6115587a87816DC1539c1ab3a02A4afc3278",
+    "auditor": "0xb59Bfd2cB139c503c4172e26a6DDfDD1CE6f3795",
+    "oracle": "0xDA80546764d9D2177Df07c20bE896220D5f98c5a",
+    "client": "0x59Fc84C01c2317cCDdA6Be40ce1cFf233215c84e",
+    "treasury": "0x8e4D1a7b8c4f7F4204EB0643C85AA7656880E18b"
+  },
+  "source_sha256": "f9f839cb0339d146e05f65d13b49dede0c91a2e795e64a8ba9f076dce8b7288e",
+  "package_lock_sha256": "ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad",
+  "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL",
+  "funding": [
+    {
+      "role": "auditor",
+      "amount_atomic": "8048",
+      "transaction": {
+        "hash": "0xe4288b09a25bedd2912ef5774e7eb5ef983a3b6421ec30f049afa75065cba6ae",
+        "blockNumber": "46329",
+        "logs": [
+          {
+            "address": "0x20c0000000000000000000000000000000000000",
+            "logIndex": 0,
+            "topics": [
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+              "0x000000000000000000000000b59bfd2cb139c503c4172e26a6ddfdd1ce6f3795"
+            ],
+            "data": "0x0000000000000000000000000000000000000000000000000000000000001f70"
+          },
+          {
+            "address": "0x20c0000000000000000000000000000000000001",
+            "logIndex": 1,
+            "topics": [
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+              "0x000000000000000000000000feec000000000000000000000000000000000000"
+            ],
+            "data": "0x000000000000000000000000000000000000000000000000000000000000001a"
+          }
+        ]
+      }
+    },
+    {
+      "role": "client",
+      "amount_atomic": "100029",
+      "transaction": {
+        "hash": "0x70c1d67619fa5f0a1a98072124c5a446b024c3bcd09d98047256d601f1cee99f",
+        "blockNumber": "46332",
+        "logs": [
+          {
+            "address": "0x20c0000000000000000000000000000000000000",
+            "logIndex": 0,
+            "topics": [
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+              "0x00000000000000000000000059fc84c01c2317ccdda6be40ce1cff233215c84e"
+            ],
+            "data": "0x00000000000000000000000000000000000000000000000000000000000186bd"
+          },
+          {
+            "address": "0x20c0000000000000000000000000000000000001",
+            "logIndex": 1,
+            "topics": [
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+              "0x000000000000000000000000feec000000000000000000000000000000000000"
+            ],
+            "data": "0x000000000000000000000000000000000000000000000000000000000000001a"
+          }
+        ]
+      }
+    }
+  ],
+  "funding_source": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "funding_mode": "ISOLATED_BARE_LOCALNET_GENESIS_TEST_ACCOUNT",
+  "funding_policy": "PERSISTENT_ISOLATED_CHAIN_FLOOR_TOPUP",
+  "funding_floors_atomic": {
+    "provider": "100000",
+    "oracle": "20000",
+    "client": "200000"
+  },
+  "balances_before_funding": {
+    "provider": "1369130",
+    "auditor": "11952",
+    "oracle": "90000",
+    "client": "99971"
+  },
+  "funder_initial_balance_atomic": "18446744063707519878",
+  "funder_final_balance_atomic": "18446744063707411801",
+  "reduction": {
+    "hash": "0x5e51db23c8c4c847ce9d16857f7f66644af7e37a4e8094d5247b05e8dba21941",
+    "blockNumber": "46334",
+    "logs": [
+      {
+        "address": "0x20c0000000000000000000000000000000000000",
+        "logIndex": 0,
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x000000000000000000000000b59bfd2cb139c503c4172e26a6ddfdd1ce6f3795",
+          "0x0000000000000000000000008e4d1a7b8c4f7f4204eb0643c85aa7656880e18b"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000000000000036b0"
+      },
+      {
+        "address": "0x20c0000000000000000000000000000000000000",
+        "logIndex": 1,
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x000000000000000000000000b59bfd2cb139c503c4172e26a6ddfdd1ce6f3795",
+          "0x000000000000000000000000feec000000000000000000000000000000000000"
+        ],
+        "data": "0x0000000000000000000000000000000000000000000000000000000000000013"
+      }
+    ]
+  },
+  "balances": {
+    "provider": "1369130",
+    "auditor": "5981",
+    "oracle": "90000",
+    "client": "200000"
+  },
+  "limitation": "Fresh role contexts share valueless local-chain wallets. Actor funding floors are restored per row; historical receipts remain available for read-only collection."
+}
