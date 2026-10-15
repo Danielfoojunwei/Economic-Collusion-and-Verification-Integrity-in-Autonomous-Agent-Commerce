@@ -141,7 +141,9 @@ def mixed_offline_readiness(sources: dict[str, str]) -> dict:
         raise ValueError("MPP008 new native bridge control failed")
     return {**base, "mixed_decision_preflight": "PASS",
             "new_native_bridge_controls": native,
-            "missing_scalar_reasoning_negative": "REJECTED", "payment_execution": "NONE"}
+            "missing_scalar_reasoning_negative": "REJECTED",
+            "payment_execution": "NATIVE_LOCAL_PROTOCOL_SCRIPTED_CONTROL",
+            "remote_model_execution": "NONE"}
 
 
 def load_assignment(directory: Path = ASSIGNMENT):
