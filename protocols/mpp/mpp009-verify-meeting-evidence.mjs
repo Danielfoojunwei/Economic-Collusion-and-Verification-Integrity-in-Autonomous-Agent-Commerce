@@ -82,8 +82,22 @@ assert.equal(evidence.payments.length, expectedPaths.length)
 const touchBlock = block => { firstBlock = firstBlock === undefined || block < firstBlock ? block : firstBlock; lastBlock = lastBlock === undefined || block > lastBlock ? block : lastBlock }
 for (const [index, payment] of evidence.payments.entries()) {
   assert.equal(payment.path, expectedPaths[index][0])
-  assert.equal(payment.receipt.intent, 'charge')
+  // mppx@0.13.4 puts the charge intent on the 402 Challenge, not the
+  // successful Receipt. Bind that challenge to the paid path and transfer.
+  assert.equal(payment.receipt.method, 'tempo')
+  assert.equal(payment.receipt.fundingCurrency.toLowerCase(), expectedToken.toLowerCase())
   assert.equal(payment.receipt.status, 'success')
+  const challenges = evidence.events.filter(event => event.path === payment.path &&
+    event.status === 402 && event.challenge?.intent === 'charge' &&
+    event.challenge?.method === 'tempo' &&
+    BigInt(event.challenge?.request?.amount ?? -1) === BigInt(expectedPaths[index][1]) &&
+    event.challenge?.request?.currency?.toLowerCase() === expectedToken.toLowerCase() &&
+    event.challenge?.request?.recipient?.toLowerCase() === expectedAuditor.toLowerCase() &&
+    event.challenge?.request?.methodDetails?.chainId === 1337)
+  assert.ok(challenges.length >= 1, 'exact MPP charge challenge required for paid path')
+  assert.ok(evidence.events.some(event => event.path === payment.path && event.status === 200 &&
+    event.credential_sha256 && event.receipt?.reference === payment.receipt.reference),
+    'paid path requires an authorized response and matching receipt')
   const hash = payment.transaction.hash
   assert.equal(payment.receipt.reference, hash)
   const receipt = await getTransactionReceipt(client, { hash })
