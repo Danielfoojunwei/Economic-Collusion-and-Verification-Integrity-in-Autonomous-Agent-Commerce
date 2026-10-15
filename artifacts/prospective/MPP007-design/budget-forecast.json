@@ -1,0 +1,33 @@
+{
+  "status": "PROSPECTIVE_ONLY_NOT_FROZEN",
+  "cells": 8,
+  "fresh_pairs_per_cell": 4,
+  "total_assigned_pairs": 32,
+  "remote_model_calls_executed": 0,
+  "ledger_observation": {
+    "seq": 122,
+    "spent_usd": "4.410432",
+    "reserved_usd": "0",
+    "available_usd": "45.589568",
+    "post_006_mpp005": false
+  },
+  "historical_pricing_assumption": {
+    "model_id": "openai/gpt-5.6-sol",
+    "input_usd_per_token": "0.00001",
+    "output_usd_per_token": "0.00003",
+    "input_framing_tokens_per_call": 8192,
+    "requires_refresh_before_freeze": true
+  },
+  "recommended_new_bounds": {
+    "max_model_calls_per_pair": 3,
+    "max_input_bytes_per_call": 16384,
+    "max_output_tokens_per_call": 2048,
+    "reasoning_effort": "high",
+    "max_retries": 0,
+    "per_pair_reservation_usd": "0.921600",
+    "total_32_pair_reservation_usd": "29.491200",
+    "contingency_usd": "1",
+    "required_post_block_available_usd": "30.491200",
+    "currently_implemented_or_live_validated": false
+  }
+}
