@@ -10,7 +10,7 @@ from agent_economic_trust.mpp005_plan import (ARMS, CANONICAL_LEDGER_PATH, TRUTH
     canonical_project_root, make_schedule, manifest)
 from agent_economic_trust.mpp005_remote import Mpp005Plan, _verify_partial_native, fresh_budget
 from agent_economic_trust.mpp005_reporting import _action_linkage, binary_bounds, summary
-from agent_economic_trust.remote import RemoteBoundaryError
+from agent_economic_trust.mpp005_boundary import RemoteBoundaryError
 from scripts import freeze_mpp005 as freezer
 
 
@@ -105,6 +105,22 @@ class ActionLinkTests(unittest.TestCase):
             sample.events = [SimpleNamespace(event="tool", function="market_check", error="payment failed")]
             with self.assertRaisesRegex(RemoteBoundaryError, "may have paid"):
                 _verify_partial_native(log, service, quality="BAD")
+
+
+class SourceSealTests(unittest.TestCase):
+    def test_source_seal_has_mpp_closure_without_unrelated_experiments(self):
+        files = freezer.source_inventory()
+        self.assertLess(len(files), 40)
+        self.assertIn("src/agent_economic_trust/mpp005_boundary.py", files)
+        self.assertIn("src/agent_economic_trust/open_mpp_native_service.py", files)
+        self.assertIn("protocols/mpp/verify-meeting-evidence.mjs", files)
+        self.assertIn("scripts/check_mpp_compensation_tampering.py", files)
+        self.assertFalse(any("open004" in name or "open005" in name
+                             or "open006" in name or "ap2_" in name for name in files))
+        with patch.object(freezer, "SOURCE_ASSETS", freezer.SOURCE_ASSETS +
+                          ("protocols/mpp/required-missing-file.mjs",)):
+            with self.assertRaisesRegex(ValueError, "missing or symlinked"):
+                freezer.source_inventory()
 
 
 class FreezeTests(unittest.TestCase):

@@ -21,9 +21,9 @@ from inspect_ai.model import GenerateConfig, get_model
 from .mpp005_plan import (CONTINGENCY_USD, EVAL_TOKEN_LIMIT, MAX_CALLS_PER_EPISODE,
     MAX_INPUT_BYTES, MAX_OUTPUT_TOKENS, MODEL_ID, SCHEDULER_SECONDS, TASK_TOKEN_LIMIT,
     CANONICAL_LEDGER_PATH)
-from .open004_remote import assert_no_key, file_sha, guard_api, verify_model_boundary, write_json
-from .remote import (REQUEST_TIMEOUT_SECONDS, RemoteBoundaryError,
-    _usage_for, account_usage_delta_usd, account_usage_usd)
+from .mpp005_boundary import (REQUEST_TIMEOUT_SECONDS, RemoteBoundaryError,
+    _usage_for, account_usage_delta_usd, account_usage_usd, assert_no_key,
+    file_sha, guard_api, verify_model_boundary, write_json)
 from .remote_budget import BudgetLedger
 from .remote_pricing import estimate_usage, pricing_snapshot, reserve_worst_case
 

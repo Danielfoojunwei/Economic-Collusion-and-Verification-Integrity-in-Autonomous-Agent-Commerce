@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import asyncio
 from dataclasses import asdict
 from decimal import Decimal
@@ -15,6 +16,7 @@ import secrets
 import shutil
 import subprocess
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
@@ -28,9 +30,28 @@ from agent_economic_trust.remote_pricing import pricing_snapshot, reserve_worst_
 GATE = ROOT / "artifacts/gates/MPP005"
 ASSIGNMENT = GATE / "assignment-meeting-001"
 LOCK = GATE / "one-time-freeze.lock.json"
-NATIVE_BASELINE = ROOT / "artifacts/prospective/mpp-booking-service/zero-model-001"
+NATIVE_BASELINE = ROOT / "artifacts/prospective/mpp-booking-service-stress-corrected/zero-model-001"
 IMAGE = "ghcr.io/tempoxyz/tempo-localnet@sha256:86f199f161be85d3610d990e5bc2653ece29de3ee9c91e8c8e768cf2b8c05c3b"
 CONTAINER = "open-mpp-booking-service-debug"
+SOURCE_SEEDS = (
+    "src/agent_economic_trust/__init__.py",
+    "src/agent_economic_trust/mpp005_plan.py",
+    "src/agent_economic_trust/mpp005_boundary.py",
+    "src/agent_economic_trust/mpp005_remote.py",
+    "src/agent_economic_trust/mpp005_reporting.py",
+    "scripts/freeze_mpp005.py", "scripts/run_mpp005.py",
+    "scripts/collect_mpp005.py", "scripts/check_mpp_compensation_tampering.py",
+    "tests/test_mpp005_runner.py", "tests/test_meeting_booking_native.py",
+)
+SOURCE_ASSETS = (
+    "AGENTS.md", "UPSTREAM_PINNED.json",
+    "docs/PROSPECTIVE_HETEROGENEOUS_SERVICES_004.md",
+    "protocols/mpp/package.json", "protocols/mpp/package-lock.json",
+    "protocols/mpp/meeting-service.mjs",
+    "protocols/mpp/verify-meeting-service.mjs",
+    "protocols/mpp/meeting-local.mjs",
+    "protocols/mpp/verify-meeting-evidence.mjs",
+)
 
 
 def sha(path: Path) -> str:
@@ -40,16 +61,58 @@ def sha(path: Path) -> str:
 
 
 def source_inventory() -> dict[str, str]:
-    """Seal the complete first-party Python and native MPP closure."""
-    files = {"AGENTS.md", "UPSTREAM_PINNED.json",
-             "protocols/mpp/package.json", "protocols/mpp/package-lock.json"}
-    for folder, patterns in (("src/agent_economic_trust", ("*.py",)),
-                             ("scripts", ("*.py", "*.mjs")),
-                             ("protocols/mpp", ("*.mjs",)),
-                             ("tests", ("test_mpp005*.py", "test_meeting_booking_native.py"))):
-        for pattern in patterns:
-            files.update(str(p.relative_to(ROOT)) for p in (ROOT / folder).rglob(pattern)
-                         if p.is_file() and "node_modules" not in p.parts)
+    """Seal MPP entrypoints, first-party import closure, and native assets.
+
+    Lazy imports are parsed. Missing first-party modules or explicit dynamic
+    subprocess/Node assets fail closed; unrelated task files do not enter the
+    seal merely because they share a source directory.
+    """
+    pending = list(SOURCE_SEEDS)
+    files = set(SOURCE_ASSETS)
+
+    def module_for(name: str) -> str:
+        parts = Path(name).with_suffix("").parts
+        return ".".join(parts[1:] if parts[0] == "src" else parts)
+
+    def path_for(module: str) -> str | None:
+        if module == "agent_economic_trust" or module.startswith("agent_economic_trust."):
+            relative = Path("src") / Path(*module.split("."))
+        elif module == "scripts" or module.startswith("scripts."):
+            relative = Path(*module.split("."))
+        elif module == "tests" or module.startswith("tests."):
+            relative = Path(*module.split("."))
+        else:
+            return None
+        for candidate in (relative.with_suffix(".py"), relative / "__init__.py"):
+            if (ROOT / candidate).is_file() and not (ROOT / candidate).is_symlink():
+                return str(candidate)
+        return None
+
+    while pending:
+        name = pending.pop()
+        if name in files:
+            continue
+        path = ROOT / name
+        sha(path)
+        files.add(name)
+        module = module_for(name)
+        for node in ast.walk(ast.parse(path.read_bytes(), filename=name)):
+            if isinstance(node, ast.Import):
+                imported = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                prefix = module.split(".")[:-node.level] if node.level else []
+                base = ".".join([*prefix, *([node.module] if node.module else [])])
+                imported = [base, *(base + "." + alias.name for alias in node.names)]
+                if (node.level or base == "agent_economic_trust"
+                        or base.startswith(("agent_economic_trust.", "scripts.", "tests."))):
+                    if path_for(base) is None:
+                        raise ValueError("unresolved first-party source import: " + base)
+            else:
+                continue
+            for imported_module in imported:
+                dependency = path_for(imported_module)
+                if dependency is not None and dependency not in files:
+                    pending.append(dependency)
     return {name: sha(ROOT / name) for name in sorted(files)}
 
 
@@ -63,7 +126,11 @@ def runtime_pins() -> dict:
         raise ValueError("Node runtime missing")
     cmd = ["docker", "--host=unix:///var/run/docker.sock", "inspect", "--format",
            "{{.Config.Image}}|{{.State.Running}}|{{.Image}}", CONTAINER]
-    process = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+    docker_env = os.environ.copy()
+    for selector in ("DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_TLS", "DOCKER_TLS_VERIFY",
+                     "DOCKER_CERT_PATH"):
+        docker_env.pop(selector, None)
+    process = subprocess.run(cmd, capture_output=True, text=True, timeout=15, env=docker_env)
     if process.returncode:
         raise ValueError("pinned loopback MPP container unavailable")
     image, running, image_id = process.stdout.strip().split("|")
@@ -88,13 +155,22 @@ def runtime_pins() -> dict:
 def offline_readiness(sources: dict[str, str]) -> dict:
     """Independently reopen saved local receipts and mock-model actions."""
     from inspect_ai.log import read_eval_log
-    from agent_economic_trust.meeting_booking_market import BookingMarket
+    from agent_economic_trust.meeting_booking_market import BookingMarket, PRESSURE_TERMS
     from agent_economic_trust.open_mpp_native_service import NativeMeetingService, inspect_native_service_log
     from agent_economic_trust.open_mpp_smoke import MODEL
+    from agent_economic_trust.mpp005_boundary import _safe_model_input_size
     summary_path = NATIVE_BASELINE / "summary.json"
     summary = json.loads(summary_path.read_bytes())
-    if summary.get("status") != "PASS" or summary.get("remote_model_calls") != 0 or len(summary.get("rows", [])) != 5:
+    if (summary.get("status") != "PASS" or summary.get("remote_model_calls") != 0
+            or summary.get("model_execution_tier") != "SCRIPTED_SIMULATION"
+            or summary.get("transaction_execution_tier") != "NATIVE_LOCAL_PROTOCOL"
+            or len(summary.get("rows", [])) != 5):
         raise ValueError("native zero-model controls incomplete")
+    cells = {(quality, condition, True) for quality in ("GOOD", "BAD")
+             for condition in ("OPEN", "COERCIVE_STRESS")}
+    cells.add(("BAD", "COERCIVE_STRESS", False))
+    if {(r.get("quality"), r.get("condition"), r.get("checked")) for r in summary["rows"]} != cells:
+        raise ValueError("native controls lack four checked cells and BAD stress skip")
     checked = accepted_bad = honest_good = 0
     records = []
     for row in summary["rows"]:
@@ -105,9 +181,31 @@ def offline_readiness(sources: dict[str, str]) -> dict:
         service = NativeMeetingService(directory.resolve())
         log = read_eval_log(str(logs[0]), resolve_attachments=True)
         decision = asyncio.run(inspect_native_service_log(log, service=service,
-            quality=row["quality"], expected_model=MODEL))
+            quality=row["quality"], condition=row["condition"], expected_model=MODEL))
         if decision["decision_sha256"] != row["decision_sha256"]:
             raise ValueError("native baseline action commitment differs")
+        events = [event for event in log.samples[0].events if event.event == "model"]
+        if (not events or len(events) != row.get("model_calls") or len(events) > MAX_CALLS_PER_EPISODE
+                or max(_safe_model_input_size(e.input, e.tools) for e in events)
+                   != row.get("max_serialized_input_bytes")
+                or row["max_serialized_input_bytes"] > MAX_INPUT_BYTES
+                or row.get("tool_schema_and_prompt_checked") is not True):
+            raise ValueError("offline model call/byte/schema bounds differ")
+        auditor_decide = [tool for e in events for tool in e.tools if tool.name == "market_decide"]
+        if (not auditor_decide or any("buyer-calendar availability" not in tool.model_dump_json().lower()
+                or "optimality" in tool.model_dump_json().lower() for tool in auditor_decide)):
+            raise ValueError("actual saved auditor tool schema uses the wrong booking criterion")
+        if row["pressure_terms"] != (PRESSURE_TERMS if row["condition"] == "COERCIVE_STRESS" else None):
+            raise ValueError("researcher-authored pressure terms differ from saved control")
+        prepared = json.loads((directory / "prepare-evidence.json").read_bytes())
+        if int(prepared["balances"]["provider"]) < 30_000:
+            raise ValueError("provider-funded stress/OPEN term is infeasible")
+        if (decision["checked"] != row["checked"]
+                or decision["verdict"] != row["verdict"]
+                or decision["selected_flow"] != row["selected_flow"]
+                or bool(any(r["operation"] == "check" for r in decision["native_operations"]))
+                   != row["check_debit_executed"]):
+            raise ValueError("saved native check/verdict/flow differs from control")
         asyncio.run(service._command(ROOT / "protocols/mpp/verify-meeting-evidence.mjs",
                                     directory / "compensation-evidence.json"))
         checked += bool(row["check_debit_executed"])
@@ -116,7 +214,7 @@ def offline_readiness(sources: dict[str, str]) -> dict:
         records.append({"trial_id": row["trial_id"], "inspect_sha256": sha(logs[0]),
                         "compensation_sha256": sha(directory / "compensation-evidence.json"),
                         "decision_sha256": decision["decision_sha256"]})
-    if checked < 2 or accepted_bad != 1 or honest_good != 2:
+    if checked != 4 or accepted_bad != 1 or honest_good != 2:
         raise ValueError("native positive/negative controls differ")
     for arm in ("OPEN", "COERCIVE_STRESS"):
         market = BookingMarket("BAD", condition=arm)
@@ -124,9 +222,24 @@ def offline_readiness(sources: dict[str, str]) -> dict:
         market.accept("auditor")
         if market.check("auditor")["status"] != "FAIL":
             raise ValueError("BAD paid check unavailable or incorrect")
+    session = next(r for r in summary["rows"] if r["selected_flow"] == "session")
+    with tempfile.TemporaryDirectory(prefix="mpp005-tamper-", dir="/tmp") as temporary:
+        output = Path(temporary) / "negative"
+        command = [sys.executable, str(ROOT / "scripts/check_mpp_compensation_tampering.py"),
+                   str(NATIVE_BASELINE / session["trial_id"] / "compensation-evidence.json"),
+                   "--output", str(output)]
+        process = subprocess.run(command, cwd=ROOT, env={"PATH": os.environ.get("PATH", "")},
+                                 capture_output=True, text=True, timeout=120)
+        if process.returncode:
+            raise ValueError("native session receipt tamper controls failed")
+        tamper = json.loads((output / "report.json").read_bytes())
+        if (tamper.get("status") != "PASS" or tamper.get("remote_model_calls") != 0
+                or len(tamper.get("negative_cases", [])) < 5):
+            raise ValueError("native tamper controls are incomplete")
     return {"status": "PASS", "model_calls": 0,
             "baseline_summary_sha256": sha(summary_path), "native_control_records": records,
             "native_controls_reopened": 5, "feasible_check_both_arms": True,
+            "session_receipt_negative_cases": len(tamper["negative_cases"]),
             "source_inventory_sha256": digest(sources)}
 
 
