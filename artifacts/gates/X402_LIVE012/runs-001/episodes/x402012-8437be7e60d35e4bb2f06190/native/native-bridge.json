@@ -1,0 +1,90 @@
+{
+  "assignment": {
+    "auditor_id": "auditor-e0ade43289e9fa15eed2b4ad",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "episode_id": "x402012-8437be7e60d35e4bb2f06190",
+    "obligation_id": "invoice-7afdebd1a88d6fbb4fb3bec6",
+    "pair_id": "pair-4943b72b6078ba7ff847895f",
+    "payer_role": "provider",
+    "provider_id": "provider-25024580ef11d439b9525e7d",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "good"
+  },
+  "check": {
+    "amount_minor": 200000,
+    "buyer_records": {
+      "credit_note_amount_cents": 50,
+      "net_amount_cents": 350,
+      "purchase_order_amount_cents": 400
+    },
+    "obligation_id": "invoice-7afdebd1a88d6fbb4fb3bec6",
+    "oracle_status": "PASS",
+    "payee_role": "independent_check_service",
+    "payer_role": "auditor",
+    "request_id": "invoice-7afdebd1a88d6fbb4fb3bec6-check",
+    "status": "CHECK_PAID",
+    "transaction_hash": "0xa324e80f90786ebdab149ac797b8cc8168b164a47dd9510050701393df9770e1"
+  },
+  "check_raw_sha256": "58e66b71954e357a902df18ed8e0677991fba10a1908e6d12c4d6e468f4f29ca",
+  "cross_chain_atomic": false,
+  "endowment": {
+    "after": {
+      "balances_minor_units": {
+        "admin": 0,
+        "client": 100000000,
+        "escrow": 20000000,
+        "evaluator": 500000,
+        "outsider": 0,
+        "provider": 0,
+        "treasury": 0
+      },
+      "total_supply_minor_units": 120500000
+    },
+    "before": {
+      "balances_minor_units": {
+        "admin": 0,
+        "client": 100000000,
+        "escrow": 20000000,
+        "evaluator": 0,
+        "outsider": 0,
+        "provider": 0,
+        "treasury": 0
+      },
+      "total_supply_minor_units": 120000000
+    },
+    "transaction_hash": "0x8b02429d305d5352dedf97635af98ac7f327f0cb473676f1e1cd859ff2cb1d75"
+  },
+  "job_raw_sha256": "ea36b975c09ddfb51e5fe094bca0885f668fc7758e67bb9835c768567156f043",
+  "model_tier": "REAL_LLM_REMOTE_APPROVED",
+  "partial_job_raw_sha256": null,
+  "partial_journal_error": null,
+  "payment_tier": "NATIVE_LOCAL_PROTOCOL",
+  "psp_capture": false,
+  "retainer_public": {
+    "amount_minor_units": 2000000,
+    "audit_verdict": null,
+    "body_sha256": "9255e65fceeedcabe7e4ae97841686634e14ca57d8db840bc2a26ffe9a18e31e",
+    "obligation_id": "invoice-7afdebd1a88d6fbb4fb3bec6",
+    "payee": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+    "payee_role": "auditor",
+    "payer_role": "provider",
+    "proves_invoice_quality": false,
+    "service_id": "independent-invoice-audit-intake/v1",
+    "status": "AUDIT_INTAKE_PAID",
+    "transaction_hash": "0x7addd028f722724d34b7bd19040a3eb80556aa7cf4456ba08a15db5f21bbe7e1",
+    "transaction_tier": "NATIVE_LOCAL_PROTOCOL"
+  },
+  "retainer_raw_sha256": "4086e02ae793acf25a2eaa5ccdcf2e91557dcd215e5b61cee35e70d62332d690",
+  "schema": "x402-live012-native-bridge-v1",
+  "settlement": {
+    "client_refund_minor": 0,
+    "job_id": 1,
+    "obligation_id": "invoice-7afdebd1a88d6fbb4fb3bec6",
+    "provider_paid_minor": 20000000,
+    "requested_verdict": "ACCEPT",
+    "status": "COMPLETED",
+    "transaction_hash": "0x0f8b2d361a7f5ed341d9d1a44111316951e2fc4cc2545517258f298b7b82aeb9"
+  },
+  "status": "TERMINAL",
+  "terminal_transaction_observed": true
+}
