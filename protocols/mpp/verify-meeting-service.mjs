@@ -31,6 +31,9 @@ if (evidence.operation === 'prepare') {
   const actual = await balanceAt(expected.auditor, receipt.blockNumber)
   assert.equal(actual, BigInt(evidence.balances.auditor))
   assert.ok(actual <= 6000n && actual >= 3000n)
+  const providerFunds = await balanceAt(expected.provider, receipt.blockNumber)
+  assert.equal(providerFunds, BigInt(evidence.balances.provider))
+  assert.ok(providerFunds >= 30000n, 'native provider wallet must fund full guaranteed fee and conditional bonus')
   assert.deepEqual(evidence.request, { auditor_endowment_atomic: 6000, check_price_atomic: 2000, client_release_atomic: 100000 })
 } else {
   assert.ok(['check', 'release'].includes(evidence.operation))

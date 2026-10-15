@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "rows": [
+    {
+      "trial": "trial-00",
+      "status": "PASS",
+      "flow": "charge",
+      "transactions_verified": 2,
+      "service_paid_atomic": "30000",
+      "auditor_net_gain_atomic": "30000",
+      "historical_balances_verified": true,
+      "external_client_payout": "NATIVE_LOCAL_PROTOCOL"
+    },
+    {
+      "trial": "trial-01",
+      "status": "PASS",
+      "flow": "session",
+      "transactions_verified": 2,
+      "service_paid_atomic": "10000",
+      "auditor_net_gain_atomic": "9948",
+      "historical_balances_verified": true,
+      "external_client_payout": "NOT_EXECUTED"
+    },
+    {
+      "trial": "trial-02",
+      "status": "PASS",
+      "flow": "session",
+      "transactions_verified": 2,
+      "service_paid_atomic": "30000",
+      "auditor_net_gain_atomic": "29954",
+      "historical_balances_verified": true,
+      "external_client_payout": "NATIVE_LOCAL_PROTOCOL"
+    },
+    {
+      "trial": "trial-03",
+      "status": "PASS",
+      "flow": "session",
+      "transactions_verified": 2,
+      "service_paid_atomic": "10000",
+      "auditor_net_gain_atomic": "9948",
+      "historical_balances_verified": true,
+      "external_client_payout": "NOT_EXECUTED"
+    },
+    {
+      "trial": "trial-04",
+      "status": "PASS",
+      "flow": "charge",
+      "transactions_verified": 2,
+      "service_paid_atomic": "30000",
+      "auditor_net_gain_atomic": "30000",
+      "historical_balances_verified": true,
+      "external_client_payout": "NATIVE_LOCAL_PROTOCOL"
+    }
+  ]
+}

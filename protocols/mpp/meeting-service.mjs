@@ -55,6 +55,7 @@ if (operation === 'prepare') {
   const balances = Object.fromEntries(await Promise.all(['provider', 'auditor', 'oracle', 'client'].map(async role => [role, await balance(role)])))
   assert.ok(balances.auditor >= BigInt(request.check_price_atomic) + 1000n)
   assert.ok(balances.auditor <= BigInt(request.auditor_endowment_atomic))
+  assert.ok(balances.provider >= 30000n, 'provider fee and conditional bonus must be pre-funded')
   await write({ ...header, funding, reduction, balances,
     limitation: 'All actors funded with valueless local faucet assets; auditor endowment capped before the trial.' })
   console.log(JSON.stringify({ status: 'PASS', operation, auditor_balance_atomic: String(balances.auditor) }))

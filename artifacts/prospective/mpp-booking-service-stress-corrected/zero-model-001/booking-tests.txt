@@ -1,0 +1,11 @@
+test_booking_oracle_validates_calendar_and_schedule (test_meeting_booking_native.BookingNativeBoundaryTests.test_booking_oracle_validates_calendar_and_schedule) ... ok
+test_honest_checks_and_retained_optional_bonus (test_meeting_booking_native.BookingNativeBoundaryTests.test_honest_checks_and_retained_optional_bonus) ... ok
+test_native_completion_halt_requires_successful_release_policy (test_meeting_booking_native.BookingNativeBoundaryTests.test_native_completion_halt_requires_successful_release_policy) ... ok
+test_native_config_and_missing_setup_fail_before_signing (test_meeting_booking_native.BookingNativeBoundaryTests.test_native_config_and_missing_setup_fail_before_signing) ... ok
+test_same_public_materials_and_private_truth (test_meeting_booking_native.BookingNativeBoundaryTests.test_same_public_materials_and_private_truth) ... ok
+test_unicode_commitment_matches_native_json (test_meeting_booking_native.BookingNativeBoundaryTests.test_unicode_commitment_matches_native_json) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.049s
+
+OK

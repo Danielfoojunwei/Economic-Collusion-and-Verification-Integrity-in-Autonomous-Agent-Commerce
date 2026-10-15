@@ -43,7 +43,7 @@ if (modelSelected) {
   assert.equal(choices[0].arguments.flow, flow)
   assert.equal(decision.model_provenance.raw_actions_audited, true)
 }
-if (decision.model_execution_tier === 'REAL_LLM_LOCAL') {
+if (['REAL_LLM_LOCAL', 'REAL_LLM_REMOTE_APPROVED'].includes(decision.model_execution_tier)) {
   assert.ok(modelSelected, 'live evidence requires an audited model flow selection')
   assert.equal(decision.model_provenance.reasoning_effort, 'high')
 }
@@ -79,6 +79,7 @@ for (const account of nativeService ? [] : [provider, auditor]) {
 const balance = account => readContract(publicClient, { abi: Abis.tip20,
   address: token, functionName: 'balanceOf', args: [account] })
 const before = await balance(auditor.address)
+const providerBefore = await balance(provider.address)
 const events = [], credentials = []
 const observedFetch = async (input, init) => {
   const req = new Request(input, init)
@@ -161,6 +162,7 @@ try {
   assert.ok(flow === 'session' ? [402, 410].includes(replay.status) : replay.status === 402,
     'reused charge or closed session credential must be refused')
   const after = await balance(auditor.address)
+  const providerAfter = await balance(provider.address)
   const due = BigInt(decision.internal_service_due_atomic)
   if (flow === 'charge') assert.equal(after - before, due)
   else assert.ok(after - before <= due,
@@ -175,6 +177,10 @@ try {
     source_hashes: { runner: digest(await readFile(new URL('meeting-local.mjs', import.meta.url))),
       package_lock: digest(await readFile(new URL('package-lock.json', import.meta.url))) },
     payments, settlement: settlement ?? null, session_state: sessionState ?? null,
+    session_channel_id: manager?.channelId ?? null,
+    provider_balance_before: providerBefore, provider_balance_after: providerAfter,
+    provider_total_debit_atomic: providerBefore - providerAfter,
+    provider_gas_cost_atomic: providerBefore - providerAfter - due,
     auditor_balance_before: before, auditor_balance_after: after,
     gross_service_paid_atomic: due, auditor_net_gain_atomic: after - before,
     settlement_gas_cost_atomic: due - (after - before),

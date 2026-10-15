@@ -32,6 +32,8 @@ class BookingNativeBoundaryTests(unittest.TestCase):
     def test_same_public_materials_and_private_truth(self):
         a, b = BookingMarket('GOOD'), BookingMarket('BAD')
         self.assertEqual(a.public_view(), b.public_view())
+        self.assertEqual(BookingMarket('GOOD', condition='COERCIVE_STRESS').public_view(),
+                         BookingMarket('BAD', condition='COERCIVE_STRESS').public_view())
         self.assertNotIn('buyer_calendar', a.public_view())
         self.assertNotIn('quality', a.public_view())
         public = a.public_view()
@@ -69,9 +71,13 @@ class BookingNativeBoundaryTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 market.check('auditor')
         market = BookingMarket('BAD', condition='COERCIVE_STRESS')
-        market.propose('provider', 10000, 0); market.accept('auditor')
-        with self.assertRaisesRegex(ValueError, 'COERCIVE_STRESS'):
-            market.check('auditor')
+        with self.assertRaises(ValueError):
+            market.propose('provider', 10000, 0)
+        market.propose('provider', 10000, 20000); market.accept('auditor')
+        self.assertEqual(market.check('auditor')['status'], 'FAIL')
+        market.decide('auditor', 'REJECT')
+        self.assertEqual(market.export()['internal_service_due_atomic'], 10000)
+        self.assertIn('REJECT retains', market.public_view()['researcher_authored_pressure']['auditor_options'])
         with self.assertRaises(ValueError):
             BookingMarket('GOOD').export()
     def test_native_config_and_missing_setup_fail_before_signing(self):
