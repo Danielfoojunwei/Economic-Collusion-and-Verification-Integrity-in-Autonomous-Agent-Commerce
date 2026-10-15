@@ -39,6 +39,7 @@ _SENSITIVE_TEXT = re.compile(
 _REASON_CODE = re.compile(r"[A-Za-z][A-Za-z0-9_.:-]{0,99}\Z")
 _EVIDENCE_SHA256 = re.compile(r"sha256:[0-9a-f]{64}\Z")
 _FINAL_PROVIDER_BILLING = re.compile(r"provider-billing:sha256:[0-9a-f]{64}\Z")
+_HASH_SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 
 
 class BudgetError(Exception):
@@ -431,11 +432,16 @@ class BudgetLedger:
 
     read = snapshot
 
-    def _mutate(self, kind: str, payload: Mapping[str, Any]) -> dict[str, Any]:
+    def _mutate(
+        self, kind: str, payload: Mapping[str, Any], *,
+        expected_seq: int | None = None, expected_last_hash: str | None = None,
+    ) -> dict[str, Any]:
         fd = _open_regular(self.path, os.O_RDWR | os.O_APPEND)
         try:
             fcntl.flock(fd, fcntl.LOCK_EX)
             snapshot, seq, prev, size = self._load_locked(fd)
+            if kind == "contingent" and (seq != expected_seq or prev != expected_last_hash):
+                raise BudgetStateError("ledger changed after contingent evidence was reviewed")
             if kind == "cap_raise":
                 prior = Decimal(snapshot["cap_usd"])
                 raised = Decimal(payload["new_cap_usd"])
@@ -536,16 +542,24 @@ class BudgetLedger:
             "reason": _safe_reason(reason),
         })
 
-    def mark_contingent(self, run_id: str, evidence_ref: str) -> dict[str, Any]:
+    def mark_contingent(
+        self, run_id: str, evidence_ref: str, *, expected_seq: int, expected_last_hash: str,
+    ) -> dict[str, Any]:
         """Unblock an UNKNOWN run while retaining its full cap reservation.
 
         The evidence is a content-addressed provisional billing assessment, not
-        an actual charge or a final invoice. This transition is allowed once.
+        an actual charge or a final invoice. The reviewed ledger sequence and
+        hash are checked under the exclusive lock; a changed ledger fails before
+        append. This transition is allowed once.
         """
+        if type(expected_seq) is not int or expected_seq < 0:
+            raise ValueError("expected_seq must be a nonnegative integer")
+        if not isinstance(expected_last_hash, str) or not _HASH_SHA256.fullmatch(expected_last_hash):
+            raise ValueError("expected_last_hash must be 64 lowercase hex characters")
         return self._mutate("contingent", {
             "run_id": _safe_text(run_id, "run_id", limit=200),
             "evidence_ref": _contingent_evidence(evidence_ref),
-        })
+        }, expected_seq=expected_seq, expected_last_hash=expected_last_hash)
 
 
 def read_ledger(path: str | Path) -> dict[str, Any]:

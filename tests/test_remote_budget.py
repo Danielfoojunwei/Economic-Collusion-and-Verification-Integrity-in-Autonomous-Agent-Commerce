@@ -28,6 +28,14 @@ class RemoteBudgetTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.path = Path(self.temporary.name) / "shared" / "remote_budget.jsonl"
 
+    @staticmethod
+    def _mark_contingent(ledger: BudgetLedger, run_id: str, evidence_ref: str) -> dict:
+        reviewed = ledger.snapshot()
+        return ledger.mark_contingent(
+            run_id, evidence_ref, expected_seq=reviewed["seq"],
+            expected_last_hash=reviewed["last_hash"],
+        )
+
     def test_explicit_creation_opening_spend_and_no_reset(self) -> None:
         with self.assertRaises(BudgetMissingError):
             read_ledger(self.path)
@@ -126,7 +134,9 @@ class RemoteBudgetTests(unittest.TestCase):
             ledger.reserve("later", "1", "20", {})
 
         evidence = "sha256:" + "a" * 64
-        after = ledger.mark_contingent("uncertain", evidence)
+        after = ledger.mark_contingent(
+            "uncertain", evidence, expected_seq=before["seq"], expected_last_hash=before["last_hash"],
+        )
         for field in ("cap_usd", "settled_spent_usd", "reserved_usd", "committed_usd", "available_usd"):
             self.assertEqual(after[field], before[field], field)
         self.assertFalse(after["blocked"])
@@ -148,27 +158,65 @@ class RemoteBudgetTests(unittest.TestCase):
         ledger = create_ledger(self.path, "20", "0")
         evidence = "sha256:" + "b" * 64
         with self.assertRaises(BudgetStateError):
-            ledger.mark_contingent("absent", evidence)
+            self._mark_contingent(ledger, "absent", evidence)
         ledger.reserve("run", "6", "20", {})
         with self.assertRaises(BudgetStateError):
-            ledger.mark_contingent("run", evidence)
+            self._mark_contingent(ledger, "run", evidence)
         ledger.mark_unknown("run", "provider_timeout")
         for invalid in ("", "b" * 64, "sha256:" + "B" * 64,
                         "sha256:" + "b" * 63, "sha256:" + "b" * 65,
                         "sha256:" + "b" * 63 + "x", "Bearer hidden"):
             with self.subTest(invalid=invalid), self.assertRaises(ValueError):
-                ledger.mark_contingent("run", invalid)
+                self._mark_contingent(ledger, "run", invalid)
         self.assertEqual(ledger.snapshot()["seq"], 2)
-        ledger.mark_contingent("run", evidence)
+        self._mark_contingent(ledger, "run", evidence)
         with self.assertRaises(BudgetStateError):
-            ledger.mark_contingent("run", evidence)
+            self._mark_contingent(ledger, "run", evidence)
         self.assertEqual(ledger.snapshot()["seq"], 3)
+
+    def test_contingent_transition_rejects_intervening_writer_without_appending(self) -> None:
+        ledger = create_ledger(self.path, "20", "0")
+        ledger.reserve("run", "6", "20", {})
+        reviewed = ledger.mark_unknown("run", "provider_timeout")
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            executor.submit(
+                BudgetLedger(self.path).raise_cap, "50", "owner-authorization",
+            ).result()
+        intervened = ledger.snapshot()
+        self.assertEqual(intervened["seq"], reviewed["seq"] + 1)
+        ledger_bytes = self.path.read_bytes()
+        anchor_bytes = self.path.with_name(self.path.name + ".anchor").read_bytes()
+        with self.assertRaisesRegex(BudgetStateError, "changed after contingent evidence"):
+            ledger.mark_contingent(
+                "run", "sha256:" + "a" * 64,
+                expected_seq=reviewed["seq"], expected_last_hash=reviewed["last_hash"],
+            )
+        self.assertEqual(ledger.snapshot(), intervened)
+        self.assertEqual(self.path.read_bytes(), ledger_bytes)
+        self.assertEqual(self.path.with_name(self.path.name + ".anchor").read_bytes(), anchor_bytes)
+        self.assertEqual(intervened["runs"]["run"]["status"], "UNKNOWN")
+
+        with self.assertRaises(BudgetStateError):
+            ledger.mark_contingent(
+                "run", "sha256:" + "a" * 64,
+                expected_seq=intervened["seq"], expected_last_hash="f" * 64,
+            )
+        self.assertEqual(ledger.snapshot(), intervened)
+        for seq, digest in ((True, intervened["last_hash"]),
+                            (intervened["seq"], "F" * 64),
+                            (-1, intervened["last_hash"])):
+            with self.subTest(seq=seq, digest=digest), self.assertRaises(ValueError):
+                ledger.mark_contingent(
+                    "run", "sha256:" + "a" * 64,
+                    expected_seq=seq, expected_last_hash=digest,
+                )
+        self.assertEqual(ledger.snapshot(), intervened)
 
     def test_contingent_evidence_can_be_discredited_without_releasing_hold(self) -> None:
         ledger = create_ledger(self.path, "20", "0")
         ledger.reserve("run", "6", "20", {})
         ledger.mark_unknown("run", "provider_timeout")
-        contingent = ledger.mark_contingent("run", "sha256:" + "c" * 64)
+        contingent = self._mark_contingent(ledger, "run", "sha256:" + "c" * 64)
         reblocked = ledger.mark_unknown("run", "evidence_discredited")
         self.assertTrue(reblocked["blocked"])
         self.assertEqual(reblocked["unknown_run_ids"], ["run"])
@@ -182,14 +230,14 @@ class RemoteBudgetTests(unittest.TestCase):
         with self.assertRaises(BudgetStateError):
             ledger.reserve("later", "1", "20", {})
         with self.assertRaises(BudgetStateError):
-            ledger.mark_contingent("run", "sha256:" + "d" * 64)
+            self._mark_contingent(ledger, "run", "sha256:" + "d" * 64)
         self.assertEqual(read_ledger(self.path), reblocked)
 
     def test_contingent_settlement_requires_final_attributable_billing_reference(self) -> None:
         ledger = create_ledger(self.path, "20", "13")
         ledger.reserve("run", "6", "20", {})
         ledger.mark_unknown("run", "provider_timeout")
-        ledger.mark_contingent("run", "sha256:" + "a" * 64)
+        self._mark_contingent(ledger, "run", "sha256:" + "a" * 64)
         for evidence in ("provider-usage/run", "sha256:" + "b" * 64,
                          "provider-billing:sha256:" + "B" * 64):
             with self.subTest(evidence=evidence), self.assertRaises(BudgetStateError):
@@ -212,7 +260,7 @@ class RemoteBudgetTests(unittest.TestCase):
         ledger = create_ledger(self.path, "20", "0")
         ledger.reserve("run", "6", "20", {})
         ledger.mark_unknown("run", "provider_timeout")
-        ledger.mark_contingent("run", "sha256:" + "a" * 64)
+        self._mark_contingent(ledger, "run", "sha256:" + "a" * 64)
         ledger.mark_unknown("run", "evidence_discredited")
         with self.assertRaises(BudgetStateError):
             ledger.settle("run", "0", "provider-usage/run")

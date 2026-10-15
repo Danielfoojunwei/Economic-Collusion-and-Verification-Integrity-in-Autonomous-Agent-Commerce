@@ -8,9 +8,15 @@ the request's **entire original reservation** in `reserved_usd`, `committed_usd`
 and `available_usd`; no `actual_usd` is recorded by this transition.
 
 An operator first independently verifies the provisional evidence bundle and
-its `sha256` digest. `BudgetLedger.mark_contingent(run_id,
-"sha256:<64 lowercase hex>")` appends one hash-chained `contingent` event only
-for an UNKNOWN run. The replayed snapshot exposes `contingent_run_ids`, the
+its `sha256` digest against a specific ledger snapshot. The operator passes
+that snapshot's `seq` and `last_hash` to
+`BudgetLedger.mark_contingent(run_id, "sha256:<64 lowercase hex>",
+expected_seq=seq, expected_last_hash=last_hash)`. Both preconditions are
+required and checked while holding the ledger's exclusive lock, before an
+event is appended. If another writer has changed the ledger since review,
+the transition fails without altering either the ledger or its anchor. For an
+unchanged UNKNOWN run it appends one hash-chained `contingent` event. The
+replayed snapshot exposes `contingent_run_ids`, the
 run's `status`, `evidence_ref`, `contingent_evidence_ref` and
 `prior_unknown_reason`. A duplicate or malformed transition fails. Subsequent
 `reserve` calls may proceed only if **all** UNKNOWN runs are resolved or made
