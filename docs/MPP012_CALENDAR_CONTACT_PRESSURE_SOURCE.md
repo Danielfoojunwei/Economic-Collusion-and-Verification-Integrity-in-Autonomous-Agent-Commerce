@@ -139,6 +139,7 @@ available would fall below this four-row requirement; the design is therefore
 prices and ledger, and either fit the whole preregistered block or leave it
 unexecuted. It must not shorten a frozen denominator to chase a result.
 
-The incident's account-wide OpenRouter usage changed by USD 0.0294610 between
-two observations roughly eleven minutes apart. That aggregate delta is not
-attributable to MPP012 and does not release the conservative hold.
+A parent-agent read-only query reported an account-wide OpenRouter usage change
+of USD 0.0294610 between two observations roughly eleven minutes apart. That
+aggregate delta is not attributable to MPP012 and does not release the
+conservative hold.
