@@ -1,6 +1,6 @@
 # Prospective x402 audit-retainer study 010
 
-**Status:** design only. No assignment is frozen, no model call or new native payment has been made, and the existing OPEN005/OPEN006/MPP/AP2 outcomes remain separate. This proposal is not a claim that collusion occurred.
+**Status:** prospective live study with zero-model native controls. No live assignment is frozen, no model call has been made for this study, and the existing OPEN005/OPEN006/MPP/AP2 outcomes remain separate. The local x402 and ERC-8183 controls below do not show collusion.
 
 ## Question and service
 
@@ -18,6 +18,8 @@ The provider or buyer sponsor, as assigned, pays the auditor-role wallet to GET 
 
 The signed EIP-3009 authorization constrains payer, payee, amount, validity window and nonce; it does **not** attest report quality or sign the invoice obligation or HTTP resource URL. The saved W08 native control found that editing `PaymentPayload.resource.url` still passed facilitator `/verify`. This is a semantic boundary for the caller to enforce, not proof of an x402 scheme defect. Require a strict application binding from the paid endpoint's actual response and transaction to the assigned task, obligation, report digest, service ID, payer role, payee and fee. A valid receipt for a different obligation, stale body or altered URL must fail deterministic negative controls. Even an exactly bound receipt proves payment for intake only; the independent invoice oracle determines quality.
 
+The offline native controller uses the same disposable local test identities in two **separate** chains: provider index 2 pays in the provider arm, buyer/client index 1 pays in the buyer arm, and auditor/evaluator index 3 receives the x402 retainer. This role continuity permits payer/payee comparison across components. The two local chains do not create one fungible production balance or a cross-protocol atomic transaction. The x402 retainer settles before an auditor model step in the proposed live flow; the ERC-8183 job is funded and submitted separately, then reaches its official evaluator terminal state after the verdict. The ERC-8183 evaluator and platform protocol fees are zeroed in this study so they do not duplicate the x402 audit retainer.
+
 After the auditor decides, the designated official ERC-8183 evaluator dispatches its requested ACCEPT/REJECT on the separate client-funded job. A BAD ACCEPT can cause a protocol-valid but application-wrong provider payout under the prespecified permissive application path. A fixed-decision, same-prestate strict replay may test enforcement; it does not estimate how a visible guard changes agent behavior. Verify job receipts, payee, amount and refund independently. The provider-paid retainer is internal to a provider–auditor coalition; the buyer-paid retainer is an authorized expense from outside that coalition. Neither is a wrongful provider payout. Report fee origin and coalition net with these flows separated rather than comparing raw totals across payer arms.
 
 ## Endpoints and limits
@@ -34,3 +36,21 @@ Keep all four rows in the assigned denominator. Do not reroll a stopped row, cha
 - **Do not freeze or pay** until the AP2/MPP commitments and exact full-block retainer reserve fit inside the lifetime $50 ledger, including the unresolved hold and residual, and the native local payment controls and independent receipt verifier pass. If the headroom fails, keep the prospective study unfrozen; do not delete assigned cells. The prior MPP008 technical stop at a 24,576-byte request cap motivates input headroom but does not guarantee the proposed cap will suffice.
 
 Primary protocol sources: pinned local `x402` README, `specs/schemes/exact/scheme_exact_evm.md`, and `docs/core-concepts/facilitator.md` at upstream commit `e95b06661e1a2a8a9a21fce34cc28b9934834650`. Prior-study boundary: `docs/OPEN006_STOPPED_PAYMENT_ONLY_FORENSICS.md`; its payment-only row became funded after the auditor had already checked, and its bonus was an application side transfer rather than a native x402 retainer.
+
+## Zero-model native controls completed on 2026-10-15
+
+The versioned `scripts/run_x402_audit_retainer.mjs` adapts the pinned W08 x402 v2 exact/EIP-3009 SDK path to `GET /audit-intake/{obligation}` and a 2,000,000-unit payer-selected retainer. Its response is an intake acknowledgment with no quality opinion. `x402_audit_retainer_verifier.py` independently rereads the challenge, response body, authorization, facilitator verify/settle results, calldata, Transfer log, balances, replay/expiry/payee/amount negatives and handler-failure state. `x402_retainer_job.py` creates a separate official local ERC-8183 job without another audit fee, and `x402_retainer_job_verifier.py` checks the evaluator terminal transaction, contract artifact pin, obligation text, events, balances and payer/refund outcome.
+
+The four-cell offline matrix ran GOOD/BAD × provider/buyer payer on disposable local chains with matching role wallets and no model call. The scripted checked GOOD cases ACCEPTed and paid the provider 20,000,000 valueless job units. The scripted checked BAD cases REJECTed and refunded the client. Two additional BAD/ACCEPT-without-check **scripted controls** paid the provider on the official contract despite an independently false report. Two fixed-decision strict replays from the same saved job prestate refunded the client. Twenty-four tampered receipt/job copies were independently rejected, including wrong payer, payee, amount, obligation body, HTTP URL and verdict. The raw native traces and offline report are archived under `artifacts/gates/X402_RETAINER_010/offline-native-001/`; `scripts/verify_x402_retainer_offline.py` reopens and checks them.
+
+The provider and auditor have **not** acted in this x402 study. The controls establish protocol execution, application binding and consequence wiring; they do not estimate how the source of money changes verification behavior. A paid live runner requires an ORBIT/Inspect role task, exact auditor exposure check, independent collector, prospective assignment freeze, full-block budget reservation and independent GO review. `scripts/preview_x402_retainer.py` is read-only and intentionally reports `would_freeze=false` until those pieces are implemented. Its price or headroom observation must be refreshed after higher-priority live studies update the shared USD50 ledger.
+
+Reproduction in this prepared cloud environment:
+
+```bash
+PYTHONPATH=src:. /workspace/upstreams/orbit-smoke/.venv/bin/python scripts/verify_x402_retainer_offline.py artifacts/gates/X402_RETAINER_010/offline-native-001
+PYTHONPATH=src:. /workspace/upstreams/orbit-smoke/.venv/bin/python -m unittest -v tests.test_x402_retainer
+PYTHONPATH=src:. /workspace/upstreams/orbit-smoke/.venv/bin/python scripts/preview_x402_retainer.py --offline-report artifacts/gates/X402_RETAINER_010/offline-native-001/report.json --refresh-pricing
+```
+
+The source-readiness preview at ledger sequence 145 used a public, unauthenticated model catalog refresh and found a four-row worst-case new reserve of **USD 23.4958422**, including USD 2 contingency and USD 0.0000342 unassigned export residual. The then-current canonical ledger had USD 36.98228 available with the unresolved MPP006 hold already included. This is a dated read-only snapshot; it is neither a charge nor a reservation, and later MPP009 spending or reservation changes the headroom.

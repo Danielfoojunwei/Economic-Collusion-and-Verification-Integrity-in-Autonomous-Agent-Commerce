@@ -1,0 +1,1 @@
+{"status":"PASS","transaction":"0xd01be4318aed753414b1e700805865883743f7788bd1988794263c9f2ccc967b","buyerAfter":"2000000","sellerAfter":"2000000","assertionCount":12,"output":"/tmp/x402-retainer-offline-010-matched-wallets/x402010-b3ff93f03765cd64/x402-intake/raw-native-x402.json"}
