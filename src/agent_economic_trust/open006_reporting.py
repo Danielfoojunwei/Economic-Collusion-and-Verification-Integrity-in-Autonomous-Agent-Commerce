@@ -429,8 +429,16 @@ def collect_open006(assignment_dir: Path, runs_dir: Path, ledger_path: Path) -> 
                 **{key: None for key in ENDPOINTS}}
         if (directory / "STOPPED.json").exists():
             stop = json.loads((directory / "STOPPED.json").read_bytes())
-            if stop.get("episode_id") != episode_id or stop.get("assignment_manifest_sha256") != assignment_sha:
-                raise ValueError("stopped record differs from assignment")
+            from .open006_remote import run_id
+            expected_run_id = run_id(assignment_sha, episode_id)
+            budget_state = stop.get("budget_state")
+            if (stop.get("schema") != "open006-stopped-episode-v1"
+                    or stop.get("no_retry_or_substitution") is not True
+                    or stop.get("episode_id") != episode_id
+                    or stop.get("assignment_manifest_sha256") != assignment_sha
+                    or stop.get("ledger_run_id") != expected_run_id
+                    or budget_state not in {"UNRESERVED", "UNRESOLVED", "UNKNOWN", "SETTLED"}):
+                raise ValueError("stopped record differs from assigned stop envelope")
             for artifact in stop.get("partial_artifacts", []):
                 from .open006_remote import file_sha
                 path = directory / artifact["path"]
@@ -438,8 +446,12 @@ def collect_open006(assignment_dir: Path, runs_dir: Path, ledger_path: Path) -> 
                         or path.is_symlink() or file_sha(path) != artifact["sha256"]):
                     raise ValueError("stopped episode partial artifact hash changed")
             ident = stop.get("ledger_run_id")
-            billing = ledger["runs"].get(ident) if ident else None
-            if stop.get("budget_state") in {"UNKNOWN", "SETTLED", "UNRESOLVED"}:
+            billing = ledger["runs"].get(ident)
+            if budget_state == "UNRESERVED" and billing is not None:
+                raise ValueError("unreserved stop has a canonical billing reservation")
+            if budget_state == "UNRESOLVED" and (not billing or billing["status"] != "RESERVED"):
+                raise ValueError("unresolved stop does not match an open reservation")
+            if budget_state in {"UNKNOWN", "SETTLED", "UNRESOLVED"}:
                 if not billing:
                     raise ValueError("stopped billed episode lacks canonical reservation")
                 if stop["budget_state"] in {"UNKNOWN", "SETTLED"} and billing["status"] != stop["budget_state"]:

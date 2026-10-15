@@ -204,10 +204,21 @@ def prior_005_disposition() -> dict:
                             "src/agent_economic_trust/x402_invoice_adapter.py",
                             "src/agent_economic_trust/x402_invoice_verifier.py",
                             "scripts/run_x402_local.mjs", "contracts/x402/TestEIP3009Token.sol"})
-    names = sorted(name for name in listed if archived(name))
+    assignment_path = "artifacts/gates/OPEN005/assignment-invoice-001/assignment_manifest.json"
+    archived_assignment = json.loads(git("show", commit + ":" + assignment_path))
+    shared_sources = archived_assignment.get("source_sha256")
+    if not isinstance(shared_sources, dict) or not shared_sources:
+        raise ValueError("005 archived assignment has no transitive source inventory")
+    if any(not isinstance(name, str) or name not in listed
+           or Path(name).is_absolute() or ".." in Path(name).parts
+           for name in shared_sources):
+        raise ValueError("005 archived assignment source path is missing or unsafe")
+    names = sorted({name for name in listed if archived(name)} | set(shared_sources))
     if not names or not any(name.endswith("STOPPED.json") for name in names):
         raise ValueError("005 immutable stop archive is missing")
     expected = {name: sha256(git("show", commit + ":" + name)).hexdigest() for name in names}
+    if any(expected[name] != value for name, value in shared_sources.items()):
+        raise ValueError("005 archived assignment source hash differs from pinned Git bytes")
     if any(sha(ROOT / name) != value for name, value in expected.items()):
         raise ValueError("005 archived source or evidence changed from fixed commit")
     archive_dir = ROOT / "artifacts/gates/OPEN005"
@@ -235,6 +246,7 @@ def prior_005_disposition() -> dict:
         raise ValueError("005 stopped model episode is not settled in shared ledger")
     return {"status": "IRREVOCABLY_STOPPED_NO_RETRY_NO_POOLING", "archive_commit": commit,
             "file_count": len(expected), "tree_sha256": digest(expected),
+            "archived_assignment_source_file_count": len(shared_sources),
             "archive_sha256": expected, "complete": 0, "failed_or_incomplete": 1, "pending": 7,
             "remaining_005_obligation_reserve_usd": "0",
             "archived_ledger_prefix_sha256": sha256(archived_ledger).hexdigest()}

@@ -14,7 +14,7 @@ import zipfile
 
 from inspect_ai.model import GenerateConfig
 from agent_economic_trust.open006_plan import ARMS, make_schedule, manifest
-from agent_economic_trust.open006_remote import Open006Plan, assert_no_key, guard_api, preflight
+from agent_economic_trust.open006_remote import Open006Plan, assert_no_key, guard_api, preflight, run_id
 from agent_economic_trust.open006_reporting import action_linked_components, binary_bounds, collect_open006, summary, verified_native_flows, pressured_compliance, same_usd_amount, verify_billing_record, verify_archived_005_components
 from agent_economic_trust.remote_budget import BudgetLedger, create_ledger
 from scripts import freeze_open006 as freezer
@@ -101,6 +101,17 @@ class ArchiveBoundaryTests(unittest.TestCase):
                           "0" * 64 if p.name == "open004_plan.py" else original(p)):
             with self.assertRaisesRegex(ValueError, "archived source or evidence"):
                 freezer.prior_004_disposition()
+
+    def test_archived005_shared_transitive_dependency_tamper_is_rejected(self):
+        report = freezer.prior_005_disposition()
+        self.assertEqual(report["archived_assignment_source_file_count"], 35)
+        for name in ("open004_task.py", "core.py", "orbit_task.py", "remote.py"):
+            self.assertIn("src/agent_economic_trust/" + name, report["archive_sha256"])
+            original = freezer.sha
+            with patch.object(freezer, "sha", side_effect=lambda p, target=name:
+                              "0" * 64 if p.name == target else original(p)):
+                with self.assertRaisesRegex(ValueError, "005 archived source or evidence"):
+                    freezer.prior_005_disposition()
 
 
 class BillingRepairTests(unittest.TestCase):
@@ -315,7 +326,8 @@ class FreezeTests(unittest.TestCase):
         stopped = runs / "episodes" / rows[0].episode_id
         stopped.mkdir(parents=True)
         stop = stopped / "STOPPED.json"
-        stop.write_text(json.dumps({"episode_id": rows[0].episode_id,
+        stop.write_text(json.dumps({"schema": "open006-stopped-episode-v1", "no_retry_or_substitution": True,
+            "episode_id": rows[0].episode_id, "ledger_run_id": run_id(assignment_sha, rows[0].episode_id),
             "assignment_manifest_sha256": assignment_sha, "error_type": "TimeoutError",
             "budget_state": "UNRESERVED", "partial_artifacts": []}))
         before = {p: p.read_bytes() for p in self.root.rglob("*") if p.is_file()}
@@ -325,6 +337,30 @@ class FreezeTests(unittest.TestCase):
         self.assertEqual(sum(r["status"] == "PENDING" for r in report["rows"]), 7)
         self.assertEqual(sum(r["status"] == "FAILED_OR_INCOMPLETE" for r in report["rows"]), 1)
         self.assertEqual(before, {p: p.read_bytes() for p in self.root.rglob("*") if p.is_file()})
+
+    def test_collector_rejects_forged_stop_envelopes_and_inconsistent_budget_state(self):
+        freezer.freeze(seed_hex=SEED)
+        frozen, assignment_sha, rows = freezer.load_assignment(self.assignment)
+        runs = self.root / "forged-runs"
+        stopped = runs / "episodes" / rows[0].episode_id
+        stopped.mkdir(parents=True)
+        stop = stopped / "STOPPED.json"
+        ident = run_id(assignment_sha, rows[0].episode_id)
+        valid = {"schema": "open006-stopped-episode-v1", "no_retry_or_substitution": True,
+                 "episode_id": rows[0].episode_id, "ledger_run_id": ident,
+                 "assignment_manifest_sha256": assignment_sha, "error_type": "TimeoutError",
+                 "budget_state": "UNRESERVED", "partial_artifacts": []}
+        for changes in ({"schema": "wrong"}, {"no_retry_or_substitution": False},
+                        {"ledger_run_id": "wrong-run"}, {"budget_state": "GIBBERISH"},
+                        {"budget_state": "SETTLED"}, {"budget_state": "UNKNOWN"},
+                        {"budget_state": "UNRESOLVED"}):
+            stop.write_text(json.dumps({**valid, **changes}))
+            with self.assertRaises(ValueError):
+                collect_open006(self.assignment, runs, self.ledger)
+        BudgetLedger(self.ledger).reserve(ident, Decimal("1"), Decimal("50"))
+        stop.write_text(json.dumps(valid))
+        with self.assertRaisesRegex(ValueError, "unreserved stop"):
+            collect_open006(self.assignment, runs, self.ledger)
 
 
 class BoundaryTests(unittest.TestCase):
