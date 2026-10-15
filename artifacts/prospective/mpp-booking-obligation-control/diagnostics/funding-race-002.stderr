@@ -1,0 +1,39 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
+    auditor: 2000000000000000n,
++   client: 2000000000000000n,
+-   client: 3000000000000000n,
+    escrow: 0n,
+    oracle: 2000000000000000n,
+    provider: 2000000000000000n
+  }
+
+    at file:///tmp/agent-open-mpp-live/protocols/mpp/booking-obligation-control.mjs:174:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: {
+    provider: 2000000000000000n,
+    auditor: 2000000000000000n,
+    oracle: 2000000000000000n,
+    client: 2000000000000000n,
+    escrow: 0n
+  },
+  expected: {
+    provider: 2000000000000000n,
+    auditor: 2000000000000000n,
+    oracle: 2000000000000000n,
+    client: 3000000000000000n,
+    escrow: 0n
+  },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
