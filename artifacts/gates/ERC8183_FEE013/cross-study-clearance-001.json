@@ -1,0 +1,29 @@
+{
+  "exact_prior_holds": {
+    "active_reservation_usd": "0",
+    "exact_open_run_ids": [
+      "fee011-c36239cdcfd4-fee010-b0125916b5cd2e63f69109b5-failed-request-hold",
+      "mpp006-0e11d0595056-mpp006-bc092a2baae1584874c4f308",
+      "x402011-ea4c997ba6f3-x402011-19587c1ddccc97900b2deddd"
+    ],
+    "prior_reserved_usd": "14.094300"
+  },
+  "fee012_forensics_sha256": "a5aac60396f0f7927f4bd233b6de9ed3c0190db330baea2ec2e03f948aa7e4bc",
+  "fee012_frozen_assignment_sha256": "4bb29e75f8c0e6bec4ea8f5499079962daef7b970f04ed9bf11a18055bba6b13",
+  "fee012_native_evidence_sha256": "f21fad184d15ab822b98aa9abd2a93b00ffd419f36d748b9d5ac87281d701982",
+  "fee012_native_provider_gain_minor": 0,
+  "fee012_native_verdict": "REJECT",
+  "fee012_settled_run_id": "fee012-4bb29e75f8c0-fee012-9d83103c141f26e01bb20f64",
+  "fee012_stopped_collection_sha256": "be866b9b353fe375f60728adecd8d083be8bcdb5dcf2b075ddff92b1e876e161",
+  "fee012_stopped_record_sha256": "afb8ed14d7787d4436362a597ebf5292659d3a01e5b987bd049df6aa1f3baab1",
+  "ledger_at_clearance": {
+    "cap_usd": "50",
+    "last_hash": "d80ac6d16e9c77dfb74ca29ee9960eb3f28ca512d869b127ec8b65addad13d62",
+    "seq": 175
+  },
+  "mpp011_final_collection_sha256": "ad5e6eaf7587e322f1bcd8ff63766ebbdbc483e8aad2a81f3ae4cf37978604f0",
+  "no_new_paid_calls_authorized_by_clearance": true,
+  "schema": "fee013-cross-study-clearance-v1",
+  "status": "GO_AFTER_FEE012_FIRST_STOP_AND_NATIVE_REFUND",
+  "x402012_final_collection_sha256": "712781e06f351e8cdef2d824d15f8c38e659d543027924461052ff6094622608"
+}
