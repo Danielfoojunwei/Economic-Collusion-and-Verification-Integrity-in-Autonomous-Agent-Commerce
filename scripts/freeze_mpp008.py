@@ -172,8 +172,6 @@ def freeze(*, seed_hex: str | None = None) -> dict:
     # Resolve ambiguous earlier OpenRouter charges before even preparing a new
     # randomized assignment. The shared project cap is a lifetime gate.
     ledger = _ledger()
-    if Decimal(ledger["reserved_usd"]) != 0:
-        raise ValueError("shared USD50 lifetime ledger retains an active reservation")
     exposure = mpp006_contingent_exposure(ledger)
     seed_hex = secrets.token_hex(32) if seed_hex is None else seed_hex
     rows = make_schedule(seed_hex)
@@ -186,7 +184,7 @@ def freeze(*, seed_hex: str | None = None) -> dict:
                 for row in rows}
     full = required_headroom(reserves)
     if full > Decimal(ledger["available_usd"]):
-        raise ValueError("full MPP008 block, contingency, and MPP006 exposure exceed USD50 headroom")
+        raise ValueError("full MPP008 block and contingency exceed available USD50 headroom after MPP006 hold")
     payload.update(source_sha256=sources, runtime_pins=pins, offline_readiness=offline,
                    public_pricing_snapshots=prices,
                    budget_at_freeze={key: ledger[key] for key in
@@ -224,10 +222,10 @@ def _verify_static() -> tuple[dict, str, tuple, dict]:
             or frozen["worst_case_reserve_usd_full_block"] != str(sum(reserves.values(), Decimal(0)))):
         raise ValueError("MPP008 frozen reservation differs")
     if frozen["required_headroom_usd"] != str(required_headroom(reserves)):
-        raise ValueError("MPP008 frozen MPP006 exposure headroom differs")
+        raise ValueError("MPP008 frozen headroom after contingent hold differs")
     if frozen["prior_mpp006_contingent_exposure"] != mpp006_contingent_exposure(
             _ancestor(frozen["budget_at_freeze"])):
-        raise ValueError("MPP008 frozen MPP006 settlement evidence differs")
+        raise ValueError("MPP008 frozen MPP006 conditional evidence differs")
     return frozen, assignment_sha, rows, sources
 
 
@@ -257,11 +255,11 @@ def readiness() -> dict:
     full = required_headroom(reserves)
     try:
         exposure = mpp006_contingent_exposure(state)
-        settlement_ready = True
+        contingent_ready = True
     except ValueError as exc:
         exposure = {"prior_reservation_usd": str(MPP006_ORIGINAL_RESERVATION_USD),
-                    "status": "NOT_RECONCILED", "reason": str(exc)}
-        settlement_ready = False
+                    "status": "NOT_CONTINGENT", "reason": str(exc)}
+        contingent_ready = False
     return {"runtime_pins": runtime_pins(),
             "offline": mixed_offline_readiness(sources),
             "source_inventory_sha256": digest(sources),
@@ -270,11 +268,11 @@ def readiness() -> dict:
             "required_headroom_usd": str(full),
             "prior_mpp006_contingent_exposure": exposure,
             "ledger": {key: state[key] for key in ("seq", "available_usd", "cap_usd",
-                            "reserved_usd", "blocked", "unknown_run_ids")},
+                            "reserved_usd", "blocked", "unknown_run_ids", "contingent_run_ids")},
             "would_freeze": (not LOCK.exists() and not ASSIGNMENT.exists()
-                and settlement_ready and state["cap_usd"] == "50"
+                and contingent_ready and state["cap_usd"] == "50"
                 and not state["blocked"] and not state["unknown_run_ids"]
-                and Decimal(state["reserved_usd"]) == 0
+                and state["reserved_usd"] == "6.30784"
                 and full <= Decimal(state["available_usd"]))}
 
 

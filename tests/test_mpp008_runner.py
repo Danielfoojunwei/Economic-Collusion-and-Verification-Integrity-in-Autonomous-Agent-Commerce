@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 from contextlib import ExitStack
 from decimal import Decimal
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -34,10 +35,12 @@ from agent_economic_trust.mpp006_plan import (STUDY_ID as MPP006_STUDY_ID,
 from agent_economic_trust.mpp008_pricing import (MixedPricingError, estimate_model_usage,
     pricing_snapshots, reserve_pair)
 from agent_economic_trust.mpp008_budget import (
-    MPP006_STOPPED_RUN_ID, MPP006_ORIGINAL_RESERVATION_USD,
-    mpp006_contingent_exposure, required_headroom)
+    MPP006_STOPPED_RUN_ID, MPP006_ORIGINAL_RESERVATION_USD, CONDITIONAL_EVIDENCE_REF,
+    CONDITIONAL_EVIDENCE_PATH, UNATTRIBUTED_KEY_EXPORT_RESIDUAL_USD,
+    _conditional_sidecar, mpp006_contingent_exposure, required_headroom)
 from agent_economic_trust.mpp008_remote import (Mpp008Plan, _configured_models,
-    fresh_budget, post_settlement_budget)
+    fresh_budget, fresh_budget_in_service, post_reservation_budget,
+    post_settlement_budget)
 from agent_economic_trust.mpp008_reporting import _amount, _pricing_basis, summary
 from agent_economic_trust.mpp008_linkage import action_linkage
 from agent_economic_trust.mpp008_task import PROVIDER_NOTICE, native_mixed_model_task
@@ -49,12 +52,14 @@ from scripts import freeze_mpp008 as freezer
 SEED = "ab" * 32
 
 
-def settled_mpp006_snapshot(available: str) -> dict:
+def contingent_mpp006_snapshot(available: str) -> dict:
     return {"seq": 133, "last_hash": "a" * 64, "cap_usd": "50",
-        "available_usd": available, "reserved_usd": "0", "blocked": False,
-        "unknown_run_ids": [], "runs": {MPP006_STOPPED_RUN_ID: {
-            "status": "SETTLED", "reserved_usd": "6.30784", "actual_usd": "0",
-            "evidence_ref": "sha256:" + "b" * 64}}}
+        "available_usd": available, "reserved_usd": "6.30784", "blocked": False,
+        "unknown_run_ids": [], "contingent_run_ids": [MPP006_STOPPED_RUN_ID],
+        "runs": {MPP006_STOPPED_RUN_ID: {
+            "status": "CONTINGENT", "reserved_usd": "6.30784",
+            "evidence_ref": CONDITIONAL_EVIDENCE_REF,
+            "contingent_evidence_ref": CONDITIONAL_EVIDENCE_REF}}}
 
 
 def role_tools(role: str):
@@ -411,20 +416,44 @@ class ProspectiveRequestLinkageTests(unittest.TestCase):
 
 
 class FreezeTests(unittest.TestCase):
-    def test_mpp006_external_exposure_requires_exact_zero_settlement_and_evidence(self):
-        valid = settled_mpp006_snapshot("43.172992")
+    def test_contingent_evidence_bytes_and_stopped_run_prestate_are_bound(self):
+        valid = contingent_mpp006_snapshot("38.37894")
+        self.assertEqual(mpp006_contingent_exposure(valid)["evidence_ref"],
+                         CONDITIONAL_EVIDENCE_REF)
+        with TemporaryDirectory(prefix="mpp008-evidence-", dir="/tmp") as temporary:
+            path = Path(temporary) / "evidence.json"
+            record = json.loads(CONDITIONAL_EVIDENCE_PATH.read_bytes())
+            record["ledger_prestate"]["unknown_run_ids"] = ["another-stopped-run"]
+            altered = (json.dumps(record, sort_keys=True) + "\n").encode()
+            path.write_bytes(altered)
+            with patch("agent_economic_trust.mpp008_budget.CONDITIONAL_EVIDENCE_PATH", path):
+                with self.assertRaisesRegex(ValueError, "conditional evidence bytes differ"):
+                    mpp006_contingent_exposure(valid)
+                with patch("agent_economic_trust.mpp008_budget.CONDITIONAL_EVIDENCE_SHA256",
+                           sha256(altered).hexdigest()):
+                    with self.assertRaisesRegex(ValueError, "conditional evidence facts differ"):
+                        _conditional_sidecar()
+
+    def test_mpp006_contingent_hold_requires_exact_run_and_conditional_evidence(self):
+        valid = contingent_mpp006_snapshot("36.8651862")
         self.assertEqual(mpp006_contingent_exposure(valid)["prior_reservation_usd"],
                          "6.307840")
+        self.assertEqual(mpp006_contingent_exposure(valid)["status"], "CONTINGENT")
         self.assertEqual(MPP006_ORIGINAL_RESERVATION_USD, Decimal("6.307840"))
+        self.assertEqual(UNATTRIBUTED_KEY_EXPORT_RESIDUAL_USD, Decimal("0.0000342"))
         self.assertEqual(required_headroom([Decimal("34.865152")]),
-                         Decimal("43.172992"))
+                         Decimal("36.8651862"))
         for mutation in (lambda s: s["runs"].clear(),
                          lambda s: s["runs"][MPP006_STOPPED_RUN_ID].update(status="UNKNOWN"),
-                         lambda s: s["runs"][MPP006_STOPPED_RUN_ID].update(actual_usd="0.000001"),
+                         lambda s: s["runs"][MPP006_STOPPED_RUN_ID].update(actual_usd="0"),
                          lambda s: s["runs"][MPP006_STOPPED_RUN_ID].update(reserved_usd="6"),
-                         lambda s: s["runs"][MPP006_STOPPED_RUN_ID].update(evidence_ref="sha256:BAD")):
+                         lambda s: s["runs"][MPP006_STOPPED_RUN_ID].update(evidence_ref="sha256:" + "a" * 64),
+                         lambda s: s["runs"][MPP006_STOPPED_RUN_ID].update(
+                             contingent_evidence_ref="sha256:" + "a" * 64),
+                         lambda s: s.update(contingent_run_ids=[]),
+                         lambda s: s.update(reserved_usd="0")):
             with self.subTest(mutation=mutation):
-                state = settled_mpp006_snapshot("43.172992")
+                state = contingent_mpp006_snapshot("36.8651862")
                 mutation(state)
                 with self.assertRaisesRegex(ValueError, "MPP006 stopped run"):
                     mpp006_contingent_exposure(state)
@@ -439,23 +468,24 @@ class FreezeTests(unittest.TestCase):
                  patch.object(freezer, "runtime_pins", return_value={"native": "pinned"}), \
                  patch.object(freezer, "mixed_offline_readiness", return_value={"status": "PASS"}), \
                  patch.object(freezer, "BudgetLedger") as ledger:
-                ledger.return_value.snapshot.return_value = settled_mpp006_snapshot("43.172992")
+                ledger.return_value.snapshot.return_value = contingent_mpp006_snapshot("36.8651862")
                 ready = freezer.readiness()
                 self.assertTrue(ready["would_freeze"])
-                self.assertEqual(ready["required_headroom_usd"], "43.172992")
-                ledger.return_value.snapshot.return_value = settled_mpp006_snapshot("43.172991")
+                self.assertEqual(ready["required_headroom_usd"], "36.8651862")
+                ledger.return_value.snapshot.return_value = contingent_mpp006_snapshot("36.8651861")
                 self.assertFalse(freezer.readiness()["would_freeze"])
-                unknown = settled_mpp006_snapshot("43.172992")
+                unknown = contingent_mpp006_snapshot("36.8651862")
                 unknown["runs"][MPP006_STOPPED_RUN_ID]["status"] = "UNKNOWN"
                 unknown["blocked"] = True
                 unknown["unknown_run_ids"] = [MPP006_STOPPED_RUN_ID]
+                unknown["contingent_run_ids"] = []
                 ledger.return_value.snapshot.return_value = unknown
                 result = freezer.readiness()
                 self.assertFalse(result["would_freeze"])
                 self.assertEqual(result["prior_mpp006_contingent_exposure"]["status"],
-                                 "NOT_RECONCILED")
+                                 "NOT_CONTINGENT")
 
-    def test_remaining_and_post_settlement_budget_retains_external_exposure(self):
+    def test_remaining_budget_uses_ledger_available_after_contingent_hold(self):
         rates = pricing_snapshots(catalog=catalog())
         row = next(r for r in make_schedule(SEED) if r.provider_model_id == SOL
                    and r.auditor_model_id == SONNET)
@@ -463,31 +493,31 @@ class FreezeTests(unittest.TestCase):
         frozen = {"public_pricing_snapshots": rates,
                   "worst_case_reserve_usd_by_episode": {row.episode_id: str(reserve)},
                   "prior_mpp006_contingent_exposure": mpp006_contingent_exposure(
-                      settled_mpp006_snapshot("40"))}
+                      contingent_mpp006_snapshot("40"))}
         with patch.object(freezer, "verify", return_value={"status": "PASS"}), \
              patch("agent_economic_trust.mpp008_remote.BudgetLedger") as ledger, \
              patch("agent_economic_trust.mpp008_remote.pricing_snapshots", return_value=rates):
             needed = str(required_headroom([reserve]))
-            ledger.return_value.snapshot.return_value = settled_mpp006_snapshot(needed)
+            ledger.return_value.snapshot.return_value = contingent_mpp006_snapshot(needed)
             _, reserves, _ = fresh_budget(Mpp008Plan(), frozen, [row])
             self.assertEqual(reserves[row.episode_id], reserve)
-            ledger.return_value.snapshot.return_value = settled_mpp006_snapshot(
+            ledger.return_value.snapshot.return_value = contingent_mpp006_snapshot(
                 str(required_headroom([reserve]) - Decimal("0.000001")))
-            with self.assertRaisesRegex(RemoteBoundaryError, "MPP006 exposure"):
+            with self.assertRaisesRegex(RemoteBoundaryError, "unassigned residual"):
                 fresh_budget(Mpp008Plan(), frozen, [row])
-            # The next invocation still requires the hold plus $2, even with no rows left.
-            ledger.return_value.snapshot.return_value = settled_mpp006_snapshot("8.307840")
+            # The old hold is already deducted; $2 plus the unassigned residual remains.
+            ledger.return_value.snapshot.return_value = contingent_mpp006_snapshot("2.0000342")
             fresh_budget(Mpp008Plan(), frozen, [])
-            ledger.return_value.snapshot.return_value = settled_mpp006_snapshot("8.307839")
-            with self.assertRaisesRegex(RemoteBoundaryError, "MPP006 exposure"):
+            ledger.return_value.snapshot.return_value = contingent_mpp006_snapshot("2.0000341")
+            with self.assertRaisesRegex(RemoteBoundaryError, "unassigned residual"):
                 fresh_budget(Mpp008Plan(), frozen, [])
 
     def test_live_post_settlement_guard_reads_only_ledger_and_keeps_hold(self):
         frozen = {"prior_mpp006_contingent_exposure": mpp006_contingent_exposure(
-            settled_mpp006_snapshot("44"))}
+            contingent_mpp006_snapshot("44"))}
         future = [Decimal("3.801088")]
         needed = required_headroom(future)
-        snapshot = settled_mpp006_snapshot(str(needed))
+        snapshot = contingent_mpp006_snapshot(str(needed))
         ledger = SimpleNamespace(snapshot=Mock(return_value=snapshot))
         with patch.object(freezer, "verify", side_effect=AssertionError("native controls ran")), \
              patch.object(freezer, "mixed_offline_readiness",
@@ -501,12 +531,65 @@ class FreezeTests(unittest.TestCase):
                 post_settlement_budget(ledger, frozen, future)
             snapshot["available_usd"] = str(needed)
             snapshot["runs"][MPP006_STOPPED_RUN_ID]["actual_usd"] = "0.000001"
-            with self.assertRaisesRegex(RemoteBoundaryError, "not reconciled"):
+            with self.assertRaisesRegex(RemoteBoundaryError, "not bound"):
                 post_settlement_budget(ledger, frozen, future)
-            snapshot["runs"][MPP006_STOPPED_RUN_ID]["actual_usd"] = "0"
+            del snapshot["runs"][MPP006_STOPPED_RUN_ID]["actual_usd"]
             snapshot["blocked"] = True
             with self.assertRaisesRegex(RemoteBoundaryError, "shared lifetime ledger blocked"):
                 post_settlement_budget(ledger, frozen, future)
+
+    def test_post_reservation_allows_only_old_hold_and_current_row(self):
+        frozen = {"prior_mpp006_contingent_exposure": mpp006_contingent_exposure(
+            contingent_mpp006_snapshot("38.37894"))}
+        current_id = "mpp008-assigned-row"
+        current = Decimal("3.801088")
+        future = [Decimal("2.408448")]
+        snapshot = contingent_mpp006_snapshot(str(required_headroom(future)))
+        snapshot["reserved_usd"] = "10.108928"
+        snapshot["runs"][current_id] = {"status": "RESERVED", "reserved_usd": str(current)}
+        post_reservation_budget(snapshot, frozen, current_id, current, future)
+        snapshot["reserved_usd"] = "10.108929"
+        with self.assertRaisesRegex(RemoteBoundaryError, "contingent reservation changed"):
+            post_reservation_budget(snapshot, frozen, current_id, current, future)
+        snapshot["reserved_usd"] = "10.108928"
+        snapshot["unknown_run_ids"] = ["other-unknown"]
+        snapshot["blocked"] = True
+        with self.assertRaisesRegex(RemoteBoundaryError, "blocked after MPP008 reserve"):
+            post_reservation_budget(snapshot, frozen, current_id, current, future)
+        snapshot["unknown_run_ids"] = []
+        snapshot["blocked"] = False
+        snapshot["runs"][current_id]["status"] = "SETTLED"
+        with self.assertRaisesRegex(RemoteBoundaryError, "current MPP008 ledger reservation differs"):
+            post_reservation_budget(snapshot, frozen, current_id, current, future)
+        snapshot["runs"][current_id]["status"] = "RESERVED"
+        snapshot["available_usd"] = str(required_headroom(future) - Decimal("0.0000001"))
+        with self.assertRaisesRegex(RemoteBoundaryError, "remaining MPP008 block headroom"):
+            post_reservation_budget(snapshot, frozen, current_id, current, future)
+
+    def test_in_service_pre_reserve_checks_static_source_pricing_and_hold_without_controls(self):
+        rates = pricing_snapshots(catalog=catalog())
+        row = next(r for r in make_schedule(SEED) if r.provider_model_id == SOL
+                   and r.auditor_model_id == SONNET)
+        reserve = reserve_pair(rates, row.provider_model_id, row.auditor_model_id)
+        frozen = {"public_pricing_snapshots": rates,
+                  "worst_case_reserve_usd_by_episode": {row.episode_id: str(reserve)},
+                  "prior_mpp006_contingent_exposure": mpp006_contingent_exposure(
+                      contingent_mpp006_snapshot("44"))}
+        with patch.object(freezer, "verify", side_effect=AssertionError("native controls ran")), \
+             patch.object(freezer, "mixed_offline_readiness",
+                          side_effect=AssertionError("native controls ran")), \
+             patch.object(freezer, "verify_static", return_value={"status": "PASS"}) as static, \
+             patch("agent_economic_trust.mpp008_remote.BudgetLedger") as ledger, \
+             patch("agent_economic_trust.mpp008_remote.pricing_snapshots", return_value=rates):
+            needed = required_headroom([reserve])
+            ledger.return_value.snapshot.return_value = contingent_mpp006_snapshot(str(needed))
+            _, reservations, _ = fresh_budget_in_service(Mpp008Plan(), frozen, [row])
+            self.assertEqual(reservations[row.episode_id], reserve)
+            static.assert_called_once_with()
+            ledger.return_value.snapshot.return_value = contingent_mpp006_snapshot(
+                str(needed - Decimal("0.000001")))
+            with self.assertRaisesRegex(RemoteBoundaryError, "unassigned residual"):
+                fresh_budget_in_service(Mpp008Plan(), frozen, [row])
 
     def test_static_post_row_verifier_checks_source_runtime_and_hold_without_native_controls(self):
         row = make_schedule(SEED)[0]
@@ -519,11 +602,11 @@ class FreezeTests(unittest.TestCase):
                   "public_pricing_snapshots": rates,
                   "budget_at_freeze": {"seq": 133, "last_hash": "a" * 64},
                   "prior_mpp006_contingent_exposure": mpp006_contingent_exposure(
-                      settled_mpp006_snapshot("44"))}
+                      contingent_mpp006_snapshot("44"))}
         with patch.object(freezer, "load_assignment", return_value=(frozen, "c" * 64, [row])) as load, \
              patch.object(freezer, "source_inventory", return_value={"a": "b"}), \
              patch.object(freezer, "runtime_pins", return_value={"native": "pinned"}), \
-             patch.object(freezer, "_ancestor", return_value=settled_mpp006_snapshot("44")), \
+             patch.object(freezer, "_ancestor", return_value=contingent_mpp006_snapshot("44")), \
              patch.object(freezer, "mixed_offline_readiness",
                           side_effect=AssertionError("native controls ran")):
             self.assertEqual(freezer.verify_static()["native_controls_executed"], False)
@@ -537,7 +620,7 @@ class FreezeTests(unittest.TestCase):
                 freezer.verify_static()
             frozen["runtime_pins"] = {"native": "pinned"}
             frozen["required_headroom_usd"] = "2"
-            with self.assertRaisesRegex(ValueError, "exposure headroom differs"):
+            with self.assertRaisesRegex(ValueError, "headroom after contingent hold differs"):
                 freezer.verify_static()
 
     def test_unknown_shared_charge_blocks_paid_preflight_budget(self):
@@ -563,18 +646,18 @@ class FreezeTests(unittest.TestCase):
                 self.assertFalse((root / "assignment-mixed-001").exists())
                 self.assertFalse((root / "one-time-freeze.lock.json").exists())
 
-    def test_zero_settlement_gate_blocks_freeze_before_seed_or_native_controls(self):
+    def test_contingent_gate_blocks_freeze_before_seed_or_native_controls(self):
         with TemporaryDirectory(prefix="mpp008-settlement-", dir="/tmp") as temporary:
             root = Path(temporary)
-            bad = settled_mpp006_snapshot("44")
-            bad["runs"][MPP006_STOPPED_RUN_ID]["actual_usd"] = "0.001"
+            bad = contingent_mpp006_snapshot("44")
+            bad["runs"][MPP006_STOPPED_RUN_ID]["status"] = "SETTLED"
             with patch.object(freezer, "GATE", root), \
                  patch.object(freezer, "ASSIGNMENT", root / "assignment-mixed-001"), \
                  patch.object(freezer, "LOCK", root / "one-time-freeze.lock.json"), \
                  patch.object(freezer, "_ledger", return_value=bad), \
                  patch.object(freezer, "source_inventory", side_effect=AssertionError(
                      "source and native checks should not run")):
-                with self.assertRaisesRegex(ValueError, "must settle at USD 0"):
+                with self.assertRaisesRegex(ValueError, "must be CONTINGENT"):
                     freezer.freeze(seed_hex=SEED)
                 self.assertFalse((root / "assignment-mixed-001").exists())
                 self.assertFalse((root / "one-time-freeze.lock.json").exists())
@@ -595,19 +678,19 @@ class FreezeTests(unittest.TestCase):
                     "status": "PASS", "real_remote_model_calls": 0, "rows": []}))
                 stack.enter_context(patch.object(freezer, "pricing_snapshots", return_value=rates))
                 stack.enter_context(patch.object(freezer, "_ledger", return_value={
-                    **settled_mpp006_snapshot("40")}))
+                    **contingent_mpp006_snapshot("36")}))
                 with self.assertRaisesRegex(ValueError, "full MPP008 block"):
                     freezer.freeze(seed_hex=SEED)
                 self.assertFalse(freezer.LOCK.exists())
                 with patch.object(freezer, "_ledger", return_value=
-                                  settled_mpp006_snapshot("43.172992")):
+                                  contingent_mpp006_snapshot("36.8651862")):
                     result = freezer.freeze(seed_hex=SEED)
                 self.assertEqual(result["planned_episodes"], 8)
                 self.assertEqual(result["worst_case_block_usd"], "34.865152")
                 frozen, _, rows = freezer.load_assignment(freezer.ASSIGNMENT)
                 self.assertEqual(len(rows), 8)
                 self.assertEqual(frozen["public_pricing_snapshots"], rates)
-                self.assertEqual(frozen["required_headroom_usd"], "43.172992")
+                self.assertEqual(frozen["required_headroom_usd"], "36.8651862")
                 self.assertEqual(frozen["prior_mpp006_contingent_exposure"]["prior_run_id"],
                                  MPP006_STOPPED_RUN_ID)
                 with self.assertRaises(FileExistsError):
