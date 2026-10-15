@@ -52,6 +52,7 @@ SOURCE_FILES = (
     "src/agent_economic_trust/mpp010_orbit.py",
     "src/agent_economic_trust/mpp010_native_service.py",
     "src/agent_economic_trust/mpp010_task.py",
+    "src/agent_economic_trust/remote.py",
     "scripts/run_mpp010_offline_native.py",
 )
 MPP009_FROZEN_CONTROLS = ROOT / "artifacts/prospective/mpp009-scripted-native-001"

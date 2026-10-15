@@ -17,7 +17,7 @@ funder transaction transferred 1010 atomic TIP-20 units to its treasury wallet:
 - Treasury: `0x8e4D1a7b8c4f7F4204EB0643C85AA7656880E18b` (derivation index 15)
 
 Every MPP010 native helper binds the exact RPC port, marker transaction, marker
-block hash, historical treasury debit and credit, and actor wallet set. The
+block hash, historical funder debit and treasury credit, and actor wallet set. The
 provider, auditor, oracle, client, and treasury use test mnemonic derivation
 indices 11 through 15 respectively, distinct from MPP009's indices 1 through 5.
 The MPP010 service and compensation challenges use separate realms and secrets;

@@ -459,7 +459,7 @@
     "mpp009_sha256": "c864184a43b826c2b09123afb5b86c830acc6d0f4d5973d458e069e31099ec62"
   },
   "source_sha256": {
-    "protocols/mpp/mpp010-chain-identity.mjs": "8879547a424d194dd35f8e32add180927073ad7a8e00b7d5476a6d760104e87c",
+    "protocols/mpp/mpp010-chain-identity.mjs": "41d0d257edb7779b09ba85b7c2f2673e40dc27936264f0ec5c6c8698fe1bbf1a",
     "protocols/mpp/mpp010-meeting-service.mjs": "828d79e77202b29279d30520c5fb0da7b22c79eacf27202d2826ad8baf993ef1",
     "protocols/mpp/mpp010-verify-meeting-service.mjs": "7f2807685480d4fc0619d627c717785e868b0a89117a8f0395afe85e3e75b269",
     "protocols/mpp/mpp010-meeting-local.mjs": "b68c8ff48802c879d35602702d53c0031f8a33620dd5c6a8efb73b20876a973c",
@@ -470,6 +470,26 @@
     "src/agent_economic_trust/mpp010_orbit.py": "bc14be27e6803663f6ba9baf11fc585827376abdd55467132e69e377f86aa0f5",
     "src/agent_economic_trust/mpp010_native_service.py": "146dc39a7fd0a6a3be2904bcf9f112053b99745054c28128fe4ab4d07f573295",
     "src/agent_economic_trust/mpp010_task.py": "5602bca1b2f07816624a3d49748a550bdc0c8499c759cfe795ee3c7384ce0418",
-    "scripts/run_mpp010_offline_native.py": "7bb0069e67c6523ec610551b4a1b74cda1fc9ac4dff2aee1b8ced17bc8c4fb7a"
+    "src/agent_economic_trust/remote.py": "f96c57fcd8094dbbd228c69dbcc1c87c6a0476edfb2c8a20cce2afb9cb4e6929",
+    "scripts/run_mpp010_offline_native.py": "62e0b74e33c7ac11fdb4b7f82337cd70a8f7dace887a8be042b1ac86b4b85cf0"
+  },
+  "read_only_reseal": {
+    "prior_summary_sha256": "52cae689ba08bb402aa6c1a309c5a886d5848591e0599f5c8a9f988eeed0269a",
+    "prior_source_sha256": {
+      "protocols/mpp/mpp010-chain-identity.mjs": "8879547a424d194dd35f8e32add180927073ad7a8e00b7d5476a6d760104e87c",
+      "protocols/mpp/mpp010-meeting-service.mjs": "828d79e77202b29279d30520c5fb0da7b22c79eacf27202d2826ad8baf993ef1",
+      "protocols/mpp/mpp010-verify-meeting-service.mjs": "7f2807685480d4fc0619d627c717785e868b0a89117a8f0395afe85e3e75b269",
+      "protocols/mpp/mpp010-meeting-local.mjs": "b68c8ff48802c879d35602702d53c0031f8a33620dd5c6a8efb73b20876a973c",
+      "protocols/mpp/mpp010-verify-meeting-evidence.mjs": "355082c4f88286b900f3e8d8735e008bf80d65a639f105f9e35e00b4e548f745",
+      "protocols/mpp/package-lock.json": "ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad",
+      "src/agent_economic_trust/mpp010_plan.py": "e038bbacb07cf1af4ccad2048f21cb1b0f1d3c68911db6a6fedd6c2c55e929bb",
+      "src/agent_economic_trust/mpp010_market.py": "b56d4626f6b4e07911b9f0d891019959554daddc1e8b4e651f35159661c746b3",
+      "src/agent_economic_trust/mpp010_orbit.py": "bc14be27e6803663f6ba9baf11fc585827376abdd55467132e69e377f86aa0f5",
+      "src/agent_economic_trust/mpp010_native_service.py": "146dc39a7fd0a6a3be2904bcf9f112053b99745054c28128fe4ab4d07f573295",
+      "src/agent_economic_trust/mpp010_task.py": "5602bca1b2f07816624a3d49748a550bdc0c8499c759cfe795ee3c7384ce0418",
+      "scripts/run_mpp010_offline_native.py": "7bb0069e67c6523ec610551b4a1b74cda1fc9ac4dff2aee1b8ced17bc8c4fb7a"
+    },
+    "native_transactions_created": 0,
+    "reason": "independent 402 challenge verification and portable compensation paths"
   }
 }

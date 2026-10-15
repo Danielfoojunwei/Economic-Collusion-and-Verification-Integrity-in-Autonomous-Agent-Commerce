@@ -46,9 +46,12 @@ export async function verifyMpp010Chain(client, rpcUrl = RPC_URL) {
     event.args.to.toLowerCase() === ACCOUNTS.treasury.toLowerCase())
   assert.equal(transfers.length, 1)
   assert.equal(transfers[0].args.amount, BigInt(CHAIN_IDENTITY.marker_amount_atomic))
-  const balanceAt = blockNumber => readContract(client, { abi: Abis.tip20,
-    address: TOKEN, functionName: 'balanceOf', args: [ACCOUNTS.treasury], blockNumber })
-  assert.equal(await balanceAt(blockNumber - 1n), 0n)
-  assert.equal(await balanceAt(blockNumber), BigInt(CHAIN_IDENTITY.marker_amount_atomic))
+  const balanceAt = (address, blockNumber) => readContract(client, { abi: Abis.tip20,
+    address: TOKEN, functionName: 'balanceOf', args: [address], blockNumber })
+  assert.equal(await balanceAt(ACCOUNTS.treasury, blockNumber - 1n), 0n)
+  assert.equal(await balanceAt(ACCOUNTS.treasury, blockNumber),
+    BigInt(CHAIN_IDENTITY.marker_amount_atomic))
+  assert.ok(await balanceAt(FUNDER, blockNumber - 1n) -
+    await balanceAt(FUNDER, blockNumber) >= BigInt(CHAIN_IDENTITY.marker_amount_atomic))
   return CHAIN_IDENTITY
 }
