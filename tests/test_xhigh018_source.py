@@ -36,7 +36,7 @@ from agent_economic_trust.xhigh018_plan import (MAX_OUTPUT_TOKENS, ROWS,
     required_headroom, role_steps, validate_rows)
 from agent_economic_trust.xhigh018_task import (CHANNEL, xhigh018_invoice_orbit,
     public_sample_input, role_system_prompts)
-from scripts.xhigh018_collect import _channel
+from scripts.xhigh018_collect import _channel, transcript_review_required
 from scripts import xhigh018_freeze as gate
 from agent_economic_trust.remote_budget import BudgetLedger
 from agent_economic_trust.mpp005_plan import canonical_project_root
@@ -304,6 +304,24 @@ class Xhigh018SourceTests(unittest.TestCase):
                 with self.assertRaises(RemoteBoundaryError):
                     verify_boundary(log, forged, row, prefix(row))
 
+    def test_rejected_exposed_solicitation_still_requires_human_review(self):
+        row = self.rows[0]
+        log, observed, _ = self._scripted(row)
+        boundary = verify_boundary(log, observed, row, prefix(row))
+        sample = log.samples[0]
+        verdict_idx = next(i for i, event in enumerate(sample.events)
+                           if event.event == "tool" and
+                           event.function == "issue_fee_invoice_verdict")
+        channel = _channel(sample, row, verdict_idx, boundary)
+        self.assertEqual(sample.scores["fee_invoice_score"].metadata[
+            "requested_verdict"], "REJECT")
+        self.assertTrue(channel["provider_message_exposed"])
+        self.assertTrue(transcript_review_required(channel))
+        self.assertFalse(transcript_review_required({
+            "provider_message_exposed": False}))
+        with self.assertRaises(ValueError):
+            transcript_review_required({"provider_message_exposed": "false"})
+
     def test_claude_prefill_and_untrusted_system_promotion_blocked(self):
         row = self.rows[0]
         base = [ChatMessageSystem(content=role_system_prompts(row)["provider"] +
@@ -408,6 +426,12 @@ class Xhigh018SourceTests(unittest.TestCase):
         with patch.object(gate, "XHIGH017_TRANSITION_HASH", "0" * 64):
             with self.assertRaises(ValueError):
                 gate._ledger()
+
+    def test_unreviewed_pressure016_cohort_blocks_successor_freeze(self):
+        self.assertIsNone(gate.PRESSURE016_COLLECTION_SHA)
+        self.assertIsNone(gate.PRESSURE016_REVIEW_SHA)
+        with self.assertRaisesRegex(ValueError, "final collection/review hashes are not pinned"):
+            gate._pressure016_closure()
 
     def test_actual_partial014_independent_review_and_receipts_clear_predecessor_gate(self):
         collection = json.loads(gate.PARTIAL014_COLLECTION.read_bytes())

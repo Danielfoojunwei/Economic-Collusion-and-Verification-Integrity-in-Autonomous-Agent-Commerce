@@ -60,6 +60,14 @@ XHIGH017_BILLING_REVIEW = ROOT / "artifacts/budget/xhigh017-first-stop-contingen
 XHIGH017_BILLING_REVIEW_SHA = "d68a3672042052c7c28eb000538d831a7f1e6fb757b2b0800c44bcc66ee09bd2"
 XHIGH017_PRETRANSITION_HASH = "f0e592b73cfb4091e8459e637365352ce49fb444f5ab1a2d40d03f355e0b1fcf"
 XHIGH017_TRANSITION_HASH = "15b6085904a6fb159da95db7764c20de8af1e31ff86379132cdf9bf5c1522b50"
+PRESSURE016_GATE = ROOT / "artifacts/gates/ERC8183_PRESSURE016"
+PRESSURE016_ASSIGNMENT_SHA = "dd13f314a88b6397425a4f254e68002279fac5ad15fe341314c5014e20b5d047"
+PRESSURE016_COLLECTION = PRESSURE016_GATE / "collection-004-final.json"
+PRESSURE016_REVIEW = PRESSURE016_GATE / "independent-results-review-final.json"
+# The cohort is still running. A new reviewed source revision must replace both
+# values with exact final hashes; until then every freeze and paid preflight blocks.
+PRESSURE016_COLLECTION_SHA: str | None = None
+PRESSURE016_REVIEW_SHA: str | None = None
 
 # Explicit dependencies are captured at source review and frozen by path/hash.
 # The earlier studies also retain their own independent sealed-source gates.
@@ -72,6 +80,7 @@ DEPENDENCIES = (
     "scripts/partial014_collect.py", "scripts/fee015_freeze.py",
     "scripts/fee015_collect.py", "scripts/collect_x402_live012.py",
     "scripts/xhigh017_freeze.py", "scripts/xhigh017_collect.py",
+    "scripts/pressure016_freeze.py", "scripts/pressure016_collect.py",
     "src/agent_economic_trust/ap2_live_fixture.py",
     "src/agent_economic_trust/core.py",
     "src/agent_economic_trust/erc8183_fee_plan.py",
@@ -90,6 +99,11 @@ DEPENDENCIES = (
     "src/agent_economic_trust/xhigh017_task.py",
     "src/agent_economic_trust/xhigh017_boundary.py",
     "src/agent_economic_trust/xhigh017_remote.py",
+    "src/agent_economic_trust/pressure016_plan.py",
+    "src/agent_economic_trust/pressure016_task.py",
+    "src/agent_economic_trust/pressure016_boundary.py",
+    "src/agent_economic_trust/pressure016_remote.py",
+    "docs/PROSPECTIVE_ERC8183_PRESSURE016_DESIGN.md",
 )
 OWN_SOURCES = (
     "src/agent_economic_trust/xhigh018_budget.py",
@@ -401,6 +415,76 @@ def _xhigh017_closure() -> dict:
                             "pending": 1}}
 
 
+def _pressure016_closure() -> dict:
+    """Require reviewed scientific closure of all four pressure rows."""
+    if (not isinstance(PRESSURE016_COLLECTION_SHA, str)
+            or not isinstance(PRESSURE016_REVIEW_SHA, str)
+            or any(len(value) != 64 or any(char not in "0123456789abcdef"
+                   for char in value) for value in (
+                       PRESSURE016_COLLECTION_SHA, PRESSURE016_REVIEW_SHA))):
+        raise ValueError(
+            "XHIGH018 PRESSURE016 final collection/review hashes are not pinned; "
+            "freeze and paid calls remain blocked")
+    from scripts.pressure016_freeze import load_assignment, verify_static
+    from scripts.pressure016_collect import collect
+    verify_static()
+    frozen, assignment_sha, rows = load_assignment()
+    if (assignment_sha != PRESSURE016_ASSIGNMENT_SHA or len(rows) != 4
+            or frozen.get("execution_order") != [row.episode_id for row in rows]
+            or sha(PRESSURE016_COLLECTION) != PRESSURE016_COLLECTION_SHA
+            or sha(PRESSURE016_REVIEW) != PRESSURE016_REVIEW_SHA):
+        raise ValueError("XHIGH018 PRESSURE016 frozen assignment or final archive differs")
+    collection = json.loads(PRESSURE016_COLLECTION.read_bytes())
+    review = json.loads(PRESSURE016_REVIEW.read_bytes())
+    if (collection.get("schema") != "pressure016-itt-collection-v1"
+            or collection.get("assignment_manifest_sha256") != assignment_sha
+            or tuple(collection.get(key) for key in (
+                "planned_episodes", "completed_episodes",
+                "observed_incomplete_episodes", "stopped_episodes",
+                "pending_episodes")) != (4, 4, 0, 0, 0)
+            or [item.get("episode_id") for item in collection.get("rows", [])]
+               != [row.episode_id for row in rows]
+            or any(item.get("status") != "COMPLETE"
+                   for item in collection.get("rows", []))
+            or review.get("schema")
+               != "pressure016-independent-results-review-final-v1"
+            or review.get("status") != "REVIEW_COMPLETE"
+            or review.get("assignment_manifest_sha256") != assignment_sha
+            or review.get("collection_sha256") != PRESSURE016_COLLECTION_SHA
+            or review.get("reviewer_id") in (
+                None, "", "/root", "/root/pressure016_source",
+                "/root/xhigh018_successor_source")
+            or review.get("paid_or_freeze_authorization") is not False):
+        raise ValueError("XHIGH018 PRESSURE016 denominator or independent review differs")
+    replay = collect()
+    for key in ("study", "assignment_manifest_sha256", "planned_episodes",
+                "completed_episodes", "observed_incomplete_episodes",
+                "stopped_episodes", "pending_episodes", "rows"):
+        if replay.get(key) != collection.get(key):
+            raise ValueError("XHIGH018 PRESSURE016 saved collection fails raw replay")
+    reviewed_rows = review.get("rows")
+    if not isinstance(reviewed_rows, list) or len(reviewed_rows) != 4:
+        raise ValueError("XHIGH018 PRESSURE016 four row reviews missing")
+    for row, saved, reviewed in zip(rows, collection["rows"], reviewed_rows,
+                                    strict=True):
+        directory = PRESSURE016_GATE / "runs-001/episodes" / row.episode_id
+        if (reviewed.get("episode_id") != row.episode_id
+                or reviewed.get("collection_row_sha256") != digest(saved)
+                or reviewed.get("episode_record_sha256")
+                   != sha(directory / "episode_record.json")
+                or reviewed.get("inspect_sha256") != sha(directory / "inspect.eval")
+                or reviewed.get("native_sha256")
+                   != sha(directory / "erc8183/native-evidence.json")
+                or (saved.get("human_transcript_review_required") is True
+                    and reviewed.get("human_transcript_review_completed") is not True)):
+            raise ValueError("XHIGH018 PRESSURE016 reviewed row outcome or receipt differs")
+    return {"assignment_manifest_sha256": assignment_sha,
+            "collection_sha256": PRESSURE016_COLLECTION_SHA,
+            "independent_review_sha256": PRESSURE016_REVIEW_SHA,
+            "denominator": {"planned": 4, "complete": 4, "stopped": 0,
+                            "pending": 0}}
+
+
 def _source_review(sources: dict, predecessor: dict) -> dict:
     review = json.loads(SOURCE_REVIEW.read_bytes())
     if (SOURCE_REVIEW.is_symlink()
@@ -414,6 +498,10 @@ def _source_review(sources: dict, predecessor: dict) -> dict:
                != predecessor["xhigh017"]["provisional_billing_evidence_sha256"]
             or review.get("xhigh017_independent_billing_review_sha256")
                != predecessor["xhigh017"]["independent_billing_review_sha256"]
+            or review.get("pressure016_collection_sha256")
+               != predecessor["pressure016"]["collection_sha256"]
+            or review.get("pressure016_independent_review_sha256")
+               != predecessor["pressure016"]["independent_review_sha256"]
             or review.get("reviewer_id") in (
                 None, "", "/root/xhigh018_source", "/root/xhigh018_successor_source")
             or review.get("freeze_or_paid_authorization") is not False):
@@ -424,7 +512,8 @@ def _source_review(sources: dict, predecessor: dict) -> dict:
 
 def _predecessor() -> dict:
     return {"fee015": _fee015_closure(), "partial014": _partial014_closure(),
-            "xhigh017": _xhigh017_closure()}
+            "xhigh017": _xhigh017_closure(),
+            "pressure016": _pressure016_closure()}
 
 
 def _budget(state: dict, prices: dict) -> dict:
