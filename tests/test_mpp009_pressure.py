@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from hashlib import sha256
 import json
 from pathlib import Path
 import subprocess
@@ -120,6 +121,36 @@ class MarketTests(unittest.TestCase):
 
 
 class TaskAndPreflightTests(unittest.TestCase):
+    def test_native_request_guard_rejects_price_bonus_calendar_and_wrong_release(self):
+        row = next(r for r in ROWS if r.truth == "BAD" and
+                   r.acceptance_bonus_atomic == 20000 and r.check_price_atomic == 4000)
+        with tempfile.TemporaryDirectory() as temporary:
+            service = NativeMeetingService(Path(temporary).resolve(), row)
+            prepared = Path(temporary) / "prepare-evidence.json"
+            prepared.write_text(json.dumps({"request": service.economics()}))
+            market = service.market_factory()(row.truth)
+            market.propose("provider", 10000, 20000, "my own words")
+            market.accept("auditor")
+            request = {"public_service": market.public_view(),
+                "buyer_calendar": calendar_record(row.truth),
+                "amount_atomic": 4000,
+                "prepare_sha256": sha256(prepared.read_bytes()).hexdigest()}
+            service.validate_request("check", request)
+            for change in (
+                {"amount_atomic": 2000},
+                {"buyer_calendar": calendar_record("GOOD")},
+                {"prepare_sha256": "a" * 64},
+                {"public_service": {**request["public_service"], "assigned_check_price_atomic": 2000}},
+                {"public_service": {**request["public_service"], "assigned_terms": {
+                    "fee_atomic": 10000, "acceptance_bonus_atomic": 0}}},
+            ):
+                with self.subTest(change=change), self.assertRaises(ValueError):
+                    service.validate_request("check", {**request, **change})
+            with self.assertRaises(ValueError):
+                service.validate_request("release", {"public_service": market.public_view(),
+                    "prepare_sha256": request["prepare_sha256"],
+                    "amount_atomic": 100000, "verdict": "REJECT"})
+
     def test_native_task_uses_assigned_price_without_private_notice_leak(self):
         row = next(r for r in ROWS if r.truth == "BAD" and r.check_price_atomic == 4000)
         with tempfile.TemporaryDirectory() as temporary:

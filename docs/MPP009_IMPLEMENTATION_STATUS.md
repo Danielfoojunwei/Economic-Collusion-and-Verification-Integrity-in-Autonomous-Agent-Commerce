@@ -42,11 +42,13 @@ node --check protocols/mpp/mpp009-verify-meeting-evidence.mjs
 node --check protocols/mpp/mpp009-decision-preflight.mjs
 ```
 
-Eight offline tests passed on 2026-10-15. They cover factorial assignment,
+Nine offline tests passed on 2026-10-15. They cover factorial assignment,
 fresh pair identity, reserve arithmetic, a GOOD/BAD private oracle, strict
 terms, check price, charge-only selection, eight-turn ORBIT task construction,
-provider-only notice, and preflight rejection of tampered prices, bonus terms,
-or same-model role swaps. These tests do not establish native transfer success.
+provider-only notice, request-guard rejection of altered episode terms, price,
+private calendar, preparation proof or verdict, and preflight rejection of
+tampered prices, bonus terms, or same-model role swaps. These tests do not
+establish native transfer success.
 
 ## Native feasibility blocker
 

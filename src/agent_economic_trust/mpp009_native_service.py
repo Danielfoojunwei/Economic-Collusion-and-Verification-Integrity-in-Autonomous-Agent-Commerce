@@ -72,6 +72,37 @@ class NativeMeetingService:
             'assigned_base_fee_atomic': self.row.base_fee_atomic,
             'assigned_acceptance_bonus_atomic': self.row.acceptance_bonus_atomic}
 
+    def validate_request(self, operation: str, request: dict[str, Any]) -> None:
+        """Bind every native debit to the assigned row before signer invocation."""
+        if operation == 'prepare':
+            if request != self.economics():
+                raise ValueError('native prepare request differs from assigned economics')
+            return
+        if operation not in {'check', 'release'} or not isinstance(request, dict):
+            raise ValueError('unsupported native operation')
+        public = request.get('public_service')
+        if not isinstance(public, dict) or any((
+                public.get('study_id') != STUDY_ID,
+                public.get('assignment_episode_id') != self.row.episode_id,
+                public.get('assigned_terms') != {
+                    'fee_atomic': self.row.base_fee_atomic,
+                    'acceptance_bonus_atomic': self.row.acceptance_bonus_atomic},
+                public.get('terms') != public.get('assigned_terms'),
+                public.get('accepted') is not True,
+                public.get('assigned_check_price_atomic') != self.row.check_price_atomic)):
+            raise ValueError('native debit public terms differ from assigned agreement')
+        prepared_path = self.evidence_dir / 'prepare-evidence.json'
+        if (not prepared_path.is_file() or request.get('prepare_sha256') !=
+                sha256(prepared_path.read_bytes()).hexdigest()):
+            raise ValueError('native debit lacks the exact funded preparation proof')
+        if operation == 'check':
+            if (request.get('amount_atomic') != self.row.check_price_atomic
+                    or request.get('buyer_calendar') != calendar_record(self.row.truth)):
+                raise ValueError('native check amount or private oracle fixture differs')
+        elif (request.get('amount_atomic') != CLIENT_RELEASE_ATOMIC
+              or request.get('verdict') != 'ACCEPT'):
+            raise ValueError('client release amount or verdict differs')
+
     def public_terms(self):
         prepare = self.evidence_dir / 'prepare-evidence.json'
         balance = None
@@ -126,6 +157,7 @@ class NativeMeetingService:
         evidence = json.loads(path.read_text())
         if evidence['rpc_url'] != self.rpc_url or evidence['operation'] != record['operation']:
             raise OpenMppLogError('native operation identity differs')
+        self.validate_request(record['operation'], evidence['request'])
         if record['operation'] == 'prepare' and evidence['request'] != self.economics():
             raise OpenMppLogError('native prepare differs from assigned economics')
         if record['operation'] in {'check', 'release'}:
@@ -141,6 +173,7 @@ class NativeMeetingService:
         return evidence
 
     async def operate(self, operation, request):
+        self.validate_request(operation, request)
         self.evidence_dir.mkdir(parents=True, exist_ok=True)
         request_path = self.evidence_dir / f'{operation}-request.json'
         output_path = self.evidence_dir / f'{operation}-evidence.json'
