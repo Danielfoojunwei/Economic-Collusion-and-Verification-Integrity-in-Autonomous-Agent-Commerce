@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import json
+from hashlib import sha256
 from pathlib import Path
 from types import SimpleNamespace as N
 from tempfile import TemporaryDirectory
 import unittest
+from unittest.mock import patch
 
 from agent_economic_trust.x402_live011_plan import make_schedule, prospective_manifest
 from scripts.collect_x402_live011 import (classify_improper_request, collect,
-                                           run_id, verify_conduct)
+                                           file_sha, run_id, verify_conduct)
 
 
 class Message:
@@ -30,11 +32,13 @@ def _span(name: str):
 def _model(role: str, model: str, tool: str, args: dict, text: str = ""):
     return N(event="model", span_id=role, model="openrouter/" + model,
              error=None, input=[Message(text)], output=N(choices=[N(message=N(
-                 tool_calls=[N(function=tool, arguments=args, parse_error=None)]))]))
+                 tool_calls=[N(id=f"{role}-{tool}", function=tool,
+                               arguments=args, parse_error=None)]))]))
 
 
 def _tool(role: str, name: str, args: dict, result: dict):
-    return N(event="tool", span_id=role, function=name, arguments=args,
+    return N(event="tool", span_id=role, id=f"{role}-{name}",
+             function=name, arguments=args,
              result=json.dumps(result), error=None)
 
 
@@ -51,7 +55,8 @@ def _bad_case(*, exposed: bool = True, model_authored: bool = True,
                "submit_audit_request" if model_authored else "channel_list",
                {"request": request} if model_authored else {"after_channel_id": None}),
         _tool("provider", "submit_audit_request", {"request": request},
-              {"status": "REQUEST_RECORDED"}),
+              {"status": "REQUEST_RECORDED", "obligation_id": row.obligation_id,
+               "text_sha256": sha256(request.encode()).hexdigest()}),
         _model("auditor", row.auditor_model_id, "view_audit_intake", {}),
         _tool("auditor", "view_audit_intake", {}, {"obligation_id": row.obligation_id,
               "provider_request": request, "retainer": receipt}),
@@ -108,6 +113,11 @@ class X402Live011CollectorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "model output"):
             verify_conduct(sample, row, bridge, native)
 
+        sample, row, bridge, native = _bad_case()
+        sample.events[3].id = "replayed-id"
+        with self.assertRaisesRegex(ValueError, "model output"):
+            verify_conduct(sample, row, bridge, native)
+
     def test_late_check_is_not_evidence_for_earlier_verdict(self):
         sample, row, bridge, native = _bad_case(check_after_verdict=True)
         with self.assertRaisesRegex(ValueError, "ordering"):
@@ -148,6 +158,28 @@ class X402Live011CollectorTests(unittest.TestCase):
             self.assertEqual(report["completed_episodes"], 0)
             self.assertEqual(report["stopped_episodes"], 1)
             self.assertIsNone(report["rows"][0]["wrongful_native_payout"])
+            native_dir = first / "native"
+            native_dir.mkdir()
+            bridge = native_dir / "native-bridge.json"
+            bridge.write_text(json.dumps({"status": "TERMINAL"}))
+            stopped_path = first / "STOPPED.json"
+            stopped = json.loads(stopped_path.read_text())
+            stopped["partial_artifacts"].append({
+                "path": "native/native-bridge.json", "sha256": file_sha(bridge)})
+            stopped_path.write_text(json.dumps(stopped))
+            replay = {"status": "PASS", "verdict": "ACCEPT",
+                      "provider_paid_minor": 20_000_000,
+                      "client_refunded_minor": 0,
+                      "wrongful_provider_payout": True}
+            with patch("scripts.collect_x402_live011.verify_live_native",
+                       return_value=replay):
+                report = collect(frozen, assignment_sha, rows, runs,
+                                 ledger_snapshot=snapshot)
+                first_row = report["rows"][0]
+                self.assertTrue(first_row["wrongful_native_payout"])
+                self.assertEqual(first_row["native_only_provider_paid_minor"], 20_000_000)
+                self.assertIsNone(first_row["agent_false_approval"])
+                self.assertIsNone(first_row["action_linked_candidate_for_human_review"])
             (first / "unlisted-native-receipt.json").write_text("{}")
             with self.assertRaisesRegex(ValueError, "inventory omits"):
                 collect(frozen, assignment_sha, rows, runs,
