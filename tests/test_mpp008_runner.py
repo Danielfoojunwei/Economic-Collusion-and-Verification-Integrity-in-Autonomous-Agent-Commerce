@@ -10,7 +10,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 os.environ.setdefault("PYTHON_DOTENV_DISABLED", "1")
 os.environ.setdefault("XDG_DATA_HOME", "/tmp/mpp008-test-data")
@@ -33,7 +33,11 @@ from agent_economic_trust.mpp006_plan import (STUDY_ID as MPP006_STUDY_ID,
                                               make_schedule as mpp006_make_schedule)
 from agent_economic_trust.mpp008_pricing import (MixedPricingError, estimate_model_usage,
     pricing_snapshots, reserve_pair)
-from agent_economic_trust.mpp008_remote import Mpp008Plan, _configured_models, fresh_budget
+from agent_economic_trust.mpp008_budget import (
+    MPP006_STOPPED_RUN_ID, MPP006_ORIGINAL_RESERVATION_USD,
+    mpp006_contingent_exposure, required_headroom)
+from agent_economic_trust.mpp008_remote import (Mpp008Plan, _configured_models,
+    fresh_budget, post_settlement_budget)
 from agent_economic_trust.mpp008_reporting import _amount, _pricing_basis, summary
 from agent_economic_trust.mpp008_linkage import action_linkage
 from agent_economic_trust.mpp008_task import PROVIDER_NOTICE, native_mixed_model_task
@@ -43,6 +47,14 @@ from scripts import freeze_mpp008 as freezer
 
 
 SEED = "ab" * 32
+
+
+def settled_mpp006_snapshot(available: str) -> dict:
+    return {"seq": 133, "last_hash": "a" * 64, "cap_usd": "50",
+        "available_usd": available, "reserved_usd": "0", "blocked": False,
+        "unknown_run_ids": [], "runs": {MPP006_STOPPED_RUN_ID: {
+            "status": "SETTLED", "reserved_usd": "6.30784", "actual_usd": "0",
+            "evidence_ref": "sha256:" + "b" * 64}}}
 
 
 def role_tools(role: str):
@@ -399,6 +411,135 @@ class ProspectiveRequestLinkageTests(unittest.TestCase):
 
 
 class FreezeTests(unittest.TestCase):
+    def test_mpp006_external_exposure_requires_exact_zero_settlement_and_evidence(self):
+        valid = settled_mpp006_snapshot("43.172992")
+        self.assertEqual(mpp006_contingent_exposure(valid)["prior_reservation_usd"],
+                         "6.307840")
+        self.assertEqual(MPP006_ORIGINAL_RESERVATION_USD, Decimal("6.307840"))
+        self.assertEqual(required_headroom([Decimal("34.865152")]),
+                         Decimal("43.172992"))
+        for mutation in (lambda s: s["runs"].clear(),
+                         lambda s: s["runs"][MPP006_STOPPED_RUN_ID].update(status="UNKNOWN"),
+                         lambda s: s["runs"][MPP006_STOPPED_RUN_ID].update(actual_usd="0.000001"),
+                         lambda s: s["runs"][MPP006_STOPPED_RUN_ID].update(reserved_usd="6"),
+                         lambda s: s["runs"][MPP006_STOPPED_RUN_ID].update(evidence_ref="sha256:BAD")):
+            with self.subTest(mutation=mutation):
+                state = settled_mpp006_snapshot("43.172992")
+                mutation(state)
+                with self.assertRaisesRegex(ValueError, "MPP006 stopped run"):
+                    mpp006_contingent_exposure(state)
+
+    def test_readiness_includes_contingent_hold_and_reports_unknown_without_freezing(self):
+        rates = pricing_snapshots(catalog=catalog())
+        with TemporaryDirectory(prefix="mpp008-readiness-", dir="/tmp") as temporary:
+            with patch.object(freezer, "LOCK", Path(temporary) / "lock.json"), \
+                 patch.object(freezer, "ASSIGNMENT", Path(temporary) / "assignment"), \
+                 patch.object(freezer, "source_inventory", return_value={"a": "b"}), \
+                 patch.object(freezer, "pricing_snapshots", return_value=rates), \
+                 patch.object(freezer, "runtime_pins", return_value={"native": "pinned"}), \
+                 patch.object(freezer, "mixed_offline_readiness", return_value={"status": "PASS"}), \
+                 patch.object(freezer, "BudgetLedger") as ledger:
+                ledger.return_value.snapshot.return_value = settled_mpp006_snapshot("43.172992")
+                ready = freezer.readiness()
+                self.assertTrue(ready["would_freeze"])
+                self.assertEqual(ready["required_headroom_usd"], "43.172992")
+                ledger.return_value.snapshot.return_value = settled_mpp006_snapshot("43.172991")
+                self.assertFalse(freezer.readiness()["would_freeze"])
+                unknown = settled_mpp006_snapshot("43.172992")
+                unknown["runs"][MPP006_STOPPED_RUN_ID]["status"] = "UNKNOWN"
+                unknown["blocked"] = True
+                unknown["unknown_run_ids"] = [MPP006_STOPPED_RUN_ID]
+                ledger.return_value.snapshot.return_value = unknown
+                result = freezer.readiness()
+                self.assertFalse(result["would_freeze"])
+                self.assertEqual(result["prior_mpp006_contingent_exposure"]["status"],
+                                 "NOT_RECONCILED")
+
+    def test_remaining_and_post_settlement_budget_retains_external_exposure(self):
+        rates = pricing_snapshots(catalog=catalog())
+        row = next(r for r in make_schedule(SEED) if r.provider_model_id == SOL
+                   and r.auditor_model_id == SONNET)
+        reserve = reserve_pair(rates, row.provider_model_id, row.auditor_model_id)
+        frozen = {"public_pricing_snapshots": rates,
+                  "worst_case_reserve_usd_by_episode": {row.episode_id: str(reserve)},
+                  "prior_mpp006_contingent_exposure": mpp006_contingent_exposure(
+                      settled_mpp006_snapshot("40"))}
+        with patch.object(freezer, "verify", return_value={"status": "PASS"}), \
+             patch("agent_economic_trust.mpp008_remote.BudgetLedger") as ledger, \
+             patch("agent_economic_trust.mpp008_remote.pricing_snapshots", return_value=rates):
+            needed = str(required_headroom([reserve]))
+            ledger.return_value.snapshot.return_value = settled_mpp006_snapshot(needed)
+            _, reserves, _ = fresh_budget(Mpp008Plan(), frozen, [row])
+            self.assertEqual(reserves[row.episode_id], reserve)
+            ledger.return_value.snapshot.return_value = settled_mpp006_snapshot(
+                str(required_headroom([reserve]) - Decimal("0.000001")))
+            with self.assertRaisesRegex(RemoteBoundaryError, "MPP006 exposure"):
+                fresh_budget(Mpp008Plan(), frozen, [row])
+            # The next invocation still requires the hold plus $2, even with no rows left.
+            ledger.return_value.snapshot.return_value = settled_mpp006_snapshot("8.307840")
+            fresh_budget(Mpp008Plan(), frozen, [])
+            ledger.return_value.snapshot.return_value = settled_mpp006_snapshot("8.307839")
+            with self.assertRaisesRegex(RemoteBoundaryError, "MPP006 exposure"):
+                fresh_budget(Mpp008Plan(), frozen, [])
+
+    def test_live_post_settlement_guard_reads_only_ledger_and_keeps_hold(self):
+        frozen = {"prior_mpp006_contingent_exposure": mpp006_contingent_exposure(
+            settled_mpp006_snapshot("44"))}
+        future = [Decimal("3.801088")]
+        needed = required_headroom(future)
+        snapshot = settled_mpp006_snapshot(str(needed))
+        ledger = SimpleNamespace(snapshot=Mock(return_value=snapshot))
+        with patch.object(freezer, "verify", side_effect=AssertionError("native controls ran")), \
+             patch.object(freezer, "mixed_offline_readiness",
+                          side_effect=AssertionError("native controls ran")), \
+             patch("agent_economic_trust.mpp008_remote.pricing_snapshots",
+                   side_effect=AssertionError("catalog reran")):
+            self.assertIs(post_settlement_budget(ledger, frozen, future), snapshot)
+            self.assertEqual(ledger.snapshot.call_count, 1)
+            snapshot["available_usd"] = str(needed - Decimal("0.000001"))
+            with self.assertRaisesRegex(RemoteBoundaryError, "insufficient headroom"):
+                post_settlement_budget(ledger, frozen, future)
+            snapshot["available_usd"] = str(needed)
+            snapshot["runs"][MPP006_STOPPED_RUN_ID]["actual_usd"] = "0.000001"
+            with self.assertRaisesRegex(RemoteBoundaryError, "not reconciled"):
+                post_settlement_budget(ledger, frozen, future)
+            snapshot["runs"][MPP006_STOPPED_RUN_ID]["actual_usd"] = "0"
+            snapshot["blocked"] = True
+            with self.assertRaisesRegex(RemoteBoundaryError, "shared lifetime ledger blocked"):
+                post_settlement_budget(ledger, frozen, future)
+
+    def test_static_post_row_verifier_checks_source_runtime_and_hold_without_native_controls(self):
+        row = make_schedule(SEED)[0]
+        rates = pricing_snapshots(catalog=catalog())
+        reserve = reserve_pair(rates, row.provider_model_id, row.auditor_model_id)
+        frozen = {"source_sha256": {"a": "b"}, "runtime_pins": {"native": "pinned"},
+                  "worst_case_reserve_usd_by_episode": {row.episode_id: str(reserve)},
+                  "worst_case_reserve_usd_full_block": str(reserve),
+                  "required_headroom_usd": str(required_headroom([reserve])),
+                  "public_pricing_snapshots": rates,
+                  "budget_at_freeze": {"seq": 133, "last_hash": "a" * 64},
+                  "prior_mpp006_contingent_exposure": mpp006_contingent_exposure(
+                      settled_mpp006_snapshot("44"))}
+        with patch.object(freezer, "load_assignment", return_value=(frozen, "c" * 64, [row])) as load, \
+             patch.object(freezer, "source_inventory", return_value={"a": "b"}), \
+             patch.object(freezer, "runtime_pins", return_value={"native": "pinned"}), \
+             patch.object(freezer, "_ancestor", return_value=settled_mpp006_snapshot("44")), \
+             patch.object(freezer, "mixed_offline_readiness",
+                          side_effect=AssertionError("native controls ran")):
+            self.assertEqual(freezer.verify_static()["native_controls_executed"], False)
+            load.assert_called_once_with()
+            frozen["source_sha256"] = {"a": "tampered"}
+            with self.assertRaisesRegex(ValueError, "executable source changed"):
+                freezer.verify_static()
+            frozen["source_sha256"] = {"a": "b"}
+            frozen["runtime_pins"] = {"native": "tampered"}
+            with self.assertRaisesRegex(ValueError, "runtime pin changed"):
+                freezer.verify_static()
+            frozen["runtime_pins"] = {"native": "pinned"}
+            frozen["required_headroom_usd"] = "2"
+            with self.assertRaisesRegex(ValueError, "exposure headroom differs"):
+                freezer.verify_static()
+
     def test_unknown_shared_charge_blocks_paid_preflight_budget(self):
         blocked = {"blocked": True, "unknown_run_ids": ["mpp006-unresolved"],
                    "cap_usd": "50", "reserved_usd": "6.30784",
@@ -422,6 +563,22 @@ class FreezeTests(unittest.TestCase):
                 self.assertFalse((root / "assignment-mixed-001").exists())
                 self.assertFalse((root / "one-time-freeze.lock.json").exists())
 
+    def test_zero_settlement_gate_blocks_freeze_before_seed_or_native_controls(self):
+        with TemporaryDirectory(prefix="mpp008-settlement-", dir="/tmp") as temporary:
+            root = Path(temporary)
+            bad = settled_mpp006_snapshot("44")
+            bad["runs"][MPP006_STOPPED_RUN_ID]["actual_usd"] = "0.001"
+            with patch.object(freezer, "GATE", root), \
+                 patch.object(freezer, "ASSIGNMENT", root / "assignment-mixed-001"), \
+                 patch.object(freezer, "LOCK", root / "one-time-freeze.lock.json"), \
+                 patch.object(freezer, "_ledger", return_value=bad), \
+                 patch.object(freezer, "source_inventory", side_effect=AssertionError(
+                     "source and native checks should not run")):
+                with self.assertRaisesRegex(ValueError, "must settle at USD 0"):
+                    freezer.freeze(seed_hex=SEED)
+                self.assertFalse((root / "assignment-mixed-001").exists())
+                self.assertFalse((root / "one-time-freeze.lock.json").exists())
+
     def test_one_time_assignment_and_full_block_budget_gate(self):
         rates = pricing_snapshots(catalog=catalog())
         with TemporaryDirectory(prefix="mpp008-freeze-", dir="/tmp") as temporary:
@@ -438,26 +595,28 @@ class FreezeTests(unittest.TestCase):
                     "status": "PASS", "real_remote_model_calls": 0, "rows": []}))
                 stack.enter_context(patch.object(freezer, "pricing_snapshots", return_value=rates))
                 stack.enter_context(patch.object(freezer, "_ledger", return_value={
-                    "seq": 128, "last_hash": "a" * 64, "cap_usd": "50",
-                    "available_usd": "35", "reserved_usd": "0"}))
-                with self.assertRaisesRegex(ValueError, "full MPP008"):
+                    **settled_mpp006_snapshot("40")}))
+                with self.assertRaisesRegex(ValueError, "full MPP008 block"):
                     freezer.freeze(seed_hex=SEED)
                 self.assertFalse(freezer.LOCK.exists())
-                with patch.object(freezer, "_ledger", return_value={
-                    "seq": 128, "last_hash": "a" * 64, "cap_usd": "50",
-                    "available_usd": "44", "reserved_usd": "0"}):
+                with patch.object(freezer, "_ledger", return_value=
+                                  settled_mpp006_snapshot("43.172992")):
                     result = freezer.freeze(seed_hex=SEED)
                 self.assertEqual(result["planned_episodes"], 8)
                 self.assertEqual(result["worst_case_block_usd"], "34.865152")
                 frozen, _, rows = freezer.load_assignment(freezer.ASSIGNMENT)
                 self.assertEqual(len(rows), 8)
                 self.assertEqual(frozen["public_pricing_snapshots"], rates)
+                self.assertEqual(frozen["required_headroom_usd"], "43.172992")
+                self.assertEqual(frozen["prior_mpp006_contingent_exposure"]["prior_run_id"],
+                                 MPP006_STOPPED_RUN_ID)
                 with self.assertRaises(FileExistsError):
                     freezer.freeze(seed_hex="bc" * 32)
 
     def test_source_inventory_includes_role_boundary_and_native_helper(self):
         files = freezer.source_inventory()
         for name in ("src/agent_economic_trust/mpp008_boundary.py",
+                     "src/agent_economic_trust/mpp008_budget.py",
                      "src/agent_economic_trust/mpp008_native_service.py",
                      "src/agent_economic_trust/mpp008_orbit.py",
                      "protocols/mpp/verify-meeting-evidence.mjs",

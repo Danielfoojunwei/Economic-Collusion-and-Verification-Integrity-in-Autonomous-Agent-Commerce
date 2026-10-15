@@ -18,8 +18,10 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 from agent_economic_trust.mpp008_plan import (  # noqa: E402
-    CANONICAL_LEDGER_PATH, CONTINGENCY_USD, canonical, digest, make_schedule, manifest)
+    CANONICAL_LEDGER_PATH, canonical, digest, make_schedule, manifest)
 from agent_economic_trust.mpp008_pricing import pricing_snapshots, reserve_pair  # noqa: E402
+from agent_economic_trust.mpp008_budget import (  # noqa: E402
+    MPP006_ORIGINAL_RESERVATION_USD, mpp006_contingent_exposure, required_headroom)
 from agent_economic_trust.remote_budget import BudgetLedger  # noqa: E402
 from agent_economic_trust.open_mpp_meeting import commitment  # noqa: E402
 from scripts.freeze_mpp005 import (_ancestor, _ledger, _new, offline_readiness,
@@ -172,6 +174,7 @@ def freeze(*, seed_hex: str | None = None) -> dict:
     ledger = _ledger()
     if Decimal(ledger["reserved_usd"]) != 0:
         raise ValueError("shared USD50 lifetime ledger retains an active reservation")
+    exposure = mpp006_contingent_exposure(ledger)
     seed_hex = secrets.token_hex(32) if seed_hex is None else seed_hex
     rows = make_schedule(seed_hex)
     payload = manifest(seed_hex, rows)
@@ -181,13 +184,15 @@ def freeze(*, seed_hex: str | None = None) -> dict:
     prices = pricing_snapshots()
     reserves = {row.episode_id: reserve_pair(prices, row.provider_model_id, row.auditor_model_id)
                 for row in rows}
-    full = sum(reserves.values(), Decimal(0)) + Decimal(CONTINGENCY_USD)
+    full = required_headroom(reserves)
     if full > Decimal(ledger["available_usd"]):
-        raise ValueError("full MPP008 mixed-model block plus contingency exceeds USD50 headroom")
+        raise ValueError("full MPP008 block, contingency, and MPP006 exposure exceed USD50 headroom")
     payload.update(source_sha256=sources, runtime_pins=pins, offline_readiness=offline,
                    public_pricing_snapshots=prices,
                    budget_at_freeze={key: ledger[key] for key in
                                      ("seq", "last_hash", "cap_usd", "available_usd")},
+                   prior_mpp006_contingent_exposure=exposure,
+                   required_headroom_usd=str(full),
                    worst_case_reserve_usd_by_episode={key: str(value) for key, value in reserves.items()},
                    worst_case_reserve_usd_full_block=str(sum(reserves.values(), Decimal(0))))
     GATE.mkdir(parents=True, exist_ok=True)
@@ -204,24 +209,73 @@ def freeze(*, seed_hex: str | None = None) -> dict:
             "worst_case_block_usd": str(sum(reserves.values(), Decimal(0))), "model_calls": 0}
 
 
-def verify() -> dict:
+def _verify_static() -> tuple[dict, str, tuple, dict]:
+    """Check frozen assignment, source, runtime and budget without native replay."""
     frozen, assignment_sha, rows = load_assignment()
     sources = source_inventory()
     if frozen["source_sha256"] != sources:
         raise ValueError("MPP008 executable source changed")
     if frozen["runtime_pins"] != runtime_pins():
         raise ValueError("MPP008 native/runtime pin changed")
-    if frozen["offline_readiness"] != mixed_offline_readiness(sources):
-        raise ValueError("MPP008 offline control evidence changed")
     reserves = {row.episode_id: reserve_pair(frozen["public_pricing_snapshots"],
                 row.provider_model_id, row.auditor_model_id) for row in rows}
     if (frozen["worst_case_reserve_usd_by_episode"] != {
             key: str(value) for key, value in reserves.items()}
             or frozen["worst_case_reserve_usd_full_block"] != str(sum(reserves.values(), Decimal(0)))):
         raise ValueError("MPP008 frozen reservation differs")
-    _ancestor(frozen["budget_at_freeze"])
+    if frozen["required_headroom_usd"] != str(required_headroom(reserves)):
+        raise ValueError("MPP008 frozen MPP006 exposure headroom differs")
+    if frozen["prior_mpp006_contingent_exposure"] != mpp006_contingent_exposure(
+            _ancestor(frozen["budget_at_freeze"])):
+        raise ValueError("MPP008 frozen MPP006 settlement evidence differs")
+    return frozen, assignment_sha, rows, sources
+
+
+def verify_static() -> dict:
+    """Reopen sealed material after a paid row without executing controls."""
+    _, assignment_sha, rows, _ = _verify_static()
+    return {"status": "PASS", "assignment_manifest_sha256": assignment_sha,
+            "planned_episodes": len(rows), "native_controls_executed": False}
+
+
+def verify() -> dict:
+    frozen, assignment_sha, rows, sources = _verify_static()
+    if frozen["offline_readiness"] != mixed_offline_readiness(sources):
+        raise ValueError("MPP008 offline control evidence changed")
     return {"status": "PASS", "assignment_manifest_sha256": assignment_sha,
             "planned_episodes": len(rows)}
+
+
+def readiness() -> dict:
+    """Report the zero-paid gate even while old billing remains UNKNOWN."""
+    sources = source_inventory()
+    prices = pricing_snapshots()
+    rows = make_schedule("ab" * 32)
+    reserves = [reserve_pair(prices, row.provider_model_id, row.auditor_model_id)
+                for row in rows]
+    state = BudgetLedger(CANONICAL_LEDGER_PATH).snapshot()
+    full = required_headroom(reserves)
+    try:
+        exposure = mpp006_contingent_exposure(state)
+        settlement_ready = True
+    except ValueError as exc:
+        exposure = {"prior_reservation_usd": str(MPP006_ORIGINAL_RESERVATION_USD),
+                    "status": "NOT_RECONCILED", "reason": str(exc)}
+        settlement_ready = False
+    return {"runtime_pins": runtime_pins(),
+            "offline": mixed_offline_readiness(sources),
+            "source_inventory_sha256": digest(sources),
+            "public_pricing_snapshots": prices,
+            "worst_case_block_usd": str(sum(reserves, Decimal(0))),
+            "required_headroom_usd": str(full),
+            "prior_mpp006_contingent_exposure": exposure,
+            "ledger": {key: state[key] for key in ("seq", "available_usd", "cap_usd",
+                            "reserved_usd", "blocked", "unknown_run_ids")},
+            "would_freeze": (not LOCK.exists() and not ASSIGNMENT.exists()
+                and settlement_ready and state["cap_usd"] == "50"
+                and not state["blocked"] and not state["unknown_run_ids"]
+                and Decimal(state["reserved_usd"]) == 0
+                and full <= Decimal(state["available_usd"]))}
 
 
 def main() -> None:
@@ -233,24 +287,7 @@ def main() -> None:
     elif args.command == "verify":
         answer = verify()
     else:
-        sources = source_inventory()
-        prices = pricing_snapshots()
-        rows = make_schedule("ab" * 32)
-        reserves = [reserve_pair(prices, row.provider_model_id, row.auditor_model_id)
-                    for row in rows]
-        state = BudgetLedger(CANONICAL_LEDGER_PATH).snapshot()
-        full = sum(reserves, Decimal(0)) + Decimal(CONTINGENCY_USD)
-        answer = {"runtime_pins": runtime_pins(),
-                  "offline": mixed_offline_readiness(sources),
-                  "source_inventory_sha256": digest(sources),
-                  "public_pricing_snapshots": prices,
-                  "worst_case_block_usd": str(sum(reserves, Decimal(0))),
-                  "ledger": {key: state[key] for key in ("seq", "available_usd", "cap_usd",
-                              "reserved_usd", "blocked", "unknown_run_ids")},
-                  "would_freeze": (not LOCK.exists() and not ASSIGNMENT.exists()
-                      and not state["blocked"] and not state["unknown_run_ids"]
-                      and Decimal(state["reserved_usd"]) == 0
-                      and full <= Decimal(state["available_usd"]))}
+        answer = readiness()
     print(json.dumps(answer, sort_keys=True))
 
 

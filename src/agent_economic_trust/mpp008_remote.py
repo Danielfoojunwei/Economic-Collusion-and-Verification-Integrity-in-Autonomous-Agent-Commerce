@@ -23,6 +23,7 @@ from .mpp008_plan import (AUDITOR_CALLS, CANONICAL_LEDGER_PATH, CONTINGENCY_USD,
     EVAL_TOKEN_LIMIT, MAX_CALLS_PER_EPISODE, MAX_INPUT_BYTES, MAX_OUTPUT_TOKENS,
     MODELS, PROVIDER_CALLS, SCHEDULER_SECONDS)
 from .mpp008_pricing import estimate_model_usage, pricing_snapshots, reserve_pair
+from .mpp008_budget import mpp006_contingent_exposure, required_headroom
 from .mpp008_task import native_mixed_model_task
 from .remote_budget import BudgetLedger
 
@@ -51,14 +52,22 @@ class Mpp008Plan:
         freeze_mpp008.verify()
         return freeze_mpp008.load_assignment()
 
+    def validate_static(self):
+        """Post-row source/assignment check without replaying native controls."""
+        from scripts import freeze_mpp008
+        if (self.assignment_dir.resolve() != ASSIGNMENT.resolve()
+                or self.runs_dir.resolve() != RUNS.resolve()
+                or self.ledger_path.resolve() != CANONICAL_LEDGER_PATH.resolve()):
+            raise RemoteBoundaryError("MPP008 path differs from canonical assignment or shared ledger")
+        freeze_mpp008.verify_static()
+        return freeze_mpp008.load_assignment()
+
 
 def fresh_budget(plan: Mpp008Plan, frozen: dict, remaining: list[Any]):
     from scripts import freeze_mpp008
     freeze_mpp008.verify()
     state = BudgetLedger(plan.ledger_path).snapshot()
-    if (state["blocked"] or state["unknown_run_ids"] or state["cap_usd"] != "50"
-            or Decimal(state["reserved_usd"]) != 0):
-        raise RemoteBoundaryError("shared lifetime ledger blocked or concurrent reservation")
+    _require_contingent_ledger_state(state, frozen)
     prices = pricing_snapshots()
     if {name: value["catalog_model_sha256"] for name, value in prices.items()} != {
             name: value["catalog_model_sha256"] for name, value in frozen["public_pricing_snapshots"].items()}:
@@ -66,9 +75,31 @@ def fresh_budget(plan: Mpp008Plan, frozen: dict, remaining: list[Any]):
     reserves = {row.episode_id: max(Decimal(frozen["worst_case_reserve_usd_by_episode"][row.episode_id]),
                                     reserve_pair(prices, row.provider_model_id, row.auditor_model_id))
                 for row in remaining}
-    if sum(reserves.values(), Decimal(0)) + Decimal(CONTINGENCY_USD) > Decimal(state["available_usd"]):
-        raise RemoteBoundaryError("remaining mixed-model block plus contingency exceeds USD50 headroom")
+    if required_headroom(reserves) > Decimal(state["available_usd"]):
+        raise RemoteBoundaryError("remaining mixed-model block, contingency, and MPP006 exposure exceed USD50 headroom")
     return prices, reserves, state
+
+
+def _require_contingent_ledger_state(state: dict, frozen: dict) -> None:
+    """Check only the canonical ledger's current state and old exposure."""
+    if (state["blocked"] or state["unknown_run_ids"] or state["cap_usd"] != "50"
+            or Decimal(state["reserved_usd"]) != 0):
+        raise RemoteBoundaryError("shared lifetime ledger blocked or concurrent reservation")
+    try:
+        if mpp006_contingent_exposure(state) != frozen["prior_mpp006_contingent_exposure"]:
+            raise ValueError("MPP006 settlement differs from frozen evidence")
+    except (KeyError, ValueError) as exc:
+        raise RemoteBoundaryError("MPP006 contingent billing exposure is not reconciled") from exc
+
+
+def post_settlement_budget(ledger: BudgetLedger, frozen: dict,
+                           remaining_reserves: list[Decimal]) -> dict:
+    """Retain the hold after settlement without rerunning native controls."""
+    state = ledger.snapshot()
+    _require_contingent_ledger_state(state, frozen)
+    if required_headroom(remaining_reserves) > Decimal(state["available_usd"]):
+        raise RemoteBoundaryError("settled row left insufficient headroom for MPP006 exposure")
+    return state
 
 
 def preflight(plan: Mpp008Plan = Mpp008Plan()) -> dict:
@@ -109,6 +140,8 @@ def preflight(plan: Mpp008Plan = Mpp008Plan()) -> dict:
             "assignment_manifest_sha256": assignment_sha,
             "next_reservation_usd": str(reserves[row.episode_id]),
             "full_remaining_reservation_usd": str(sum(reserves.values(), Decimal(0))),
+            "mpp006_contingent_exposure_usd": frozen["prior_mpp006_contingent_exposure"]["prior_reservation_usd"],
+            "required_headroom_usd": str(required_headroom(reserves)),
             "contingency_usd": CONTINGENCY_USD, "available_usd": state["available_usd"],
             "fresh_public_pricing": prices, "reasoning_effort_by_role": {
                 "provider": "high", "auditor": "high"},
@@ -181,10 +214,9 @@ def execute_one(plan: Mpp008Plan = Mpp008Plan()) -> dict:
                       "auditor_model_id": row.auditor_model_id,
                       "episode_id": row.episode_id, "assignment_sha": assignment_sha})
         reserved = True
-        if Decimal(snapshot["available_usd"]) < (
-                sum((reserves[r.episode_id] for r in remaining[1:]), Decimal(0))
-                + Decimal(CONTINGENCY_USD)):
-            raise RemoteBoundaryError("concurrent spending consumed remaining block reserve")
+        if Decimal(snapshot["available_usd"]) < required_headroom(
+                [reserves[r.episode_id] for r in remaining[1:]]):
+            raise RemoteBoundaryError("concurrent spending consumed remaining block and MPP006 exposure")
         logs = inspect_eval(task, model=models["provider"], sample_id=row.trial_id,
             max_samples=1, max_tasks=1, epochs=1, retry_on_error=0, fail_on_error=True,
             time_limit=SCHEDULER_SECONDS, token_limit=EVAL_TOKEN_LIMIT,
@@ -209,6 +241,10 @@ def execute_one(plan: Mpp008Plan = Mpp008Plan()) -> dict:
             raise RemoteBoundaryError("observed mixed-model charge exceeds reservation")
         ledger.settle(ident, cost, "sha256:" + file_sha(target))
         settled = True
+        # The service is still active. Reopen only the canonical ledger here;
+        # native readiness and source/catalog checks run before each next row.
+        post_settlement_budget(ledger, frozen,
+            [reserves[r.episode_id] for r in remaining[1:]])
         boundary = verify_raw_model_boundary(saved, observed, row)
         if saved.samples[0].store.get("OpenMppStore:decision") is None:
             partial = _verify_partial_native(saved, service, quality=row.truth)
@@ -227,7 +263,7 @@ def execute_one(plan: Mpp008Plan = Mpp008Plan()) -> dict:
             asyncio.run(service._command(ROOT / "protocols/mpp/verify-meeting-evidence.mjs", compensation))
             partial = []
             status = "COMPLETE"
-        plan.validate()
+        plan.validate_static()
         record = {"schema": "mpp008-paid-episode-v1", "status": status,
             "episode_id": row.episode_id, "assignment_manifest_sha256": assignment_sha,
             "provider_model_id": row.provider_model_id, "auditor_model_id": row.auditor_model_id,
