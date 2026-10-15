@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 from hashlib import sha256
+from importlib.metadata import version
 import json
 from pathlib import Path
 import subprocess
@@ -22,12 +23,14 @@ from scripts.verify_erc8183_fee_control import verify_directory
 
 
 ROOT = Path(__file__).resolve().parents[1]
+EXPECTED_RUNTIME = {"orbit": "1.0.3", "inspect-ai": "0.3.263"}
 CONTROL = ROOT / "artifacts/prospective/erc8183-fee-live/zero-model-001"
 READINESS = ROOT / "artifacts/prospective/erc8183-fee-live/readiness-001.json"
 BASE_SOURCES = (
     "scripts/run_erc8183_local.py", "scripts/run_erc8183_fee_control.py",
     "scripts/verify_erc8183_fee_control.py",
     "src/agent_economic_trust/ap2_live_fixture.py",
+    "src/agent_economic_trust/open004_task.py",
     "src/agent_economic_trust/core.py",
     "src/agent_economic_trust/remote_budget.py",
     "src/agent_economic_trust/remote_pricing.py",
@@ -74,8 +77,33 @@ def source_inventory() -> dict[str, str]:
     return {name: file_sha(ROOT / name) for name in sorted(names)}
 
 
+def require_canonical_root() -> None:
+    if ROOT.resolve() != CANONICAL_LEDGER.parents[2].resolve():
+        raise ValueError("fee study readiness/freeze must run in canonical shared-ledger checkout")
+
+
+def sealed_sources_committed(inventory: dict[str, str]) -> None:
+    """Check only sealed sources; later ledger/artifact writes may dirty this checkout."""
+    paths = sorted(inventory)
+    if not paths or subprocess.run(
+            ["git", "ls-files", "--error-unmatch", "--", *paths], cwd=ROOT,
+            capture_output=True, text=True).returncode:
+        raise ValueError("every sealed fee study source must be committed")
+    if subprocess.run(["git", "diff", "--quiet", "HEAD", "--", *paths],
+                      cwd=ROOT, capture_output=True, text=True).returncode:
+        raise ValueError("sealed fee study source differs from committed HEAD")
+
+
+def installed_runtime_versions() -> dict[str, str]:
+    observed = {name: version(name) for name in EXPECTED_RUNTIME}
+    if observed != EXPECTED_RUNTIME:
+        raise ValueError("fee study ORBIT/Inspect runtime versions differ")
+    return observed
+
+
 def verify(*, run_tests: bool = True, catalog: dict | None = None) -> dict:
     inventory = source_inventory()
+    runtime = installed_runtime_versions()
     native = verify_directory(CONTROL)
     if native["status"] != "PASS" or len(native["cases"]) != 9:
         raise ValueError("saved nine-case native control failed")
@@ -108,19 +136,18 @@ def verify(*, run_tests: bool = True, catalog: dict | None = None) -> dict:
             "control_verification_sha256": file_sha(CONTROL / "verification.json"),
             "native_cases_verified": 9, "tests_executed": tested,
             "test_modules": list(TEST_MODULES), "role_models": list(snapshots),
+            "runtime_versions": runtime,
             "public_pricing_snapshot": snapshots, "budget_preview": headroom,
             "mpp009_predecessor_disposition": predecessor,
             "paid_model_calls": 0, "assignment_frozen": False}
 
 
 def save() -> dict:
+    require_canonical_root()
     if READINESS.exists():
         raise FileExistsError("fee study readiness is immutable")
-    dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"],
-                           cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
-    if dirty:
-        raise ValueError("tracked fee study sources must be committed before readiness")
     record = verify()
+    sealed_sources_committed(record["source_sha256"])
     READINESS.parent.mkdir(parents=True, exist_ok=True)
     with READINESS.open("x") as handle:
         handle.write(json.dumps(record, sort_keys=True, indent=2) + "\n")
@@ -134,6 +161,7 @@ def reopen_saved() -> dict:
             or saved.get("status") != "PASS_READ_ONLY"
             or saved.get("source_sha256") != current
             or saved.get("source_inventory_sha256") != sha256(canonical(current)).hexdigest()
+            or saved.get("runtime_versions") != installed_runtime_versions()
             or saved.get("native_cases_verified") != 9
             or saved.get("tests_executed") is not True
             or saved.get("paid_model_calls") != 0

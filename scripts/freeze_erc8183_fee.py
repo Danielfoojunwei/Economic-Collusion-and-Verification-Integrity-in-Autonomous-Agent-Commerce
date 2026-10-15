@@ -23,7 +23,8 @@ from agent_economic_trust.erc8183_fee_clearance import sealed_mpp009_disposition
 from agent_economic_trust.mpp008_pricing import pricing_snapshots
 from agent_economic_trust.remote_budget import BudgetLedger
 from scripts.verify_erc8183_fee_readiness import (ROOT, READINESS, canonical,
-    file_sha, reopen_saved, source_inventory)
+    file_sha, installed_runtime_versions, reopen_saved, sealed_sources_committed,
+    source_inventory)
 
 
 GATE = ROOT / "artifacts/gates/ERC8183_FEE010"
@@ -36,20 +37,20 @@ def _head() -> str:
                           capture_output=True, text=True).stdout.strip()
 
 
-def _clean() -> None:
-    if subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"],
-                      cwd=ROOT, check=True, capture_output=True, text=True).stdout.strip():
-        raise ValueError("tracked source must be committed before fee study freeze")
+def _canonical_root() -> None:
+    if ROOT.resolve() != CANONICAL_LEDGER.parents[2].resolve():
+        raise ValueError("fee study freeze/verify must run in canonical shared-ledger checkout")
 
 
 def prepare() -> dict:
+    _canonical_root()
     if os.environ.get("ERC8183_FEE010_FREEZE_ALLOWED") != "true":
         raise ValueError("explicit versioned fee-study freeze flag required")
     if ASSIGNMENT.exists() or LOCK.exists():
         raise FileExistsError("fee study first assignment already exists")
     saved = reopen_saved()
-    _clean()
     inventory = source_inventory()
+    sealed_sources_committed(inventory)
     if saved["source_sha256"] != inventory:
         raise ValueError("source differs from independent readiness")
     prices = pricing_snapshots()
@@ -66,6 +67,7 @@ def prepare() -> dict:
         "schema": "erc8183-fee-first-assignment-v1",
         "status": "FROZEN_NOT_EXECUTED", "source_commit": _head(),
         "source_sha256": inventory,
+        "runtime_versions": installed_runtime_versions(),
         "source_inventory_sha256": sha256(canonical(inventory)).hexdigest(),
         "readiness_sha256": file_sha(READINESS),
         "mpp009_predecessor_disposition": saved["mpp009_predecessor_disposition"],
@@ -97,6 +99,7 @@ def prepare() -> dict:
 
 
 def verify() -> tuple[dict, str, tuple]:
+    _canonical_root()
     saved = reopen_saved()
     manifest_path = ASSIGNMENT / "assignment_manifest.json"
     frozen = json.loads(manifest_path.read_text())
@@ -114,6 +117,8 @@ def verify() -> tuple[dict, str, tuple]:
             or lock.get("source_commit") != frozen.get("source_commit")
             or lock.get("paid_model_calls") != 0
             or frozen.get("source_sha256") != inventory
+            or frozen.get("runtime_versions") != saved["runtime_versions"]
+            or frozen.get("runtime_versions") != installed_runtime_versions()
             or frozen.get("source_inventory_sha256") != sha256(canonical(inventory)).hexdigest()
             or frozen.get("readiness_sha256") != file_sha(READINESS)
             or frozen.get("zero_model_summary_sha256") != saved["control_summary_sha256"]

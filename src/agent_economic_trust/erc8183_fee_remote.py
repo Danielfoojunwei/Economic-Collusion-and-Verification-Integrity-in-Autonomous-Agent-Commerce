@@ -43,6 +43,11 @@ RUNS = ROOT / "artifacts/gates/ERC8183_FEE010/runs-001"
 ROLE_LIMITS = {"provider": PROVIDER_CALLS, "auditor": AUDITOR_CALLS}
 
 
+def _canonical_root() -> None:
+    if ROOT.resolve() != CANONICAL_LEDGER.parents[2].resolve():
+        raise RemoteBoundaryError("fee paid runner must run in canonical shared-ledger checkout")
+
+
 def run_id(assignment_sha: str, episode_id: str) -> str:
     return f"fee010-{assignment_sha[:12]}-{episode_id}"
 
@@ -53,7 +58,10 @@ class FeeLivePlan:
     runs_dir: Path = RUNS
 
     def validate(self):
+        _canonical_root()
         from scripts.freeze_erc8183_fee import verify
+        from scripts.verify_erc8183_fee_readiness import installed_runtime_versions
+        installed_runtime_versions()
         if (self.ledger_path.resolve() != CANONICAL_LEDGER.resolve()
                 or self.runs_dir.resolve() != RUNS.resolve()):
             raise RemoteBoundaryError("fee study must use frozen paths and canonical USD50 ledger")
@@ -106,6 +114,7 @@ def _post_settle(ledger: BudgetLedger, reserve: Decimal, remaining: int) -> None
 
 
 def preflight(plan: FeeLivePlan = FeeLivePlan()) -> dict:
+    _canonical_root()
     from scripts.collect_erc8183_fee import verify_episode
     frozen, assignment_sha, rows = plan.validate()
     ledger = BudgetLedger(plan.ledger_path).snapshot()
@@ -306,6 +315,7 @@ def _usage_estimate(log: Any, prices: dict, observed: list[dict]) -> Decimal:
 
 
 def execute_one(plan: FeeLivePlan = FeeLivePlan()) -> dict:
+    _canonical_root()
     preview = preflight(plan)
     _enabled()
     from scripts.collect_erc8183_fee import verify_episode

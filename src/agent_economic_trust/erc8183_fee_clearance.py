@@ -11,6 +11,9 @@ from .mpp005_plan import canonical_project_root
 
 
 GATE = canonical_project_root() / "artifacts/gates/MPP009"
+ASSIGNMENT_SHA256 = "a406280cf0619ea70e9901bd88f79af793a260fb199857f1a82a60a724d2239e"
+COLLECTION_SHA256 = "942fac731930ac77d79a2a40be048ca666c4c1cac39426d27b11ec4b88536b29"
+FIRST_STOP_SHA256 = "1c6b12257c1b879961a5d40ba406a0002b7431e3b79568b3deace5220a50b0da"
 
 
 def _sha(path: Path) -> str:
@@ -24,6 +27,8 @@ def sealed_mpp009_disposition(ledger: Mapping[str, Any]) -> dict:
     assignment = GATE / "assignment-001/assignment_manifest.json"
     collection = GATE / "collection-001-after-first-stop.json"
     lock = GATE / "one-time-freeze.lock.json"
+    if _sha(assignment) != ASSIGNMENT_SHA256 or _sha(collection) != COLLECTION_SHA256:
+        raise ValueError("pinned MPP009 assignment or collection changed")
     frozen = json.loads(assignment.read_text())
     report = json.loads(collection.read_text())
     sealed = json.loads(lock.read_text())
@@ -53,6 +58,8 @@ def sealed_mpp009_disposition(ledger: Mapping[str, Any]) -> dict:
     if directory.is_symlink() or (directory / "episode_record.json").exists():
         raise ValueError("MPP009 stopped row falsely claims completion")
     stop_path = directory / "STOPPED.json"
+    if _sha(stop_path) != FIRST_STOP_SHA256:
+        raise ValueError("pinned MPP009 first STOPPED artifact changed")
     stop = json.loads(stop_path.read_text())
     ident = "mpp009-" + _sha(assignment)[:12] + "-" + order[0]
     billing = ledger.get("runs", {}).get(ident)
