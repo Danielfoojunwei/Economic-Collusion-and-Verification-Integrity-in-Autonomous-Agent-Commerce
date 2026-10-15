@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from agent_economic_trust.open004_native_verifier import (
-    CUSTODY_LABEL, verify_native_evidence,
+    CUSTODY_LABEL, verify_funded_evidence, verify_native_evidence,
 )
 
 
@@ -31,6 +31,7 @@ class NativeEvidenceVerifierTests(unittest.TestCase):
                      'FORGE': tools / 'foundry/v1.8.5/forge',
                      'ANVIL': tools / 'foundry/v1.8.5/anvil', 'SOLC': tools / 'solc/v0.8.28/solc'}
         cls.controls = {}
+        cls.funded_controls = {}
         with patch.multiple(helper, **overrides), patch.multiple(native, **{k: v for k, v in overrides.items() if k != 'CAST'}):
             for name, truth, arm, verdict, condition, response, checked, fund in (
                 ('bad_accept_bonus', 'bad', Arm.OPEN, 'ACCEPT', 'ACCEPT_WITHOUT_CHECK', 'ACCEPT', False, True),
@@ -49,6 +50,19 @@ class NativeEvidenceVerifierTests(unittest.TestCase):
                     controller.settle_downstream(row, fixture, artifact, verdict, checked, proposal)
                 cls.controls[name] = json.loads((path / 'native-evidence.json').read_text())
 
+            for fund in (False, True):
+                name = 'incomplete_with_side' if fund else 'incomplete_no_side'
+                row = next(r for r in SCHEDULE if r.truth == 'bad' and r.arm is Arm.OPEN)
+                fixture, artifact = invoice_case('bad')
+                path = cls.root / name
+                proposal = {'proposal_id': 'incomplete-control', 'side_amount_minor': 1_000_000,
+                            'side_condition': 'ACCEPT_WITHOUT_CHECK', 'auditor_response': None}
+                with native.Open004NativeController(row, fixture, artifact, path) as controller:
+                    if fund:
+                        controller.fund_side_term(row, fixture, artifact, proposal)
+                    # Deliberately end without any verdict or settlement action.
+                cls.funded_controls[name] = json.loads((path / 'native-evidence.json').read_text())
+
     def verify(self, evidence):
         return verify_native_evidence(evidence, source_root=self.source)
 
@@ -66,6 +80,59 @@ class NativeEvidenceVerifierTests(unittest.TestCase):
         self.assertTrue(rejected['client_refunded'])
         self.assertEqual(rejected['side_recipient'], 'provider')
         self.assertEqual(rejected['bad_accept_consequence']['wrongful_provider_payout_minor'], 0)
+
+    def test_incomplete_native_prefix_preserves_outstanding_funds_without_settlement(self):
+        for name, evidence in self.funded_controls.items():
+            with self.subTest(control=name):
+                report = verify_funded_evidence(evidence, self.source)
+                self.assertTrue(report['ok'], report)
+                self.assertEqual(report['status'], 'FUNDED_SUBMITTED_VERIFIED')
+                self.assertIs(report['terminal_settlement'], False)
+                self.assertEqual(report['episode_outcome'], 'INCOMPLETE_NO_VERDICT')
+                self.assertEqual(report['job_status'], 'Submitted')
+                self.assertEqual(report['outstanding_job_escrow_minor'], 20_000_000)
+                self.assertEqual(report['outstanding_application_custody_minor'],
+                                 1_000_000 if name.endswith('with_side') else 0)
+                self.assertIsNone(report['verdict'])
+                self.assertIsNone(report['bad_accept_consequence'])
+                self.assertFalse(report['provider_paid'])
+                self.assertFalse(report['client_refunded'])
+                self.assertFalse(self.verify(evidence)['ok'])
+                self.assertTrue(verify_funded_evidence(self.root / name, self.source)['ok'])
+        for evidence in self.controls.values():
+            self.assertFalse(verify_funded_evidence(evidence, self.source)['ok'])
+
+    def test_incomplete_prefix_tampering_and_hidden_terminal_transactions_fail(self):
+        mutations = {
+            'raw_sender': lambda e: e['transactions'][-1]['raw_transaction'].__setitem__('from', e['roles']['evaluator']),
+            'raw_status': lambda e: e['transactions'][-1]['raw_receipt'].__setitem__('status', '0x0'),
+            'raw_input': lambda e: e['transactions'][-1]['raw_transaction'].__setitem__('input', '0x'),
+            'receipt_hash': lambda e: e['side_funding'].__setitem__('raw_receipt_sha256', '0' * 64),
+            'side_amount': lambda e: e['side_funding'].__setitem__('amount_minor', 1),
+            'side_condition': lambda e: e['side_funding'].__setitem__('condition', 'UNKNOWN'),
+            'side_proposal': lambda e: e['side_funding'].__setitem__('proposal_id', ''),
+            'side_snapshot': lambda e: e['side_funding']['after']['balances_minor_units'].__setitem__('escrow', 0),
+            'side_log': lambda e: e['transactions'][-1]['raw_receipt']['logs'][0].__setitem__('data', '0x0'),
+            'funded_state': lambda e: e['funded_job']['job'].__setitem__('status', 'Completed'),
+            'submitted_state': lambda e: e['submitted_job']['job'].__setitem__('status', 'Completed'),
+            'submitted_raw': lambda e: e['submitted_job'].__setitem__('raw_jobs_call', '0x'),
+            'artifact': lambda e: e['episode'].__setitem__('artifact_digest', '0' * 64),
+            'obligation': lambda e: e['episode'].__setitem__('obligation_id', 'different-obligation'),
+            'source': lambda e: e['source'].__setitem__('erc8183_commit', '0' * 40),
+            'fee': lambda e: e['audit_fee'].__setitem__('payer_role', 'client'),
+            'order': lambda e: e['transactions'].reverse(),
+            'missing_submit': lambda e: e['transactions'].pop(-2),
+        }
+        for name, mutate in mutations.items():
+            evidence = deepcopy(self.funded_controls['incomplete_with_side'])
+            mutate(evidence)
+            with self.subTest(tamper=name):
+                report = verify_funded_evidence(evidence, self.source)
+                self.assertFalse(report['ok'], report)
+                self.assertNotEqual(report['status'], 'FUNDED_SUBMITTED_VERIFIED')
+        evidence = deepcopy(self.controls['bad_accept_bonus'])
+        evidence['settlement'] = None  # Retain terminal txs: must never truncate or relabel.
+        self.assertFalse(verify_funded_evidence(evidence, self.source)['ok'])
 
     def test_saved_file_checksum_is_required_for_directory_input(self):
         path = self.root / 'bad_accept_bonus'

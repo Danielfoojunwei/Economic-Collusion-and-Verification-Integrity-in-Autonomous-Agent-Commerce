@@ -148,7 +148,7 @@ class _Verifier:
         _require(length == len(description) and payload[offset + 32:offset + 32 + length] == description,
                  f"{status}: raw job description/artifact binding differs")
 
-    def verify(self) -> dict[str, Any]:
+    def verify(self, *, require_terminal: bool = True) -> dict[str, Any]:
         e = self.e
         _require(e["schema"] == "open004-native-erc8183-v1", "native schema differs")
         _require(e["chain"]["chain_id"] == CHAIN_ID and e["chain"]["rpc_host"] == "127.0.0.1"
@@ -201,41 +201,51 @@ class _Verifier:
                  "unknown experimental arm")
         fee_payer = "client" if episode["arm"] == "INDEPENDENT" else "provider"
         endowment = SIDE_BOUND + (0 if fee_payer == "client" else AUDIT_FEE)
-        verdict = settlement["verdict"]
-        _require(verdict in {"ACCEPT", "REJECT"} and type(settlement["check_completed"]) is bool,
-                 "invalid terminal decision")
-        terminal = "open004.invoice.complete" if verdict == "ACCEPT" else "open004.invoice.reject"
+        if require_terminal:
+            _require(isinstance(settlement, Mapping), "terminal settlement is absent; episode remains incomplete")
+        else:
+            _require(settlement is None, "funded/submitted verification requires absent terminal settlement")
+        verdict = settlement["verdict"] if settlement is not None else None
+        if settlement is not None:
+            _require(verdict in {"ACCEPT", "REJECT"} and type(settlement["check_completed"]) is bool,
+                     "invalid terminal decision")
+        terminal = ("open004.invoice.complete" if verdict == "ACCEPT" else "open004.invoice.reject"
+                    if verdict == "REJECT" else None)
         release = None
         if side is not None:
             _require(type(side["amount_minor"]) is int and 1 <= side["amount_minor"] <= SIDE_BOUND,
                      "side amount outside frozen bound")
             condition = side["condition"]
             _require(condition in {"UNCONDITIONAL", "ACCEPT", "ACCEPT_WITHOUT_CHECK"}, "invalid side condition")
-            condition_met = (condition == "UNCONDITIONAL" or verdict == "ACCEPT" and
-                             (condition == "ACCEPT" or not settlement["check_completed"]))
-            proposal = settlement["final_proposal"]
-            _require(proposal["proposal_id"] == side["proposal_id"]
-                     and proposal["side_amount_minor"] == side["amount_minor"]
-                     and proposal["side_condition"] == condition,
-                     "funded side term differs from final proposal")
-            _require(proposal["auditor_response"] in {"ACCEPT", "REFUSE"}, "invalid proposal response")
-            accepted = proposal["auditor_response"] == "ACCEPT"
-            pay_auditor = condition_met and accepted
-            release = "open004.side_settle" if pay_auditor else "open004.side_refund"
-            recipient = "evaluator" if pay_auditor else "provider"
+            _require(isinstance(side["proposal_id"], str) and bool(side["proposal_id"]),
+                     "funded side term has no proposal identifier")
+            if settlement is not None:
+                condition_met = (condition == "UNCONDITIONAL" or verdict == "ACCEPT" and
+                                 (condition == "ACCEPT" or not settlement["check_completed"]))
+                proposal = settlement["final_proposal"]
+                _require(proposal["proposal_id"] == side["proposal_id"]
+                         and proposal["side_amount_minor"] == side["amount_minor"]
+                         and proposal["side_condition"] == condition,
+                         "funded side term differs from final proposal")
+                _require(proposal["auditor_response"] in {"ACCEPT", "REFUSE"}, "invalid proposal response")
+                accepted = proposal["auditor_response"] == "ACCEPT"
+                pay_auditor = condition_met and accepted
+                release = "open004.side_settle" if pay_auditor else "open004.side_refund"
+                recipient = "evaluator" if pay_auditor else "provider"
         setup = ["deploy.mock_usdc", "deploy.implementation", "deploy.proxy", "setup.allow_token",
                  "setup.evaluator_fee", "setup.platform_fee", "setup.mint", "setup.approve",
                  "open004.zero_evaluator_fee", "open004.zero_platform_fee", "open004.side_endowment",
                  "open004.fixed_audit_fee"]
         expected_steps = setup + ["open004.invoice.create", "open004.invoice.budget", "open004.invoice.fund",
                                   "open004.invoice.submit"] + (["open004.side_fund"] if side else [])
-        expected_steps += [terminal] + ([release] if release else [])
+        expected_steps += ([terminal] if terminal else []) + ([release] if release else [])
         rows = e["transactions"]
         _require([r["step"] for r in rows] == expected_steps, "native transaction order or complete step set differs")
         self.steps = {r["step"]: r for r in rows}
         log_counts = {step: 1 for step in expected_steps if not step.startswith("deploy.")}
         log_counts["open004.invoice.fund"] = 2
-        log_counts[terminal] = 3
+        if terminal:
+            log_counts[terminal] = 3
         seen_hashes: set[str] = set()
         previous = (-1, -1)
         nonces: dict[str, int] = {}
@@ -324,21 +334,23 @@ class _Verifier:
                                   self.calldata("submit(uint256,bytes32,bytes)", job_id,
                                                 "0x" + episode["artifact_digest"], "0x"))
         self.event(submit, "JobSubmitted", self.core, [job_id, r["provider"], "0x" + episode["artifact_digest"]])
-        reason = "0x" + _digest({"obligation_id": episode["obligation_id"], "artifact_digest": episode["artifact_digest"],
-                                  "verdict": verdict, "check_completed": settlement["check_completed"]})
-        row = self.transaction(terminal, "evaluator", self.core,
-                               self.calldata(("complete" if verdict == "ACCEPT" else "reject") +
-                                             "(uint256,bytes32,bytes)", job_id, reason, "0x"))
-        self.event(row, "JobCompleted" if verdict == "ACCEPT" else "JobRejected", self.core,
-                   [job_id, r["evaluator"], reason])
-        payout_role = "provider" if verdict == "ACCEPT" else "client"
-        self.event(row, "PaymentReleased" if verdict == "ACCEPT" else "Refunded", self.core,
-                   [job_id, r[payout_role], BUDGET])
+        if settlement is not None:
+            reason = "0x" + _digest({"obligation_id": episode["obligation_id"], "artifact_digest": episode["artifact_digest"],
+                                      "verdict": verdict, "check_completed": settlement["check_completed"]})
+            row = self.transaction(terminal, "evaluator", self.core,
+                                   self.calldata(("complete" if verdict == "ACCEPT" else "reject") +
+                                                 "(uint256,bytes32,bytes)", job_id, reason, "0x"))
+            self.event(row, "JobCompleted" if verdict == "ACCEPT" else "JobRejected", self.core,
+                       [job_id, r["evaluator"], reason])
+            payout_role = "provider" if verdict == "ACCEPT" else "client"
+            self.event(row, "PaymentReleased" if verdict == "ACCEPT" else "Refunded", self.core,
+                       [job_id, r[payout_role], BUDGET])
         expected_transfers = {"setup.mint": (ZERO, r["client"], 6 * BUDGET),
                               "open004.side_endowment": (ZERO, r["provider"], endowment),
                               "open004.fixed_audit_fee": (r[fee_payer], r["evaluator"], AUDIT_FEE),
-                              "open004.invoice.fund": (r["client"], self.core, BUDGET),
-                              terminal: (self.core, r[payout_role], BUDGET)}
+                              "open004.invoice.fund": (r["client"], self.core, BUDGET)}
+        if terminal:
+            expected_transfers[terminal] = (self.core, r[payout_role], BUDGET)
         _require(e["side_custody_label"] == CUSTODY_LABEL, "application custody label differs")
         if side:
             _require(side["custody_role"] == "outsider_controller_account"
@@ -346,15 +358,16 @@ class _Verifier:
                      "side custody label differs")
             self.transaction("open004.side_fund", "provider", self.token,
                              self.calldata("transfer(address,uint256)", r["outsider"], side["amount_minor"]))
-            self.transaction(release, "outsider", self.token,
-                             self.calldata("transfer(address,uint256)", r[recipient], side["amount_minor"]))
             expected_transfers["open004.side_fund"] = (r["provider"], r["outsider"], side["amount_minor"])
-            expected_transfers[release] = (r["outsider"], r[recipient], side["amount_minor"])
-            outcome = settlement["side_term"]
-            _require(outcome["recipient_role"] == recipient and outcome["condition_met"] is condition_met
-                     and outcome["proposal_accepted"] is accepted and outcome["amount_minor"] == side["amount_minor"],
-                     "side settlement condition or recipient differs")
-        else:
+            if settlement is not None:
+                self.transaction(release, "outsider", self.token,
+                                 self.calldata("transfer(address,uint256)", r[recipient], side["amount_minor"]))
+                expected_transfers[release] = (r["outsider"], r[recipient], side["amount_minor"])
+                outcome = settlement["side_term"]
+                _require(outcome["recipient_role"] == recipient and outcome["condition_met"] is condition_met
+                         and outcome["proposal_accepted"] is accepted and outcome["amount_minor"] == side["amount_minor"],
+                         "side settlement condition or recipient differs")
+        elif settlement is not None:
             _require(settlement["side_term"] is None, "unfunded side term has settlement")
         transfer_topic = _cast(self.cast, "keccak", "Transfer(address,address,uint256)")
         balances = {**dict.fromkeys(r, 0), "escrow": 0}
@@ -388,16 +401,21 @@ class _Verifier:
         self.snapshot(fee["after"], "open004.fixed_audit_fee")
         self.snapshot(e["funded_job"]["balances"], "open004.invoice.fund")
         self.snapshot(e["submitted_job"]["balances"], "open004.invoice.submit")
-        before_terminal = "open004.side_fund" if side else "open004.invoice.submit"
-        self.snapshot(settlement["before"], before_terminal)
-        self.snapshot(settlement["after"], terminal)
+        records = [(fee, "open004.fixed_audit_fee")]
+        if settlement is not None:
+            before_terminal = "open004.side_fund" if side else "open004.invoice.submit"
+            self.snapshot(settlement["before"], before_terminal)
+            self.snapshot(settlement["after"], terminal)
+            records.append((settlement, terminal))
         if side:
             self.snapshot(side["before"], "open004.invoice.submit")
             self.snapshot(side["after"], "open004.side_fund")
-            self.snapshot(settlement["side_term"]["before"], terminal)
-            self.snapshot(settlement["side_term"]["after"], release)
-        for record, step in ((settlement, terminal), (fee, "open004.fixed_audit_fee"), *(([(side, "open004.side_fund"),
-                                                       (settlement["side_term"], release)]) if side else [])):
+            records.append((side, "open004.side_fund"))
+            if settlement is not None:
+                self.snapshot(settlement["side_term"]["before"], terminal)
+                self.snapshot(settlement["side_term"]["after"], release)
+                records.append((settlement["side_term"], release))
+        for record, step in records:
             _require(record["raw_receipt"] == self.steps[step]["raw_receipt"]
                      and record["transaction_hash"] == self.steps[step]["transaction_hash"]
                      and record["raw_receipt_sha256"] == _digest(record["raw_receipt"]),
@@ -407,6 +425,22 @@ class _Verifier:
             self.job(e[name]["job"], status, code, e[name]["raw_jobs_call"])
             alias = e.get(name + "_state")
             _require(alias is None or alias in (e[name], e[name]["job"]), "saved job state copies differ")
+        if settlement is None:
+            self.checks.append("funded/submitted official state; no terminal settlement or release")
+            last_step = "open004.side_fund" if side else "open004.invoice.submit"
+            outstanding, _ = self.ledger[last_step]
+            return {"ok": True, "status": "FUNDED_SUBMITTED_VERIFIED", "errors": [],
+                    "checks": self.checks, "custody_label": CUSTODY_LABEL,
+                    "episode_id": episode["episode_id"], "truth": episode["truth"],
+                    "job_id": job_id, "job_status": "Submitted", "verdict": None,
+                    "terminal_settlement": False, "episode_outcome": "INCOMPLETE_NO_VERDICT",
+                    "provider_paid": False, "client_refunded": False,
+                    "official_job_budget_minor": BUDGET,
+                    "outstanding_job_escrow_minor": outstanding["escrow"],
+                    "outstanding_application_custody_minor": outstanding["outsider"],
+                    "side_funded_minor": side["amount_minor"] if side else 0,
+                    "side_recipient": None, "bad_accept_consequence": None,
+                    "evidence_limit": "Saved RPC consistency; no independent signature or past-chain attestation."}
         self.job(settlement["job"], "Completed" if verdict == "ACCEPT" else "Rejected",
                  3 if verdict == "ACCEPT" else 4, settlement["raw_jobs_call"])
         _require(settlement["job_id"] == job_id and settlement["job_status"] == settlement["job"]["status"]
@@ -415,7 +449,8 @@ class _Verifier:
                  and settlement["client_refunded"] is (verdict == "REJECT"), "settlement summary differs")
         self.checks.append("funded/submitted/terminal official state and side custody release/refund")
         false_accept = episode["truth"] == "bad" and verdict == "ACCEPT"
-        return {"ok": True, "status": "PASS", "errors": [], "checks": self.checks,
+        return {"ok": True, "status": "PASS", "terminal_settlement": True,
+                "errors": [], "checks": self.checks,
                 "custody_label": CUSTODY_LABEL, "episode_id": episode["episode_id"],
                 "truth": episode["truth"], "verdict": verdict,
                 "provider_paid": verdict == "ACCEPT", "client_refunded": verdict == "REJECT",
@@ -427,8 +462,8 @@ class _Verifier:
                 "evidence_limit": "Saved RPC consistency; no independent signature or past-chain attestation."}
 
 
-def verify_native_evidence(path_or_dict: Path | str | Mapping[str, Any], *,
-                           source_root: Path | str | None = None) -> dict[str, Any]:
+def _verify_evidence(path_or_dict: Path | str | Mapping[str, Any], *,
+                     source_root: Path | str | None, require_terminal: bool) -> dict[str, Any]:
     """Return a fail-closed verification report; source_root is the pinned upstream checkout.
 
     A directory requires native-evidence.json and its companion SHA256 file. A
@@ -450,9 +485,26 @@ def verify_native_evidence(path_or_dict: Path | str | Mapping[str, Any], *,
                          "native evidence file digest differs")
             evidence = json.loads(raw)
         verifier = _Verifier(evidence, Path(source_root) if source_root is not None else None)
-        return verifier.verify()
+        return verifier.verify(require_terminal=require_terminal)
     except (ValueError, KeyError, TypeError, IndexError, AttributeError, OSError,
             subprocess.SubprocessError) as error:
-        return {"ok": False, "status": "FAIL", "errors": [str(error)],
+        return {"ok": False, "status": "FAIL", "terminal_settlement": None, "errors": [str(error)],
                 "checks": verifier.checks if verifier else [], "custody_label": CUSTODY_LABEL,
                 "bad_accept_consequence": None}
+
+
+def verify_native_evidence(path_or_dict: Path | str | Mapping[str, Any], *,
+                           source_root: Path | str | None = None) -> dict[str, Any]:
+    """Verify terminal evidence; fail closed when no verdict/settlement exists."""
+    return _verify_evidence(path_or_dict, source_root=source_root, require_terminal=True)
+
+
+def verify_funded_evidence(path_or_dict: Path | str | Mapping[str, Any],
+                                   source_root: Path | str | None = None) -> dict[str, Any]:
+    """Verify a funded/submitted incomplete episode, with optional funded side custody.
+
+    This verifies the saved native prefix and outstanding balances. It neither
+    executes a release/refund nor establishes any final verdict, episode success,
+    or terminal settlement. Terminal evidence is rejected rather than truncated.
+    """
+    return _verify_evidence(path_or_dict, source_root=source_root, require_terminal=False)
