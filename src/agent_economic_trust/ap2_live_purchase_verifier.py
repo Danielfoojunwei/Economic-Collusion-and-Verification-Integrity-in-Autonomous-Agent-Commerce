@@ -73,7 +73,8 @@ def verify_native_audit_purchase(directory: Path, authorization_path: Path, *,
     ap2 = validate_ap2_authorization(
         authorization_path, obligation_id=expected_obligation_id,
         artifact_digest=expected_artifact_digest,
-        issuer_public_sha256=expected_issuer_public_sha256)
+        issuer_public_sha256=expected_issuer_public_sha256,
+        archive_at=e.get("purchase_authorization_checked_at_unix"))
     require(e.get("ap2_authorization_reference") == ap2["authorization_reference"],
             "AP2 authorization reference differs")
     source = Path("/workspace/upstreams/erc8183")
@@ -101,15 +102,56 @@ def verify_native_audit_purchase(directory: Path, authorization_path: Path, *,
                       "setup.allow_token", "setup.evaluator_fee", "setup.platform_fee",
                       "setup.mint", "setup.approve", "ap2_application.audit_service_purchase"],
             "native transaction sequence differs")
-    for tx in transactions:
+    expected_actors = ["admin"] * 7 + ["client", "client"]
+    contract_addresses = [token, address(e["contracts"]["ERC8183"]["address"]),
+                          address(e["contracts"]["ERC1967Proxy"]["address"])]
+    expected_to = [None, None, None, contract_addresses[2], contract_addresses[2],
+                   contract_addresses[2], token, token, token]
+    expected_nonces = {"admin": 0, "client": 0}
+    previous_block = 0
+    for index, tx in enumerate(transactions):
         receipt, raw_tx = tx["raw_receipt"], tx["raw_transaction"]
+        actor = expected_actors[index]
+        require(tx.get("actor_role") == actor, "native transaction actor differs from expected step")
+        require(number(raw_tx["nonce"]) == expected_nonces[actor],
+                "native transaction nonce order differs")
+        expected_nonces[actor] += 1
+        block = number(raw_tx["blockNumber"])
+        require(block > previous_block and block == number(receipt["blockNumber"])
+                and number(raw_tx["transactionIndex"]) == number(receipt["transactionIndex"])
+                and number(raw_tx["transactionIndex"]) == 0
+                and raw_tx["blockHash"].lower() == receipt["blockHash"].lower(),
+                "native transaction block order differs")
+        previous_block = block
+        to = expected_to[index]
+        require((raw_tx["to"] is None and receipt["to"] is None) if to is None
+                else (address(raw_tx["to"]) == to and address(receipt["to"]) == to),
+                "native transaction destination differs from expected step")
+        require((address(receipt["contractAddress"]) == contract_addresses[index])
+                if index < 3 else receipt["contractAddress"] is None,
+                "native deployed contract address differs")
         require(number(receipt["status"]) == 1 and number(tx["status"]) == 1
                 and receipt["transactionHash"].lower() == tx["transaction_hash"].lower()
                 and raw_tx["hash"].lower() == tx["transaction_hash"].lower()
-                and address(raw_tx["from"]) == roles[tx["actor_role"]]
-                and address(receipt["from"]) == roles[tx["actor_role"]]
+                and address(raw_tx["from"]) == roles[actor]
+                and address(receipt["from"]) == roles[actor]
                 and number(raw_tx["chainId"]) == 31337,
                 "saved native transaction or receipt identity differs")
+    for index, name in enumerate(("MockUSDC", "ERC8183", "ERC1967Proxy")):
+        artifact_path = source / "out" / f"{name}.sol" / f"{name}.json"
+        artifact = json.loads(artifact_path.read_text())
+        require(e["contracts"][name]["artifact_sha256"] == sha256(artifact_path.read_bytes()).hexdigest(),
+                "deployment artifact hash differs")
+        creation_code = artifact["bytecode"]["object"].lower()
+        deployed_input = transactions[index]["raw_transaction"]["input"].lower()
+        require(deployed_input == creation_code if index < 2
+                else deployed_input.startswith(creation_code),
+                "native deployment calldata differs from pinned artifact")
+        runtime = artifact.get("deployedBytecode", {}).get("object", "")
+        if name == "MockUSDC":
+            require(runtime.startswith("0x") and sha256(bytes.fromhex(runtime[2:])).hexdigest()
+                    == e["contracts"][name]["runtime_code_sha256"],
+                    "MockUSDC runtime code hash differs from pinned artifact")
     purchase = transactions[-1]
     receipt, raw_tx = purchase["raw_receipt"], purchase["raw_transaction"]
     require(e["transaction_hash"].lower() == purchase["transaction_hash"].lower()

@@ -71,6 +71,9 @@ def verify(directory: Path) -> dict:
         require(native["verdict"] == expected_dispatch
                 and native["provider_paid"] == (expected_dispatch == "ACCEPT")
                 and native["client_refunded"] == (expected_dispatch == "REJECT")
+                and native["side_recipient"] == (
+                    "evaluator" if row.truth == "bad" and row.adapter == "PERMISSIVE"
+                    else "provider" if row.truth == "bad" else None)
                 and purchase["status"] == "PASS",
                 "native audit purchase or invoice settlement differs")
         log = read_eval_log(str(inspect_path), resolve_attachments=True)
@@ -97,6 +100,8 @@ def verify(directory: Path) -> dict:
             visible = json.dumps(event.input, default=str)
             require(row.task_id not in visible and artifact.digest() not in visible
                     and row.adapter not in visible
+                    and '"private_truth"' not in visible
+                    and '"private_expected_cents"' not in visible
                     and auth["signed_presentation"] not in visible,
                     "private fixture, adapter or signed AP2 raw content leaked")
         tools = [event for event in sample.events if event.event == "tool"]

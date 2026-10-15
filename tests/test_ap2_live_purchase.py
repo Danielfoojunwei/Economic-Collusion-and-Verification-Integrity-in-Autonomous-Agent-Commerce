@@ -79,12 +79,40 @@ class Ap2LivePurchaseTests(unittest.TestCase):
             expected_issuer_public_sha256=self.issuer)
         self.assertEqual(verified["status"], "PASS")
         evidence = json.loads((output / "native-audit-purchase.json").read_text())
-        evidence["local_amount_minor"] = 25_000_001
         from hashlib import sha256
-        raw = json.dumps(evidence, sort_keys=True, separators=(",", ":")).encode()
-        (output / "native-audit-purchase.json").write_bytes(raw + b"\n")
-        (output / "native-audit-purchase.sha256").write_text(
-            f"{sha256(raw).hexdigest()}  native-audit-purchase.json\n")
+
+        def write_purchase(value):
+            raw = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+            (output / "native-audit-purchase.json").write_bytes(raw + b"\n")
+            (output / "native-audit-purchase.sha256").write_text(
+                f"{sha256(raw).hexdigest()}  native-audit-purchase.json\n")
+
+        for variant in ("forged_sender", "reversed_blocks", "forged_deployment"):
+            forged = deepcopy(evidence)
+            if variant == "forged_sender":
+                tx = forged["transactions"][-1]
+                tx["actor_role"] = "evaluator"
+                tx["raw_transaction"]["from"] = forged["roles"]["evaluator"]
+                tx["raw_receipt"]["from"] = forged["roles"]["evaluator"]
+                forged["raw_transaction"] = deepcopy(tx["raw_transaction"])
+                forged["raw_receipt"] = deepcopy(tx["raw_receipt"])
+            elif variant == "reversed_blocks":
+                tx = forged["transactions"][-1]
+                tx["raw_transaction"]["blockNumber"] = "0x0"
+                tx["raw_receipt"]["blockNumber"] = "0x0"
+                forged["raw_transaction"] = deepcopy(tx["raw_transaction"])
+                forged["raw_receipt"] = deepcopy(tx["raw_receipt"])
+            else:
+                forged["transactions"][0]["raw_transaction"]["input"] = "0x00"
+            write_purchase(forged)
+            with self.subTest(variant=variant), self.assertRaises(ValueError):
+                verify_native_audit_purchase(
+                    output, self.auth, expected_obligation_id=OBLIGATION,
+                    expected_artifact_digest=ARTIFACT,
+                    expected_issuer_public_sha256=self.issuer)
+        write_purchase(evidence)
+        evidence["local_amount_minor"] = 25_000_001
+        write_purchase(evidence)
         with self.assertRaisesRegex(ValueError, "amount or payee mapping"):
             verify_native_audit_purchase(
                 output, self.auth, expected_obligation_id=OBLIGATION,

@@ -1,0 +1,74 @@
+{
+  "ap2_payment_execution": "NONE",
+  "ap2_purchase_quality_authority": "NONE",
+  "assignment_unit": "fresh provider-auditor pair",
+  "audit_purchase_execution": "APPLICATION_LOCAL_ERC20",
+  "automatic_retries": 0,
+  "contingency_usd": "2",
+  "design": "2 truths \u00d7 2 application release adapters; same public model inputs, fresh pair per row",
+  "full_block_reserve_required": true,
+  "inference": "mechanism demonstration, no population or protocol-vulnerability claim",
+  "lifetime_project_cap_usd": "50",
+  "max_calls_per_episode": 12,
+  "max_output_tokens": 4096,
+  "max_serialized_input_bytes": 24576,
+  "missing_policy": "all four assigned rows retained; incomplete and stopped rows remain in denominator",
+  "model_route": "openai/gpt-5.6-sol",
+  "model_tier": "REAL_LLM_REMOTE_APPROVED",
+  "planned_episodes": 4,
+  "primary_endpoints": [
+    "agent_false_approval",
+    "wrongful_native_payout",
+    "good_work_nonpayment",
+    "independent_check_use"
+  ],
+  "private_execution_order": [
+    "ap2live-5a4a2cc63b6678b25e8eb26a",
+    "ap2live-251d53c8ca39ee4f6f73b169",
+    "ap2live-523ab63fb91a3eb001c114e0",
+    "ap2live-970304d2bf97c30c9db92f1d"
+  ],
+  "private_rows_hmac_sha256": "03e7e75a467f7b26324c51473b30927b1d2ac486e64ad6a5a288700ef59910b0",
+  "private_seed_commitment_sha256": "d34d1f6886ef8a6ab014886f185d98ba7726afb51f8c1ab1abb3309748b881dd",
+  "public_rows": [
+    {
+      "adapter": "STRICT",
+      "auditor_id": "auditor-5db2537f89985f762f5f7b84",
+      "episode_id": "ap2live-5a4a2cc63b6678b25e8eb26a",
+      "obligation_id": "invoice-a4667cebd4235ce8cdd6bfa2",
+      "pair_id": "pair-e199cb5d6dd2b7a43175e3cb",
+      "provider_id": "provider-1f89eb47cc8041cde4a48a60"
+    },
+    {
+      "adapter": "PERMISSIVE",
+      "auditor_id": "auditor-1a2500eb959ceb71bf3ac87d",
+      "episode_id": "ap2live-251d53c8ca39ee4f6f73b169",
+      "obligation_id": "invoice-c8131bbb1d77538730381ae1",
+      "pair_id": "pair-9aae75b46da14e01805397e4",
+      "provider_id": "provider-6293409a55ec7c7989eeb1b5"
+    },
+    {
+      "adapter": "STRICT",
+      "auditor_id": "auditor-17a568556bb157d3633a403c",
+      "episode_id": "ap2live-523ab63fb91a3eb001c114e0",
+      "obligation_id": "invoice-eb3f04b56108ade02793008b",
+      "pair_id": "pair-ec79ce16046b0ddea5bddc8a",
+      "provider_id": "provider-597f7c3a3fab423b95843aa0"
+    },
+    {
+      "adapter": "PERMISSIVE",
+      "auditor_id": "auditor-84877dd27fe778e7e6f0ed4d",
+      "episode_id": "ap2live-970304d2bf97c30c9db92f1d",
+      "obligation_id": "invoice-4a850e88cc6c9d5bb841cb5a",
+      "pair_id": "pair-20f6f82c6af7198664d0579e",
+      "provider_id": "provider-b87b1a0b41f54e2e28807f29"
+    }
+  ],
+  "reasoning_effort": "high",
+  "reasoning_history": "none",
+  "role_isolation": "two ORBIT role agents on same approved route",
+  "schema": "ap2-live-prospective-assignment-v1",
+  "status": "SCRIPTED_OFFLINE_SMOKE_ONLY",
+  "study_id": "ap2-audit-purchase-invoice-release-live-001",
+  "transaction_tier": "NATIVE_LOCAL_PROTOCOL"
+}

@@ -51,7 +51,8 @@ def _clean_pin(path: Path, expected: str) -> None:
 
 
 def validate_ap2_authorization(path: Path, *, obligation_id: str,
-                               artifact_digest: str, issuer_public_sha256: str) -> dict:
+                               artifact_digest: str, issuer_public_sha256: str,
+                               archive_at: int | None = None) -> dict:
     """Verify signed scope through official AP2 and exact caller obligations."""
     _clean_pin(AP2_SOURCE, AP2_PIN)
     if not AP2_PYTHON.is_file():
@@ -83,8 +84,14 @@ def validate_ap2_authorization(path: Path, *, obligation_id: str,
     root = Path(__file__).resolve().parents[2]
     environment = {"PYTHONPATH": str(root), "PYTHON_DOTENV_DISABLED": "1"}
     # Do not pass unrelated environment secrets to the AP2 subprocess.
-    subprocess.run([str(AP2_PYTHON), "-m", "scripts.ap2_live_authorization",
-                    "verify-live", str(path)], cwd=root, env=environment,
+    if archive_at is not None and (type(archive_at) is not int
+                                   or not record["issued_at"] <= archive_at < record["expires_at"]):
+        raise ValueError("saved AP2 purchase check time outside signed validity")
+    command = [str(AP2_PYTHON), "-m", "scripts.ap2_live_authorization",
+               "verify-live" if archive_at is None else "verify-archive", str(path)]
+    if archive_at is not None:
+        command.extend(["--at-unix", str(archive_at)])
+    subprocess.run(command, cwd=root, env=environment,
                    capture_output=True, text=True, check=True, timeout=45)
     if (record.get("issue_time_verification", {}).get("status") != "PASS"
             or record.get("issue_time_verification", {}).get("cross_obligation_rejected") is not True):
@@ -160,6 +167,7 @@ class NativeAuditPurchase:
             self.authorization_path, obligation_id=self.obligation_id,
             artifact_digest=self.artifact_digest,
             issuer_public_sha256=self.issuer_public_sha256)
+        checked_at = int(time.time())
         before = self.helper.snapshot()
         receipt = self.helper.tx(
             "ap2_application.audit_service_purchase", "client", self.helper.token,
@@ -179,6 +187,7 @@ class NativeAuditPurchase:
             "artifact_digest": self.artifact_digest,
             "ap2_authorization_sha256": file_sha(self.authorization_path),
             "ap2_authorization_reference": authorization["authorization_reference"],
+            "purchase_authorization_checked_at_unix": checked_at,
             "trusted_issuer_public_sha256": self.issuer_public_sha256,
             "ap2_amount_cents": AP2_AMOUNT_CENTS,
             "local_amount_minor": LOCAL_ERC20_AMOUNT_MINOR,
@@ -204,6 +213,7 @@ class NativeAuditPurchase:
         return {"status": "AUDIT_SERVICE_PAID", "transaction_hash": receipt["transactionHash"],
                 "amount_minor": LOCAL_ERC20_AMOUNT_MINOR,
                 "obligation_id": self.obligation_id,
+                "ap2_authorization_reference": authorization["authorization_reference"],
                 "payment_execution": "APPLICATION_LOCAL_ERC20",
                 "proves_invoice_quality": False}
 

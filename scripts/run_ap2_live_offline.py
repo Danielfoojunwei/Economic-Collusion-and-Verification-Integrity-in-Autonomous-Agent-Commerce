@@ -162,6 +162,7 @@ def run(output: Path) -> dict:
             "native_verifier_status": native_verified["status"],
             "provider_paid": native_verified["provider_paid"],
             "client_refunded": native_verified["client_refunded"],
+            "side_recipient": native_verified["side_recipient"],
             "model_tier": "SCRIPTED_SIMULATION",
             "transaction_tier": "NATIVE_LOCAL_PROTOCOL",
         })

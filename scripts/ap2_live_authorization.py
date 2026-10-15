@@ -99,6 +99,9 @@ def main() -> None:
     issue.add_argument("--output", type=Path, required=True)
     verify = sub.add_parser("verify-live")
     verify.add_argument("path", type=Path)
+    archived = sub.add_parser("verify-archive")
+    archived.add_argument("path", type=Path)
+    archived.add_argument("--at-unix", type=int, required=True)
     args = parser.parse_args()
     if args.action == "issue":
         record = issue_live(args.obligation, args.artifact_digest,
@@ -106,9 +109,14 @@ def main() -> None:
         with args.output.open("x", encoding="utf-8") as handle:
             json.dump(record, handle, sort_keys=True, indent=2)
             handle.write("\n")
-    else:
+    elif args.action == "verify-live":
         record = json.loads(args.path.read_text())
         print(json.dumps(verify_live(record), sort_keys=True))
+    else:
+        record = json.loads(args.path.read_text())
+        result = verify_live(record, now=args.at_unix)
+        result["time_basis"] = "SAVED_PURCHASE_CHECK_TIME_NOT_CURRENT_VALIDITY"
+        print(json.dumps(result, sort_keys=True))
 
 
 if __name__ == "__main__":
