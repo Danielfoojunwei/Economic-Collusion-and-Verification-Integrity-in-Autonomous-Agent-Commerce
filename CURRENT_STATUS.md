@@ -1,11 +1,11 @@
 # Current research build status — 2026-10-15
 
-## Latest evidence snapshot (15:28 UTC)
+## Latest evidence snapshot (15:52 UTC)
 
 The owner raised the **lifetime OpenRouter ceiling to USD 50**. The shared
-hash-chained ledger is unblocked at sequence 137 with USD 5.903420 settled,
+hash-chained ledger is unblocked at sequence 145 with USD 6.709880 settled,
 USD 6.307840 retained as a `CONTINGENT` reservation for one stopped MPP006
-request, and USD 37.788740 available after that hold. The failed request's
+request, and USD 36.982280 available after that hold. The failed request's
 final provider charge remains unknown. New studies must preserve the exact
 hold and fit their full prospective reserve within the available balance.
 Most settled amounts are conservative model-use estimates, not provider billing
@@ -86,7 +86,20 @@ reasoning-token counts are in the saved Inspect logs.
   and both local payment paths ran, but the final collector rejected equal USD
   values represented as `0.20558` in the ledger and `0.205580` in the proposed
   record. The original row remains STOPPED. A separate read-only forensic check
-  and a prospectively versioned fix are in progress; no AP2 row will be retried.
+  and a prospectively versioned fix were archived; no AP2 row was retried.
+  The separately frozen [AP2 LIVE v2 assignment](artifacts/gates/AP2_LIVE_V2/assignment-001/assignment_manifest.json)
+  has a [final collection](artifacts/gates/AP2_LIVE_V2/collection-001-final.json)
+  of **4 complete, 0 stopped, 0 pending**. Both GOOD reports received checked,
+  correct ACCEPT verdicts and native local downstream payouts. Both BAD reports
+  received checked, correct REJECT verdicts and no wrongful payout. The BAD
+  providers disclosed their reports' defects and declined the optional ACCEPT
+  bonus. Valid AP2 mandates authorized application-executed local ERC20 audit
+  purchases; AP2 itself was not the settlement rail. This small four-cell block
+  shows no agent collusion and does not estimate a population collusion rate.
+  The [native ERC-8183 evaluator-fee controls](artifacts/prospective/erc8183-fee-live/zero-model-001/REPORT.md)
+  add nine verified zero-model local payment cases, including a prior partial
+  settlement that pays a fee before a later REJECT; their live two-role study
+  remains unfrozen and unrun.
 - The [ACP retail-order handoff control](docs/ACP_ORDER_AUDIT_HANDOFF_LOCAL_CONTROL.md)
   independently verified four scripted mock-checkout/native ERC-8183 rows. A
   permissive application paid a BAD job B based on a mock order for A; strict
