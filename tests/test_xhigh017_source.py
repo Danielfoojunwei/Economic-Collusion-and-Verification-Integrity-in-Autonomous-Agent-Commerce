@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from copy import deepcopy
 from dataclasses import replace
 from decimal import Decimal
 from hashlib import sha256
@@ -33,6 +34,7 @@ from agent_economic_trust.xhigh017_plan import (MAX_OUTPUT_TOKENS, ROWS,
 from agent_economic_trust.xhigh017_task import (CHANNEL, xhigh017_invoice_orbit,
     public_sample_input, role_system_prompts)
 from scripts.xhigh017_collect import _channel
+from scripts import xhigh017_freeze as gate
 
 
 def prefix(row) -> dict:
@@ -269,6 +271,62 @@ class Xhigh017SourceTests(unittest.TestCase):
         self.assertEqual(report["replay"]["scripted_native_cases_reverified"], 8)
         self.assertEqual(report["replay"]["scripted_bad_accept_positive_controls"], 1)
         self.assertEqual(report["replay"]["tamper_negatives_reverified"], 7)
+
+    def test_actual_partial014_independent_review_and_receipts_clear_predecessor_gate(self):
+        collection = json.loads(gate.PARTIAL014_COLLECTION.read_bytes())
+        self.assertEqual(gate.sha(gate.PARTIAL014_COLLECTION),
+                         gate.PARTIAL014_COLLECTION_SHA)
+        self.assertEqual(gate.sha(gate.PARTIAL014_REVIEW),
+                         gate.PARTIAL014_REVIEW_SHA)
+        # The earlier study's static gate rejects noncanonical worktrees. Keep
+        # the actual saved collection/review/receipts and bypass only that root
+        # check and the raw collector, both run again in the canonical checkout.
+        with patch("scripts.partial014_freeze.verify_static"), \
+             patch("scripts.partial014_collect.collect", return_value=collection):
+            result = gate._partial014_closure()
+        self.assertEqual(result["collection_sha256"],
+                         gate.PARTIAL014_COLLECTION_SHA)
+        self.assertEqual(result["independent_review_sha256"],
+                         gate.PARTIAL014_REVIEW_SHA)
+        self.assertEqual(result["denominator"], {
+            "completed_episodes": 5, "observed_incomplete_episodes": 0,
+            "stopped_episodes": 0, "pending_episodes": 0})
+
+    def test_partial014_review_tamper_fails_closed(self):
+        collection = json.loads(gate.PARTIAL014_COLLECTION.read_bytes())
+        review = json.loads(gate.PARTIAL014_REVIEW.read_bytes())
+        gate._partial014_reviewed_evidence(gate.PARTIAL014_COLLECTION,
+                                           collection, review)
+        for label, mutate in (
+            ("byte identical collector replay",
+             lambda r: r["verification"].update(
+                 saved_collector_replayed_byte_identically=False)),
+            ("reviewed collection hash",
+             lambda r: r["source_bindings"]["final_collection"].update(
+                 sha256="0" * 64)),
+            ("native receipt verification count",
+             lambda r: r["verification"].update(
+                 receipt_and_balance_verifier_passed_rows=4)),
+            ("native receipt digest",
+             lambda r: r["rows"][0]["evidence"][
+                 "native_local_receipts"].update(sha256="0" * 64)),
+            ("GOOD native early provider payment",
+             lambda r: r["rows"][4].update(early_provider_paid_minor=0)),
+            ("human improper request count",
+             lambda r: r["outcomes"].update(
+                 human_observed_explicit_improper_provider_solicitations=0)),
+        ):
+            with self.subTest(label=label):
+                changed = deepcopy(review)
+                mutate(changed)
+                with self.assertRaises(ValueError):
+                    gate._partial014_reviewed_evidence(
+                        gate.PARTIAL014_COLLECTION, collection, changed)
+        changed_collection = deepcopy(collection)
+        changed_collection["rows"][0]["native_early_decision"] = "APPROVE"
+        with self.assertRaises(ValueError):
+            gate._partial014_reviewed_evidence(gate.PARTIAL014_COLLECTION,
+                                               changed_collection, review)
 
 
 if __name__ == "__main__":
