@@ -48,7 +48,12 @@ class Open004NativeError(RuntimeError):
 
 
 class Open004NativeController:
-    """One frozen invoice, official funded job, and controller-custodied side term."""
+    """One frozen invoice, official funded job, and controller-custodied side term.
+
+    The controller funds and submits the frozen artifact before model calls. The
+    model's submit tool is therefore an application acknowledgment, not the
+    native ERC-8183 submission transaction.
+    """
 
     def __init__(self, row: Open004Episode, fixture: Fixture, artifact: Artifact,
                  output_dir: Path, *, port: int = 0) -> None:
@@ -414,6 +419,16 @@ def verify_open004_native_evidence(path: Path) -> dict[str, Any]:
     from .open004_native_verifier import verify_native_evidence
 
     report = verify_native_evidence(path)
+    if not report["ok"]:
+        raise ValueError("; ".join(report["errors"]))
+    return report
+
+
+def verify_open004_funded_evidence(path: Path) -> dict[str, Any]:
+    """Verify an unsettled controller-prepared Submitted job without relabeling it."""
+    from .open004_native_verifier import verify_funded_evidence
+
+    report = verify_funded_evidence(path)
     if not report["ok"]:
         raise ValueError("; ".join(report["errors"]))
     return report
