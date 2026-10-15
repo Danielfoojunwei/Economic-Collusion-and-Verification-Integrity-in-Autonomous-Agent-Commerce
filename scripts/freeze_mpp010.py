@@ -45,6 +45,26 @@ MPP009_FIRST_RUN_ID = "mpp009-a406280cf061-mpp009-bad064fc4d3fd2a6d4d74118"
 MPP009_FIRST_RAW_SHA256 = "60e9f9838fe05c7e66ab4b1284cd281afe4360b19f2c218365c25fb687768cb7"
 MPP009_FINAL_LEDGER_SEQ = 147
 MPP009_FINAL_LEDGER_HASH = "e1b94c98a463811680f4947f0a4c6f29b6e730bc654e3fb83023301422357109"
+AP2_V2_GATE = PROJECT_ROOT / "artifacts/gates/AP2_LIVE_V2"
+AP2_V2_ASSIGNMENT_SHA256 = "79e039bab397a0cbc9c50186cdf68fdb458f3fb0df76fd288ad0db332fa1d6ce"
+AP2_V2_LOCK_SHA256 = "49eb58d6f4d9e5679bec9307d07d2777eb3bb81d7fd8011ce2662fa7da942933"
+AP2_V2_FINAL_COLLECTION_SHA256 = "73e2261ed2cfb10941b6867b476e7820dc72a15ed5cccba94d6ae541763b701a"
+AP2_V2_FINAL_LEDGER_SEQ = 145
+AP2_V2_FINAL_LEDGER_HASH = "ec60ee56530c226c87c0b43e60718d93307206d27e8c54abcc745fd62c8035ba"
+AP2_V2_FINAL_EPISODE_RECORD_SHA256 = {
+    "ap2live2-4dac18e8f1bc22d551ece718": "ce553d78276ba5b91ca4a31524ff3d0995188799752e59feb3b24778bcf64b68",
+    "ap2live2-9b3a2e4c73fbc890506ec424": "e0d0f5ccb58b4110cc9ba1aab595b31fa7aa5514b1ad6f7f8efa8c046a709c18",
+    "ap2live2-67aea2ccc058779f370dcc20": "91b7da883738d946bb0e74886a78f536e204f825adc425ca72be2b1067bdee10",
+    "ap2live2-93956fe860c0756c828249ed": "10a1c2f7e967fccf7e47328c1287cb7273f8fbefc8188a044a05671d76dee003",
+}
+FEE010_GATE = PROJECT_ROOT / "artifacts/gates/ERC8183_FEE010"
+FEE010_ASSIGNMENT_SHA256 = "db6dcf6c4cca6c6a4e3ce2f527cb7d35d054c8ab6da5c42571b68bedc6d3adcd"
+FEE010_LOCK_SHA256 = "3e0ad984fc13c1ae7683f0fce697bafcf1134f449aa5ca3d290d803e195beec6"
+FEE010_CLOSURE_SHA256 = "15ec9bc8fdbdaeba553987e62691cdc3539c2e4c2dcf4281575119389459d96b"
+FEE010_FROZEN_GATE_PATHS = {
+    "artifacts/gates/ERC8183_FEE010/assignment-001/assignment_manifest.json",
+    "artifacts/gates/ERC8183_FEE010/first-freeze.lock.json",
+}
 BASELINE_GATE_INVENTORY_SHA256 = "e5ecf74567fea024fbc103235ad7e525aacef36dba7626b6a5c09b37d3571cca"
 BASELINE_GATE_PATHS = tuple("artifacts/gates/" + name for name in """
 AP2_LIVE/assignment-001/assignment_manifest.json
@@ -81,7 +101,7 @@ W11_DESIGN/assignment-006/assignment_manifest.json
 W11_DESIGN/assignment-007/assignment_manifest.json
 W11_DESIGN/assignment-008/assignment_manifest.json
 """.split())
-OFFLINE = ROOT / "artifacts/prospective/mpp010-scripted-native-001"
+OFFLINE = ROOT / "artifacts/prospective/mpp010-scripted-native-002"
 CONTAINER = "mpp010-pressure-localnet"
 IMAGE = ("ghcr.io/tempoxyz/tempo-localnet@sha256:"
          "86f199f161be85d3610d990e5bc2653ece29de3ee9c91e8c8e768cf2b8c05c3b")
@@ -90,9 +110,12 @@ IMAGE = ("ghcr.io/tempoxyz/tempo-localnet@sha256:"
 # archived evidence hashes, never through its frozen executable bytes.
 NEW_SOURCE = (
     "src/agent_economic_trust/remote.py",
+    "src/agent_economic_trust/erc8183_fee_plan.py",
+    "src/agent_economic_trust/fee010_closure.py",
     "docs/PROSPECTIVE_MPP_PRESSURE_010.md",
     "docs/MPP010_IMPLEMENTATION_STATUS.md",
     "docs/MPP010_NATIVE_ISOLATION.md",
+    "docs/MPP010_NET_REVENUE_AMENDMENT.md",
     "src/agent_economic_trust/mpp010_plan.py",
     "src/agent_economic_trust/mpp010_budget.py",
     "src/agent_economic_trust/mpp010_market.py",
@@ -103,6 +126,7 @@ NEW_SOURCE = (
     "src/agent_economic_trust/mpp010_remote.py",
     "src/agent_economic_trust/mpp010_reporting.py",
     "scripts/freeze_mpp010.py",
+    "scripts/verify_fee010_closure.py",
     "scripts/run_mpp010.py",
     "scripts/collect_mpp010.py",
     "scripts/run_mpp010_offline_native.py",
@@ -246,6 +270,111 @@ def offline_readiness() -> dict:
             "scripted_cases": 9, "remote_model_calls": 0}
 
 
+def ap2_v2_final_evidence(state: dict) -> dict:
+    """Bind the completed AP2 v2 denominator to immutable rows and ledger."""
+    assignment = AP2_V2_GATE / "assignment-001/assignment_manifest.json"
+    lock = AP2_V2_GATE / "first-freeze.lock.json"
+    collection = AP2_V2_GATE / "collection-001-final.json"
+    if any(not path.is_file() or path.is_symlink()
+           for path in (assignment, lock, collection)):
+        raise ValueError("AP2 v2 final assignment, freeze lock or collection is absent or changed")
+    if (sha(assignment) != AP2_V2_ASSIGNMENT_SHA256
+            or sha(lock) != AP2_V2_LOCK_SHA256
+            or sha(collection) != AP2_V2_FINAL_COLLECTION_SHA256):
+        raise ValueError("AP2 v2 final assignment, freeze lock or collection is absent or changed")
+    frozen = json.loads(assignment.read_bytes())
+    sealed = json.loads(lock.read_bytes())
+    report = json.loads(collection.read_bytes())
+    assigned = frozen.get("public_rows")
+    results = report.get("rows")
+    if (frozen.get("schema") != "ap2-live-prospective-assignment-v2"
+            or frozen.get("study_id") != "ap2-audit-purchase-invoice-release-live-002"
+            or frozen.get("planned_episodes") != 4
+            or not isinstance(assigned, list) or len(assigned) != 4
+            or sealed.get("schema") != "ap2-live-v2-first-freeze-v1"
+            or sealed.get("assignment_manifest_sha256") != AP2_V2_ASSIGNMENT_SHA256
+            or sealed.get("paid_model_calls") != 0
+            or report.get("schema") != "ap2-live-itt-collection-v2"
+            or report.get("study_id") != frozen["study_id"]
+            or report.get("assignment_manifest_sha256") != AP2_V2_ASSIGNMENT_SHA256
+            or (report.get("planned_episodes"), report.get("completed_episodes"),
+                report.get("stopped_episodes"), report.get("pending_episodes"))
+               != (4, 4, 0, 0)
+            or report.get("shared_ledger_seq") != AP2_V2_FINAL_LEDGER_SEQ
+            or not isinstance(results, list) or len(results) != 4
+            or [item.get("episode_id") for item in results] !=
+               [item.get("episode_id") for item in assigned]
+            or len({item.get("episode_id") for item in assigned}) != 4
+            or set(AP2_V2_FINAL_EPISODE_RECORD_SHA256) !=
+               {item.get("episode_id") for item in assigned}
+            or any(item.get("status") != "COMPLETE" for item in results)):
+        raise ValueError("AP2 v2 final assigned denominator is not four COMPLETE rows")
+    if state["seq"] < AP2_V2_FINAL_LEDGER_SEQ:
+        raise ValueError("AP2 v2 final ledger head is absent")
+    if state["seq"] == AP2_V2_FINAL_LEDGER_SEQ:
+        final_hash = state["last_hash"]
+    else:
+        lines = CANONICAL_LEDGER_PATH.read_bytes().splitlines()
+        if len(lines) <= AP2_V2_FINAL_LEDGER_SEQ:
+            raise ValueError("AP2 v2 final ledger ancestor is absent")
+        final_hash = json.loads(lines[AP2_V2_FINAL_LEDGER_SEQ])["hash"]
+    if final_hash != AP2_V2_FINAL_LEDGER_HASH:
+        raise ValueError("AP2 v2 final ledger ancestor changed")
+    runs = state["runs"]
+    expected_runs = set()
+    settled = []
+    episodes = AP2_V2_GATE / "runs-001/episodes"
+    if (not episodes.is_dir() or episodes.is_symlink()
+            or {path.name for path in episodes.iterdir()} !=
+               {item["episode_id"] for item in assigned}):
+        raise ValueError("AP2 v2 run directory differs from four assigned rows")
+    for public, result in zip(assigned, results, strict=True):
+        episode_id = public["episode_id"]
+        directory = episodes / episode_id
+        if (not directory.is_dir() or directory.is_symlink()
+                or (directory / "STOPPED.json").exists()):
+            raise ValueError("AP2 v2 final row is stopped or missing")
+        record_path = directory / "episode_record.json"
+        if sha(record_path) != AP2_V2_FINAL_EPISODE_RECORD_SHA256[episode_id]:
+            raise ValueError("AP2 v2 final episode record changed since collection")
+        record = json.loads(record_path.read_bytes())
+        inspect_sha = sha(directory / "inspect.eval")
+        purchase_sha = sha(directory / "audit-purchase/native-audit-purchase.json")
+        native_sha = sha(directory / "erc8183/native-evidence.json")
+        ident = f"ap2live2-{AP2_V2_ASSIGNMENT_SHA256[:12]}-{episode_id}"
+        billed = runs.get(ident)
+        expected_runs.add(ident)
+        if (record.get("schema") != "ap2-live-paid-episode-v2"
+                or record.get("status") != "COMPLETE"
+                or record.get("episode_id") != episode_id
+                or record.get("assignment_manifest_sha256") != AP2_V2_ASSIGNMENT_SHA256
+                or record.get("ledger_run_id") != ident
+                or record.get("inspect_sha256") != inspect_sha
+                or record.get("native_purchase_sha256") != purchase_sha
+                or record.get("native_erc8183_sha256") != native_sha
+                or not isinstance(billed, dict) or billed.get("status") != "SETTLED"
+                or billed.get("evidence_ref") != "sha256:" + inspect_sha
+                or Decimal(billed["actual_usd"]) != Decimal(record["model_cost_usd"])
+                or Decimal(result["model_cost_usd"]) != Decimal(record["model_cost_usd"])):
+            raise ValueError("AP2 v2 final row, native evidence or settled billing differs")
+        settled.append({"episode_id": episode_id, "ledger_run_id": ident,
+                        "episode_record_sha256": sha(record_path),
+                        "inspect_sha256": inspect_sha,
+                        "native_purchase_sha256": purchase_sha,
+                        "native_erc8183_sha256": native_sha,
+                        "settled_model_cost_usd": billed["actual_usd"]})
+    if any(name.startswith("ap2live2-") and name not in expected_runs for name in runs):
+        raise ValueError("unassigned AP2 v2 ledger run exists")
+    return {"ap2_v2_disposition": "COMPLETE_NO_PENDING",
+            "ap2_v2_assignment_sha256": AP2_V2_ASSIGNMENT_SHA256,
+            "ap2_v2_freeze_lock_sha256": AP2_V2_LOCK_SHA256,
+            "ap2_v2_final_collection_sha256": AP2_V2_FINAL_COLLECTION_SHA256,
+            "ap2_v2_final_ledger_seq": AP2_V2_FINAL_LEDGER_SEQ,
+            "ap2_v2_final_ledger_hash": AP2_V2_FINAL_LEDGER_HASH,
+            "ap2_v2_settled_runs": settled}
+
+
+
 def _ledger_records_through(state: dict) -> list[dict]:
     """Read the already validated ledger only through this snapshot's head."""
     records = [json.loads(line) for line in CANONICAL_LEDGER_PATH.read_bytes().splitlines()]
@@ -254,6 +383,61 @@ def _ledger_records_through(state: dict) -> list[dict]:
             or records[MPP009_FINAL_LEDGER_SEQ]["hash"] != MPP009_FINAL_LEDGER_HASH):
         raise ValueError("MPP009 ledger ancestor or current head differs")
     return records[:state["seq"] + 1]
+
+
+def fee010_closure_evidence(state: dict) -> dict:
+    """Accept FEE010's administrative zero-call closure only through its verifier."""
+    from agent_economic_trust.fee010_closure import CLOSURE_SHA256, verify_closure
+
+    assignment = FEE010_GATE / "assignment-001/assignment_manifest.json"
+    lock = FEE010_GATE / "first-freeze.lock.json"
+    closure = ROOT / "artifacts/gates/ERC8183_FEE010/verification-stop-001.json"
+    canonical_closure = FEE010_GATE / "verification-stop-001.json"
+    if (CLOSURE_SHA256 != FEE010_CLOSURE_SHA256
+            or any(not path.is_file() or path.is_symlink() or sha(path) != expected
+                   for path, expected in ((assignment, FEE010_ASSIGNMENT_SHA256),
+                                          (lock, FEE010_LOCK_SHA256),
+                                          (closure, FEE010_CLOSURE_SHA256),
+                                          (canonical_closure, FEE010_CLOSURE_SHA256)))):
+        raise ValueError("FEE010 frozen assignment, lock or closure proof changed")
+    report, rows = verify_closure()
+    order = report.get("execution_order")
+    if (report.get("schema") != "fee010-preexecution-closure-v1"
+            or report.get("status") != "CLOSED_STOPPED_BEFORE_EXECUTION"
+            or report.get("study_id") != "erc8183-native-evaluator-fee-live-010"
+            or report.get("old_assignment_sha256") != FEE010_ASSIGNMENT_SHA256
+            or report.get("old_lock_sha256") != FEE010_LOCK_SHA256
+            or not isinstance(order, list) or len(order) != 8 or len(set(order)) != 8
+            or report.get("planned_episodes") != 8
+            or report.get("completed_episodes") != 0
+            or report.get("stopped_before_execution_episodes") != 8
+            or report.get("pending_episodes") != 0
+            or report.get("paid_model_calls") != 0
+            or report.get("observed_ledger_seq") != MPP009_FINAL_LEDGER_SEQ
+            or report.get("observed_ledger_hash") != MPP009_FINAL_LEDGER_HASH
+            or state["seq"] < MPP009_FINAL_LEDGER_SEQ
+            or report.get("shared_ledger_fee010_run_ids") != []
+            or report.get("old_run_directory_present") is not False
+            or len(rows) != 8 or not isinstance(report.get("rows"), list)
+            or [row.get("episode_id") for row in report["rows"]] != order
+            or any(row.get("status") != "STOPPED_BEFORE_EXECUTION"
+                   for row in report["rows"])
+            or any(name.startswith("fee010-") for name in state["runs"])):
+        raise ValueError("FEE010 administrative zero-call closure differs")
+    return {"fee010_disposition": "ADMIN_CLOSED_BEFORE_EXECUTION_ZERO_CALLS",
+            "fee010_assignment_sha256": FEE010_ASSIGNMENT_SHA256,
+            "fee010_lock_sha256": FEE010_LOCK_SHA256,
+            "fee010_verification_stop_sha256": FEE010_CLOSURE_SHA256,
+            "fee010_readiness_sha256": report["old_readiness_sha256"],
+            "fee010_seed_file_sha256": report["old_seed_file_sha256"],
+            "fee010_private_rows_sha256": report["old_private_rows_sha256"],
+            "fee010_source_inventory_sha256": report["old_source_inventory_sha256"],
+            "fee010_closure_source_sha256": sha(ROOT / "src/agent_economic_trust/fee010_closure.py"),
+            "fee010_planned_episodes": 8,
+            "fee010_stopped_before_execution_episodes": 8,
+            "fee010_paid_model_calls": 0,
+            "fee010_closure_ledger_seq": MPP009_FINAL_LEDGER_SEQ,
+            "fee010_closure_ledger_hash": MPP009_FINAL_LEDGER_HASH}
 
 
 def mpp009_stopped_evidence(state: dict) -> dict:
@@ -390,8 +574,11 @@ def competing_gate_inventory() -> dict[str, str]:
 
 def _competing_gate_dispositions(inventory: dict[str, str]) -> dict[str, str]:
     """Require explicit review of frozen gates, including zero-ledger studies."""
-    return {name: "REVIEWED_NO_ACTIVE_PRIORITY" for name in sorted({
+    result = {name: "REVIEWED_NO_ACTIVE_PRIORITY" for name in sorted({
         Path(path).parts[2] for path in inventory})}
+    if "ERC8183_FEE010" in result:
+        result["ERC8183_FEE010"] = "ADMIN_CLOSED_BEFORE_EXECUTION_ZERO_CALLS"
+    return result
 
 
 def _new_competing_gates(inventory: dict[str, str]) -> list[str]:
@@ -401,6 +588,12 @@ def _new_competing_gates(inventory: dict[str, str]) -> list[str]:
                BASELINE_GATE_INVENTORY_SHA256):
         raise ValueError("pre-MPP010 frozen competing gate baseline changed")
     return sorted({Path(name).parts[2] for name in inventory if name not in baseline})
+
+
+def _require_only_closed_fee010_gate(inventory: dict[str, str]) -> None:
+    actual = {name for name in inventory if Path(name).parts[2] == "ERC8183_FEE010"}
+    if actual != FEE010_FROZEN_GATE_PATHS:
+        raise ValueError("FEE010 gained another frozen assignment or lock after closure")
 
 
 def intervening_ledger_evidence(state: dict, *, through: dict | None = None) -> dict:
@@ -449,16 +642,21 @@ def _intervening_review(record: dict, run_ids: list[str],
         planned = final.get("planned_episodes")
         complete = final.get("completed_episodes")
         stopped = final.get("stopped_episodes", 0)
+        pending = final.get("pending_episodes", 0)
         rows = final.get("rows")
         rows_final = (isinstance(rows, list) and len(rows) == planned
-                      and all(row.get("status") in {"COMPLETE", "STOPPED"}
+                      and all(isinstance(row, dict) and
+                              row.get("status") in {"COMPLETE", "STOPPED"}
                               for row in rows))
-        counts_final = (isinstance(complete, int) and isinstance(stopped, int)
-                        and complete + stopped == planned)
+        complete_rows = sum(row.get("status") == "COMPLETE" for row in rows) if rows_final else -1
+        stopped_rows = sum(row.get("status") == "STOPPED" for row in rows) if rows_final else -1
         if (final.get("study_id") != item["study_id"]
-                or not isinstance(planned, int) or planned <= 0
-                or final.get("pending_episodes", 0) != 0
-                or not (rows_final or counts_final)):
+                or type(planned) is not int or planned <= 0
+                or type(complete) is not int or type(stopped) is not int
+                or type(pending) is not int or pending != 0
+                or not rows_final
+                or complete != complete_rows
+                or stopped != stopped_rows):
             raise ValueError("MPP010 intervening study is not finally disposed")
         covered.extend(item["ledger_run_ids"])
         reviewed_gates.append(item["gate_id"])
@@ -477,14 +675,18 @@ def _intervening_review(record: dict, run_ids: list[str],
 def cross_study_clearance(state: dict, *, budget_head: dict | None = None) -> dict:
     """Require an explicit evidence-bound sequencing decision; never create it."""
     stopped = mpp009_stopped_evidence(state)
+    ap2_v2_final = ap2_v2_final_evidence(state)
+    fee010 = fee010_closure_evidence(state)
     if not CLEARANCE.is_file() or CLEARANCE.is_symlink():
         raise ValueError("MPP010 cross-study sequencing record is absent")
     budget_head = state if budget_head is None else budget_head
     later = intervening_ledger_evidence(state, through=budget_head)
     record = json.loads(CLEARANCE.read_bytes())
     inventory = competing_gate_inventory()
+    _require_only_closed_fee010_gate(inventory)
     new_gates = _new_competing_gates(inventory)
-    reviews = _intervening_review(record, later["post_mpp009_ledger_run_ids"], new_gates)
+    reviews = _intervening_review(record, later["post_mpp009_ledger_run_ids"],
+                                  [gate for gate in new_gates if gate != "ERC8183_FEE010"])
     expected = {"schema": "mpp010-cross-study-clearance-v1",
                 "study_id": STUDY_ID,
                 "decision": "MPP010_PRIORITY_AFTER_MPP009_FIRST_STOP",
@@ -495,7 +697,7 @@ def cross_study_clearance(state: dict, *, budget_head: dict | None = None) -> di
                 "competing_gate_dispositions": _competing_gate_dispositions(inventory),
                 "new_competing_gates": new_gates,
                 "intervening_studies": reviews,
-                **later, **stopped}
+                **later, **stopped, **ap2_v2_final, **fee010}
     if record != expected:
         raise ValueError("MPP010 cross-study clearance differs from current evidence or ledger")
     return {**record, "sha256": sha(CLEARANCE)}

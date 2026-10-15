@@ -4,6 +4,7 @@ from __future__ import annotations
 from copy import deepcopy
 import json
 from pathlib import Path
+import shutil
 from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
@@ -37,6 +38,54 @@ class ClearanceTests(unittest.TestCase):
         with patch.object(gate, "MPP009_FIRST_RAW_SHA256", "0" * 64):
             with self.assertRaisesRegex(ValueError, "raw model archive changed"):
                 gate.mpp009_stopped_evidence(state)
+
+    def test_ap2_v2_four_complete_rows_and_final_hash_are_bound(self):
+        state = BudgetLedger(CANONICAL_LEDGER_PATH).snapshot()
+        proof = gate.ap2_v2_final_evidence(state)
+        self.assertEqual(proof["ap2_v2_disposition"], "COMPLETE_NO_PENDING")
+        self.assertEqual(proof["ap2_v2_final_collection_sha256"],
+                         "73e2261ed2cfb10941b6867b476e7820dc72a15ed5cccba94d6ae541763b701a")
+        self.assertEqual(len(proof["ap2_v2_settled_runs"]), 4)
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for name in ("assignment-001/assignment_manifest.json",
+                         "first-freeze.lock.json", "collection-001-final.json"):
+                destination = root / name
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(gate.AP2_V2_GATE / name, destination)
+            collection = root / "collection-001-final.json"
+            report = json.loads(collection.read_text())
+            report["rows"][0]["status"] = "STOPPED"
+            report["completed_episodes"] = 3
+            report["stopped_episodes"] = 1
+            collection.write_text(json.dumps(report))
+            with patch.object(gate, "AP2_V2_GATE", root), \
+                 patch.object(gate, "AP2_V2_FINAL_COLLECTION_SHA256", gate.sha(collection)):
+                with self.assertRaisesRegex(ValueError, "four COMPLETE rows"):
+                    gate.ap2_v2_final_evidence(state)
+
+    def test_fee010_zero_call_closure_requires_pinned_verifier(self):
+        from agent_economic_trust import fee010_closure
+
+        state = BudgetLedger(CANONICAL_LEDGER_PATH).snapshot()
+        proof = gate.fee010_closure_evidence(state)
+        self.assertEqual(proof["fee010_disposition"],
+                         "ADMIN_CLOSED_BEFORE_EXECUTION_ZERO_CALLS")
+        self.assertEqual(proof["fee010_verification_stop_sha256"],
+                         "15ec9bc8fdbdaeba553987e62691cdc3539c2e4c2dcf4281575119389459d96b")
+        report, rows = fee010_closure.verify_closure()
+        wrong = {**report, "rows": [{**report["rows"][0], "status": "COMPLETE"},
+                                   *report["rows"][1:]]}
+        with patch.object(fee010_closure, "verify_closure", return_value=(wrong, rows)):
+            with self.assertRaisesRegex(ValueError, "zero-call closure differs"):
+                gate.fee010_closure_evidence(state)
+        with patch.object(gate, "FEE010_CLOSURE_SHA256", "0" * 64):
+            with self.assertRaisesRegex(ValueError, "closure proof changed"):
+                gate.fee010_closure_evidence(state)
+        billed = deepcopy(state)
+        billed["runs"]["fee010-unassigned"] = {"status": "SETTLED"}
+        with self.assertRaisesRegex(ValueError, "zero-call closure differs"):
+            gate.fee010_closure_evidence(billed)
 
     def test_post_stop_unknown_or_reserved_run_blocks_priority(self):
         state = BudgetLedger(CANONICAL_LEDGER_PATH).snapshot()
@@ -92,17 +141,45 @@ class ClearanceTests(unittest.TestCase):
                                              "pending_episodes": 1}))
                 with self.assertRaisesRegex(ValueError, "not finally disposed"):
                     gate._intervening_review({"intervening_studies": [entry]}, [], ["NEW"])
+                final.write_text(json.dumps({"study_id": "new-study", "planned_episodes": 1,
+                                             "completed_episodes": 0,
+                                             "rows": [{"status": "STOPPED"}]}))
+                with self.assertRaisesRegex(ValueError, "not finally disposed"):
+                    gate._intervening_review({"intervening_studies": [entry]}, [], ["NEW"])
+                final.write_text(json.dumps({"study_id": "new-study", "planned_episodes": 1,
+                                             "completed_episodes": 1, "stopped_episodes": 0,
+                                             "pending_episodes": 0,
+                                             "rows": [{"status": "PENDING"}]}))
+                with self.assertRaisesRegex(ValueError, "not finally disposed"):
+                    gate._intervening_review({"intervening_studies": [entry]}, [], ["NEW"])
+                final.write_text(json.dumps({"study_id": "new-study", "planned_episodes": 1,
+                                             "completed_episodes": 1, "stopped_episodes": 0,
+                                             "pending_episodes": 0,
+                                             "rows": [{"status": "STOPPED"}]}))
+                with self.assertRaisesRegex(ValueError, "not finally disposed"):
+                    gate._intervening_review({"intervening_studies": [entry]}, [], ["NEW"])
+
+    def test_fee010_administrative_exception_cannot_cover_second_assignment(self):
+        inventory = gate.competing_gate_inventory()
+        gate._require_only_closed_fee010_gate(inventory)
+        extra = dict(inventory)
+        extra["artifacts/gates/ERC8183_FEE010/assignment-002/assignment_manifest.json"] = "a" * 64
+        with self.assertRaisesRegex(ValueError, "another frozen assignment"):
+            gate._require_only_closed_fee010_gate(extra)
 
     def test_clearance_exactly_binds_gate_inventory_and_budget_head(self):
         state = BudgetLedger(CANONICAL_LEDGER_PATH).snapshot()
         stopped = gate.mpp009_stopped_evidence(state)
+        ap2 = gate.ap2_v2_final_evidence(state)
+        fee = gate.fee010_closure_evidence(state)
         later = {"post_mpp009_ledger_events_sha256": digest([]),
                  "post_mpp009_ledger_run_ids": [], "post_mpp009_terminal_runs": {}}
         # Isolate this exact-record unit from studies frozen concurrently in
         # the canonical checkout. A separate test requires review of each
         # newly frozen zero-call gate.
         inventory = {name: value for name, value in gate.competing_gate_inventory().items()
-                     if name in gate.BASELINE_GATE_PATHS}
+                     if name in gate.BASELINE_GATE_PATHS or
+                     name in gate.FEE010_FROZEN_GATE_PATHS}
         with TemporaryDirectory() as temporary:
             clearance = Path(temporary) / "clearance.json"
             record = {"schema": "mpp010-cross-study-clearance-v1",
@@ -112,8 +189,8 @@ class ClearanceTests(unittest.TestCase):
                       "ledger_available_usd": state["available_usd"],
                       "competing_gate_inventory": inventory,
                       "competing_gate_dispositions": gate._competing_gate_dispositions(inventory),
-                      "new_competing_gates": [],
-                      "intervening_studies": [], **later, **stopped}
+                      "new_competing_gates": gate._new_competing_gates(inventory),
+                      "intervening_studies": [], **later, **stopped, **ap2, **fee}
             clearance.write_text(json.dumps(record))
             with patch.object(gate, "CLEARANCE", clearance), \
                  patch.object(gate, "competing_gate_inventory", return_value=inventory), \
