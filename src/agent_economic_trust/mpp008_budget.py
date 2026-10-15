@@ -28,6 +28,7 @@ COLLECTION_PATH = (CANONICAL_LEDGER_PATH.parent.parent /
     "gates/MPP006/collection-mixed-001-after-first-stop.json")
 STOPPED_PATH = (CANONICAL_LEDGER_PATH.parent.parent /
     "gates/MPP006/runs-mixed-001/episodes/mpp006-bc092a2baae1584874c4f308/STOPPED.json")
+STOPPED_SHA256 = "afe3648e287db7cc3f05a87417ea6852969ae222dd043b26493854b983746745"
 
 
 def _file_sha(path: Path) -> str:
@@ -40,9 +41,10 @@ def _conditional_sidecar() -> dict:
     """Bind the exact reviewed conditional evidence and its saved sources."""
     if _file_sha(CONDITIONAL_EVIDENCE_PATH) != CONDITIONAL_EVIDENCE_SHA256:
         raise ValueError("MPP006 conditional evidence bytes differ")
+    if _file_sha(STOPPED_PATH) != STOPPED_SHA256:
+        raise ValueError("MPP006 archived STOPPED bytes differ")
     try:
         record = json.loads(CONDITIONAL_EVIDENCE_PATH.read_bytes())
-        _file_sha(STOPPED_PATH)
         stopped = json.loads(STOPPED_PATH.read_bytes())
     except (OSError, ValueError) as exc:
         raise ValueError("MPP006 conditional evidence or stopped record invalid") from exc

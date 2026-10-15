@@ -36,7 +36,7 @@ from agent_economic_trust.mpp008_pricing import (MixedPricingError, estimate_mod
     pricing_snapshots, reserve_pair)
 from agent_economic_trust.mpp008_budget import (
     MPP006_STOPPED_RUN_ID, MPP006_ORIGINAL_RESERVATION_USD, CONDITIONAL_EVIDENCE_REF,
-    CONDITIONAL_EVIDENCE_PATH, UNATTRIBUTED_KEY_EXPORT_RESIDUAL_USD,
+    CONDITIONAL_EVIDENCE_PATH, STOPPED_PATH, UNATTRIBUTED_KEY_EXPORT_RESIDUAL_USD,
     _conditional_sidecar, mpp006_contingent_exposure, required_headroom)
 from agent_economic_trust.mpp008_remote import (Mpp008Plan, _configured_models,
     fresh_budget, fresh_budget_in_service, post_reservation_budget,
@@ -433,6 +433,12 @@ class FreezeTests(unittest.TestCase):
                            sha256(altered).hexdigest()):
                     with self.assertRaisesRegex(ValueError, "conditional evidence facts differ"):
                         _conditional_sidecar()
+            stopped_copy = Path(temporary) / "STOPPED.json"
+            # Preserve every parsed fact while altering an otherwise unexamined byte.
+            stopped_copy.write_bytes(STOPPED_PATH.read_bytes() + b"\n")
+            with patch("agent_economic_trust.mpp008_budget.STOPPED_PATH", stopped_copy):
+                with self.assertRaisesRegex(ValueError, "archived STOPPED bytes differ"):
+                    mpp006_contingent_exposure(valid)
 
     def test_mpp006_contingent_hold_requires_exact_run_and_conditional_evidence(self):
         valid = contingent_mpp006_snapshot("36.8651862")
