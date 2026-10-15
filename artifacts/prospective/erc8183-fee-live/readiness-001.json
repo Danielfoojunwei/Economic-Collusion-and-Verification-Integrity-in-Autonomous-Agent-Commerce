@@ -1,0 +1,107 @@
+{
+  "assignment_frozen": false,
+  "budget_preview": {
+    "affordable_at_snapshot": true,
+    "catalog_refresh_and_independent_gate_still_required": true,
+    "full_block_plus_contingency_usd": "29.5251542",
+    "ledger_available_usd": "36.858794",
+    "ledger_seq": 147,
+    "per_row_worst_case_usd": "3.440640",
+    "permission_to_freeze_or_call": false,
+    "status": "DESIGN_ONLY_READ_ONLY"
+  },
+  "control_summary_sha256": "93785e75ad40005326452c3c41452960bdcb322cc9f23c4aca8aea396087dad1",
+  "control_verification_sha256": "741dcf8c15e2631158affbbed6ff6d8946660f133599c61c06d6952c50719595",
+  "mpp009_predecessor_disposition": {
+    "assignment_manifest_sha256": "a406280cf0619ea70e9901bd88f79af793a260fb199857f1a82a60a724d2239e",
+    "collection_sha256": "942fac731930ac77d79a2a40be048ca666c4c1cac39426d27b11ec4b88536b29",
+    "completed_episodes": 0,
+    "first_stop_sha256": "1c6b12257c1b879961a5d40ba406a0002b7431e3b79568b3deace5220a50b0da",
+    "ledger_run_id": "mpp009-a406280cf061-mpp009-bad064fc4d3fd2a6d4d74118",
+    "model_execution_tier": "REAL_LLM_REMOTE_APPROVED",
+    "native_outcome_claim": "STOPPED_PARTIAL_ONLY",
+    "pending_episodes": 9,
+    "planned_episodes": 10,
+    "status": "SEALED_STOPPED_NO_RETRY",
+    "stopped_episodes": 1
+  },
+  "native_cases_verified": 9,
+  "paid_model_calls": 0,
+  "public_pricing_snapshot": {
+    "anthropic/claude-sonnet-5.5": {
+      "catalog_model_sha256": "2e3f4d027fa7e0b86a95d918e2fd608b047698a1106f8165e7a62f0b87e8e8de",
+      "context_length": 1000000,
+      "fetched_utc": "2026-10-15T16:28:01.311416Z",
+      "input_framing_tokens_per_call": 8192,
+      "input_usd_per_token": "0.000004",
+      "max_completion_tokens": 128000,
+      "model_id": "anthropic/claude-sonnet-5.5",
+      "output_usd_per_token": "0.00001",
+      "pricing_tiers": 1,
+      "request_usd": "0",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    "openai/gpt-5.6-sol": {
+      "catalog_model_sha256": "71e95fa7cf157390232d6e13a44bf61ea6b9b6a7961ced6c8f37a684b51b499a",
+      "context_length": 1050000,
+      "fetched_utc": "2026-10-15T16:28:01.311220Z",
+      "input_framing_tokens_per_call": 8192,
+      "input_usd_per_token": "0.00001",
+      "max_completion_tokens": 128000,
+      "model_id": "openai/gpt-5.6-sol",
+      "output_usd_per_token": "0.00003",
+      "pricing_tiers": 2,
+      "request_usd": "0",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    }
+  },
+  "role_models": [
+    "openai/gpt-5.6-sol",
+    "anthropic/claude-sonnet-5.5"
+  ],
+  "runtime_versions": {
+    "inspect-ai": "0.3.263",
+    "orbit": "1.0.3"
+  },
+  "schema": "erc8183-fee-independent-readiness-v1",
+  "source_inventory_sha256": "7a70811c3abdd0a102631d15ebadc015c9d16b64b760a4ba6bdc8b3db3e1531c",
+  "source_sha256": {
+    "docs/PROSPECTIVE_ERC8183_EVALUATOR_FEE_LIVE_010.md": "f6792b6a77a0b671133f2108baa6462cf26864bd1996d8c1184ce5501fe039cd",
+    "scripts/collect_erc8183_fee.py": "a7c1b734fe19f7211f95e2ca0babfef4c00a7762b2fda1373626505672ee0729",
+    "scripts/freeze_erc8183_fee.py": "f77b1b8de5c6f4e17d5d4a4383b8af46aa8eac3a8fb2e68774732393a67ea50e",
+    "scripts/run_erc8183_fee_control.py": "1e6f5b4156a9c879adfd974a1af04b77d48e12e9ce99a943166e5c0af7bfe271",
+    "scripts/run_erc8183_fee_live.py": "109aa08e716fabf0c2c92255fbf484434071d1c44fa47529a4d562600f128a7b",
+    "scripts/run_erc8183_local.py": "0ea236b0c0fdc7c545736c34d92cc2318aa8cac8281feeb6652f218a3f83c5a7",
+    "scripts/verify_erc8183_fee_control.py": "9ba07cee49e16b30b688f7a523349b4b47aa4105d4b5fad4b073283bb8d1c268",
+    "scripts/verify_erc8183_fee_readiness.py": "02bba78a3ae4bf3d2c546f22f2304fda03df699acf75026086f4c4a72983da79",
+    "src/agent_economic_trust/ap2_live_fixture.py": "988fdb4b3f71be5f520529b37d78cef35e82d3801def8b563274d3939bb550d8",
+    "src/agent_economic_trust/core.py": "57d7ab48ffd43d6fbfcf343fc1549a3191cfae49c0c8eaa5521436de38d8d6dd",
+    "src/agent_economic_trust/erc8183_fee_clearance.py": "930a0d5ab80173c7e7ea4ed936037902263b8ce19f9de227396345ba2ab98f3d",
+    "src/agent_economic_trust/erc8183_fee_native.py": "4d300b2b6ac451b8c599419bbd5e014ada3e0a5d3802677cafe6e74790e1696f",
+    "src/agent_economic_trust/erc8183_fee_native_verifier.py": "b8009b66433de9675539ac19862f7dccd82240ad4e17263112b934344c78386a",
+    "src/agent_economic_trust/erc8183_fee_plan.py": "db65360aff0f8edee4b5a731a5b4447d036d126ee93eb82e4c76a30a6f098161",
+    "src/agent_economic_trust/erc8183_fee_remote.py": "97757249e7528eed35825cac77a669397d22ab72237f15899183201cfe7c143f",
+    "src/agent_economic_trust/erc8183_fee_task.py": "07094a71a71d8338156be58c57997c5b8806dd97b6277867658ba1f9d8011d38",
+    "src/agent_economic_trust/mpp005_boundary.py": "24ae9dc940a2f55aef000c373d922367654742adba5f3b9522498c7bf82dbffc",
+    "src/agent_economic_trust/mpp005_plan.py": "c548443ed01682c137487e40ca2ac4d470d8f86a676602207f17b5ae4a6d8c3c",
+    "src/agent_economic_trust/mpp008_budget.py": "cb9a15c8ff89b2e2bd8429fdd2d37af9d572dc8e96cd3cce0410d17d5ca5d453",
+    "src/agent_economic_trust/mpp008_plan.py": "b617e4260d483fca197d753d84f3fe08bab09613a979eadf20b2d3a341a2d2af",
+    "src/agent_economic_trust/mpp008_pricing.py": "49dd7d3f6b22535826283f60d419c207395a17990f040361071b9a443cd3d7a1",
+    "src/agent_economic_trust/open004_task.py": "1d99b2a23c61883c005edc7b552768af3131dbbf7dc392fdef309cddfceaf7ce",
+    "src/agent_economic_trust/remote_budget.py": "f15e700bed686f39ced8947aaa6f6ddbbfcdc15b100bb41dfb88dd1e3d8d7552",
+    "src/agent_economic_trust/remote_pricing.py": "3035172c0891c9ac0a96bdaacb10c39de50b1383dc08e8abd84524c8d09755d7",
+    "tests/test_erc8183_fee_control.py": "99bff629196e03b0e6277a18e79a310f4b5983931686f9e2260b9b3290dfa4ca",
+    "tests/test_erc8183_fee_live.py": "a9ddc4c14e319daeeb9cd0dceed9027554ae627f07cd8e6024148e7b77a160d9",
+    "tests/test_erc8183_fee_plan.py": "c4cc8677910e60bbdf834712584162136f15cd8a758ca6a6e28e0cd30151f944",
+    "tests/test_erc8183_fee_task_scaffold.py": "9fdb8c17a01c67b3c82e50599d1889cce8590a1f233d8471b36c63216006d14e"
+  },
+  "status": "PASS_READ_ONLY",
+  "study": "erc8183-native-evaluator-fee-live-010",
+  "test_modules": [
+    "tests.test_erc8183_fee_control",
+    "tests.test_erc8183_fee_plan",
+    "tests.test_erc8183_fee_task_scaffold",
+    "tests.test_erc8183_fee_live"
+  ],
+  "tests_executed": true
+}
