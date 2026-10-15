@@ -45,6 +45,7 @@ READINESS_SOURCE_CHANGES = (
     "scripts/freeze_ap2_live.py",
     "src/agent_economic_trust/ap2_live_budget.py",
     "src/agent_economic_trust/ap2_live_remote.py",
+    "src/agent_economic_trust/remote_budget.py",
     "tests/test_ap2_live_runner.py",
 )
 AP2_PYTHON = Path("/workspace/upstreams/ap2-w15/.venv/bin/python")
@@ -94,7 +95,7 @@ def _readiness(inventory: dict[str, str]) -> dict:
             or saved.get("source_sha256") != inventory
             or saved.get("source_inventory_sha256") != sha256(canonical(inventory)).hexdigest()
             or saved.get("prior_readiness_sha256") != file_sha(OFFLINE / "readiness.json")
-            or saved.get("source_change_scope") != "AP2_CONTINGENT_BUDGET_ONLY"
+            or saved.get("source_change_scope") != "AP2_CONTINGENT_BUDGET_AND_LEDGER"
             or saved.get("changed_source_paths") != list(changed)
             or changed != READINESS_SOURCE_CHANGES
             or saved.get("offline_report_sha256") != file_sha(OFFLINE / "report.json")
