@@ -1,0 +1,43 @@
+{
+  "actual_final_provider_charge_usd": null,
+  "aggregate_account_delta_is_final_billing": false,
+  "aggregate_account_usage_delta_usd": "0E-7",
+  "boundary_failure": "PROVIDER_CLAIM_IN_UNTRUSTED_ORBIT_CHANNEL_INBOX_MISCLASSIFIED_AS_PRIVATE_SYSTEM_TRUTH",
+  "contingent_budget_exposure_usd": "4.407296",
+  "evidence_paths": {
+    "assignment_manifest": "artifacts/gates/X402_LIVE011/assignment-001/assignment_manifest.json",
+    "collection": "artifacts/gates/X402_LIVE011/collection-001-after-first-stop.json",
+    "freeze_lock": "artifacts/gates/X402_LIVE011/first-freeze.lock.json",
+    "inspect": "artifacts/gates/X402_LIVE011/runs-001/episodes/x402011-19587c1ddccc97900b2deddd/inspect.eval",
+    "native_bridge": "artifacts/gates/X402_LIVE011/runs-001/episodes/x402011-19587c1ddccc97900b2deddd/native/native-bridge.json",
+    "stop": "artifacts/gates/X402_LIVE011/runs-001/episodes/x402011-19587c1ddccc97900b2deddd/STOPPED.json"
+  },
+  "evidence_sha256": {
+    "assignment_manifest": "ea4c997ba6f30d6b007469c90bbd58de923ee185406fc405b847b591ae2098bb",
+    "collection": "49e3d3bb707700a55f89156c0423bd28f9d474344dfab8be4b676c065b5c281b",
+    "freeze_lock": "03d67d895889565b9ea2ed59ae39f5675584054921206f94f548d5d21d6566d0",
+    "inspect": "bd3cba2a1b2f9b366e5a7b4ac1ca4935b6e820ccf3f529a3d0d1ee95dc5b2ef2",
+    "native_bridge": "6e89708bcb9c3d713e099627dd955a2bd6e9a90d3deb98cc3d1e8bf55bcd8150",
+    "stop": "3adca103ba82b62f57c1d61365ff6f5bda4545386b88b3a95d7b2ebae771de02"
+  },
+  "ledger_prestate": {
+    "blocked": true,
+    "cap_usd": "50",
+    "last_hash": "2878187fea12ff5dbb94e4b8018d40121882e70dc5753371805be4bb9710dbbf",
+    "reserved_usd": "14.0943",
+    "seq": 154,
+    "unknown_run_ids": [
+      "x402011-ea4c997ba6f3-x402011-19587c1ddccc97900b2deddd"
+    ]
+  },
+  "model_events": 6,
+  "per_request_billing_available": false,
+  "result": "MODEL_CHARGE_UNATTRIBUTED_AS_OF_LOCAL_ACCOUNT_SNAPSHOT",
+  "run_id": "x402011-ea4c997ba6f3-x402011-19587c1ddccc97900b2deddd",
+  "runner_error_type": "RemoteBoundaryError",
+  "saved_model_event_errors": 0,
+  "saved_model_usage_available": true,
+  "schema": "x402011-first-stop-contingent-billing-v1",
+  "settlement_requires_independent_review": true,
+  "stopped_native_receipt_claim": "GOOD_CHECKED_ACCEPT_AND_VALID_LOCAL_PAYOUT"
+}
