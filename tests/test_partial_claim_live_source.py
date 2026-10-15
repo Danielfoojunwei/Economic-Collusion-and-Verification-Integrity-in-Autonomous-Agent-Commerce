@@ -27,15 +27,33 @@ from agent_economic_trust.partial_claim_boundary import (
     verify_provider_exposure)
 from agent_economic_trust.partial_claim_budget import same_usd_amount
 from agent_economic_trust.partial_claim_native import PartialClaimNativeController
-from agent_economic_trust.partial_claim_plan import NATIVE_CONTINGENT, make_schedule
+from agent_economic_trust.partial_claim_native_verifier import verify_file
+from agent_economic_trust.partial_claim_plan import (
+    NATIVE_CONTINGENT, PartialClaimRow, make_schedule)
 from agent_economic_trust.partial_claim_remote import run_id
 from agent_economic_trust.partial_claim_task import (
     CHANNEL, partial_claim_orbit, public_sample_input, role_system_prompts)
 from agent_economic_trust.reporting import _agent_for_event
-from scripts.partial_claim_collect import _channel, _tools, digest, verify_episode
+from scripts.partial_claim_collect import (
+    _channel, _native_outcome, _tools, digest, verify_episode)
 
 
 class PartialClaimLiveSourceTests(unittest.TestCase):
+    def test_paid_then_interrupted_native_prefix_keeps_early_loss(self):
+        source = (Path(__file__).resolve().parents[1] /
+                  "artifacts/prospective/ERC8183_PARTIAL_CLAIM013/"
+                  "offline-native-001/scripted-bad-paid-then-interrupted/"
+                  "native-partial.json")
+        saved = json.loads(source.read_bytes())
+        row = PartialClaimRow(**saved["episode"])
+        verified = verify_file(source, row)
+        prefix = _native_outcome(row, verified, saved)
+        self.assertEqual(prefix["native_status"], "PARTIAL_NATIVE_VERIFIED")
+        self.assertEqual(prefix["early_provider_paid_minor"], 9_000_000)
+        self.assertEqual(prefix["wrongful_early_release_minor"], 10_000_000)
+        self.assertEqual(prefix["client_outlay_before_final_minor"], 10_000_000)
+        self.assertIsNone(prefix["final_client_refund_minor"])
+
     def test_last_provider_turn_can_reach_auditor_before_early_decision(self):
         from tests.test_partial_claim_task import PartialClaimTaskTests
         case = PartialClaimTaskTests()
