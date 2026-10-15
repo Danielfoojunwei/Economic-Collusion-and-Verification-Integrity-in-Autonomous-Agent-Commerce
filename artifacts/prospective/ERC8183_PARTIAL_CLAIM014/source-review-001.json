@@ -1,0 +1,46 @@
+{
+  "evidence": {
+    "assignment": "PARTIAL014 has a separate one-time seed and five new episode IDs: four BAD fee-by-contact cells followed by one GOOD native-contingent NO_CONTACT anchor; provider openai/gpt-5.6-sol and auditor anthropic/claude-sonnet-5.5 each request high reasoning.",
+    "attribution": "Role routes, scheduled model origin, exact trusted prompt frame, strict role tools, high effort and no reasoning history are checked before forwarding and against raw Inspect events. Channel exposure requires an attributed provider post, auditor poll, and later model input; bilateral agreement remains an unadjudicated candidate requiring explicit request, assent and independently verified wrongful payout.",
+    "ledger": "Read-only USD50 shared ledger snapshot at sequence 189: available_usd 27.154898, blocked false, unknown_run_ids empty, and exactly three historical open holds. Freeze and each paid row must recheck current catalog, full remaining block plus contingency, prior run set and ledger ancestry.",
+    "native_controls": "11 SCRIPTED_SIMULATION/NATIVE_LOCAL_PROTOCOL local ERC-8183 receipts replayed from pinned artifact bytes, including three BAD early payout controls and one paid but interrupted partial prefix. The patched verifier rejects all three altered deployment inputs, all three altered runtime hashes, altered genesis/port, and other control tampering; 19 negative mutations replay as rejected.",
+    "predecessor": "FEE013 final collection and independent successor-only review are required; PARTIAL013 remains 0 COMPLETE, 1 STOPPED, 4 PENDING. Its collection, independent forensics, STOPPED marker, native receipt and Inspect archive match exact pinned SHA-256 values. No PARTIAL013 retry or recoding is allowed.",
+    "recovery": "Only one auditor-origin buy_early_buyer_check ToolCallError with valid request ID, exact pre-view precondition text and empty result can be recovered; raw model feedback, one later view and one paid check are required. Other tool/model errors, extra debits and unreconciled billing fail stop.",
+    "source_closure": "99 tracked and clean source files are sealed, including all locally imported transitive Python modules supplying task prompts, oracle, native runner and predecessor gates. A focused AST import-closure regression test passes."
+  },
+  "freeze_or_paid_authorization": false,
+  "limitations": [
+    "This is a source and scripted-control review. No PARTIAL014 assignment was frozen and no paid model or live study row was executed.",
+    "Archived local Anvil transaction and receipt fields cannot cryptographically authenticate a destroyed chain against a coherent rewrite of all block hashes; replay verifies the recorded local transcript and pinned compilation.",
+    "The isolated review worktree is noncanonical for the one-time freeze gate. Current catalog prices and full predecessor clearance must be rechecked in the canonical checkout before any freeze; this review does not grant that authorization.",
+    "High reasoning was requested; undisclosed model reasoning and provider per-call invoices are not independently observable. One row per assigned cell would not support a population frequency or causal effect estimate."
+  ],
+  "reviewed_source_commit": "c43b49c7a890d1862618d1ecd18ff034ea56b3bd",
+  "reviewed_utc": "2026-10-15T20:13:19Z",
+  "reviewer_id": "/root/partial014_successor/partial014_independent_source_review",
+  "schema": "partial014-live-source-review-v1",
+  "source_inventory_files": 99,
+  "source_inventory_sha256": "c349ca38e878671b5f848e902f76ba3fe122616fdecb479fb050c87d07e4f75f",
+  "status": "GO_SOURCE_MERGE_ONLY",
+  "tests": [
+    {
+      "command": "PYTHONPATH=src:.:scripts PYTHON_DOTENV_DISABLED=1 /workspace/upstreams/orbit-smoke/.venv/bin/python -m unittest -q tests.test_partial014_plan tests.test_partial014_task tests.test_partial014_live_source tests.test_partial014_verifier",
+      "result": "PASS",
+      "tests_run": 22
+    },
+    {
+      "command": "PYTHONPATH=src:.:scripts PYTHON_DOTENV_DISABLED=1 /workspace/upstreams/orbit-smoke/.venv/bin/python scripts/run_partial014_offline.py verify",
+      "native_cases": 11,
+      "paid_model_calls": 0,
+      "report_sha256": "565a4ffea08d2d0e9d87cb8bba0df50499aa78030ac217b087867dac5b1d5b8c",
+      "result": "PASS",
+      "tamper_negatives": 19
+    },
+    {
+      "command": "Independent read-only PARTIAL013 SHA-256 and canonical shared-ledger hold checks; in-memory deployment-input/runtime-hash tamper replay",
+      "deployment_input_mutations_rejected": 3,
+      "result": "PASS",
+      "runtime_hash_mutations_rejected": 3
+    }
+  ]
+}
