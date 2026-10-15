@@ -84,9 +84,12 @@ def run(*, ledger_path: Path = CANONICAL_LEDGER, apply: bool = False) -> dict:
     }
     if not apply:
         return result
-    # BudgetLedger rechecks UNKNOWN under its own write lock. The source
-    # preflight above pins the original bytes; an intervening settlement fails.
-    after = BudgetLedger(ledger_path).mark_contingent(RUN_ID, result["evidence_ref"])
+    # BudgetLedger checks these exact prestate markers under its exclusive
+    # write lock; any intervening ledger event fails before it can append.
+    after = BudgetLedger(ledger_path).mark_contingent(
+        RUN_ID, result["evidence_ref"],
+        expected_seq=before["seq"], expected_last_hash=before["last_hash"],
+    )
     run_after = after["runs"][RUN_ID]
     if (after["seq"] != before["seq"] + 1
             or after["reserved_usd"] != EXPECTED_RESERVE

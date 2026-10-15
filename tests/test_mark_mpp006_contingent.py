@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import shutil
 import tempfile
@@ -64,6 +65,38 @@ class MPP006ContingentOperatorTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "saved conditional evidence SHA-256 differs"):
                 operator.run(ledger_path=self.ledger, apply=True)
         self.assertEqual(operator._sha(self.ledger), original)
+
+    def test_intervening_valid_event_rejects_under_ledger_lock(self) -> None:
+        class InterveningLedger(remote_budget.BudgetLedger):
+            def mark_contingent(self, *args, **kwargs):
+                # Simulate a separate writer after operator preflight. This
+                # valid hash-chain event keeps MPP006 UNKNOWN, so only the
+                # sequence/hash compare-and-swap can reject the operator.
+                before = self.snapshot()
+                event = remote_budget._record(
+                    before["seq"] + 1, before["last_hash"], "reserve",
+                    {"run_id": "race-probe", "amount_usd": "0.01",
+                     "cap_usd": "50", "metadata": {}},
+                )
+                with self.path.open("ab") as stream:
+                    stream.write(remote_budget._canonical(event) + b"\n")
+                remote_budget._write_anchor(
+                    self.path, seq=event["seq"], digest=event["hash"],
+                    size=self.path.stat().st_size,
+                )
+                return super().mark_contingent(*args, **kwargs)
+
+        with patch.object(operator, "BudgetLedger", InterveningLedger):
+            with self.assertRaisesRegex(
+                remote_budget.BudgetStateError,
+                "ledger changed after contingent evidence was reviewed",
+            ):
+                operator.run(ledger_path=self.ledger, apply=True)
+        after = remote_budget.read_ledger(self.ledger)
+        self.assertEqual(after["seq"], 133)
+        self.assertEqual(after["runs"][operator.RUN_ID]["status"], "UNKNOWN")
+        self.assertEqual(after["contingent_run_ids"], [])
+        self.assertEqual(json.loads(self.ledger.read_bytes().splitlines()[-1])["kind"], "reserve")
 
 
 if __name__ == "__main__":
