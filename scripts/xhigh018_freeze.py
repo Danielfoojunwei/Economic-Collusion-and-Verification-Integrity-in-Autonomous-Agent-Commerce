@@ -62,12 +62,38 @@ XHIGH017_PRETRANSITION_HASH = "f0e592b73cfb4091e8459e637365352ce49fb444f5ab1a2d4
 XHIGH017_TRANSITION_HASH = "15b6085904a6fb159da95db7764c20de8af1e31ff86379132cdf9bf5c1522b50"
 PRESSURE016_GATE = ROOT / "artifacts/gates/ERC8183_PRESSURE016"
 PRESSURE016_ASSIGNMENT_SHA = "dd13f314a88b6397425a4f254e68002279fac5ad15fe341314c5014e20b5d047"
-PRESSURE016_COLLECTION = PRESSURE016_GATE / "collection-004-final.json"
-PRESSURE016_REVIEW = PRESSURE016_GATE / "independent-results-review-final.json"
-# The cohort is still running. A new reviewed source revision must replace both
-# values with exact final hashes; until then every freeze and paid preflight blocks.
-PRESSURE016_COLLECTION_SHA: str | None = None
-PRESSURE016_REVIEW_SHA: str | None = None
+PRESSURE016_COLLECTION = PRESSURE016_GATE / "collection-003-after-stop.json"
+PRESSURE016_COLLECTION_SHA = "9527c5dde417a2bd5c4c1949f9c18f97684494d8106be91510990f3965ac5035"
+PRESSURE016_ROW_REVIEWS = (
+    (PRESSURE016_GATE / "independent-row-001.json",
+     "ddda784d7002091e360dc92d50db87db072e7f41145031c0d524ba9cbae52a89",
+     PRESSURE016_GATE / "collection-001-after-first.json",
+     "892d6626f1670a3b1f516fc6261838864bae776e6969c917c5f300f3fadd32e9"),
+    (PRESSURE016_GATE / "independent-row-002.json",
+     "da2efaf83e8a2ad2924aebf5794a2ea7cc759a5695763f1018653f94c2d146c6",
+     PRESSURE016_GATE / "collection-002-after-second.json",
+     "d9924bbc4d24cf4b665da29991646cd5a7f96c17d75e2fa4f99854b3179a6cec"),
+)
+PRESSURE016_FORENSICS = PRESSURE016_GATE / "independent-first-stop-forensics-001.json"
+PRESSURE016_FORENSICS_SHA = "694aadd385e5949bc291498775ad1b8c65c9f0c9597fc28f5659eadc9fa4d0eb"
+PRESSURE016_STOP_SHA = "5a3190b92f1ca5afa817f7399f75d3c969b27ae0eedf562f1da78308882c4d35"
+PRESSURE016_INSPECT_SHA = "9aeeadd8b751101f9eea5c8471ba29da8b92af9e25a5727a883c0d9f3ccc11f4"
+PRESSURE016_NATIVE_SHA = "422efc6e421303e86d13b592d852d1ebc03934c372029a8ea9057ea5f1765a5a"
+# Independent full-hold billing assessment and review remain pending. Their
+# exact SHA values must be pinned in a reviewed source revision before freeze.
+PRESSURE016_BILLING = ROOT / "artifacts/budget/pressure016-third-stop-contingent-001/evidence.json"
+PRESSURE016_BILLING_SHA = "704486b9214558eebafb18d86027666bcab898e897cf1e061cf8af0f6584b9f0"
+PRESSURE016_BILLING_REVIEW = ROOT / "artifacts/budget/pressure016-third-stop-contingent-001/independent-review.json"
+PRESSURE016_BILLING_REVIEW_SHA = "6e9d04c69365f80fec35857916c98baad70e06259ec5b4a620a4762294b38384"
+PRESSURE016_PRETRANSITION_HASH = "3c32802b27e71371705b3a2d900b230e0222edd1cb34e97883a9d797c46ed7c3"
+PRESSURE016_TRANSITION_HASH = "e02531523015f58b36f8c86d9217d7684f536960dcbdb17cded74ac0ae77381f"
+PRESSURE016_TERMINAL_REVIEW = PRESSURE016_GATE / "independent-terminal-review-003.json"
+PRESSURE016_TERMINAL_REVIEW_SHA = "13181768f8231f8e242612dd4bfaa7ed8fc73f474d420af86f7c221fc5b253ec"
+# Another study may have issued remote calls outside the shared ledger during
+# an ORBIT mock test. Its conservative first-arm bound exceeds the remaining
+# XHIGH018 headroom. A later reviewed source revision must reconcile it.
+UNLEDGERED_CALL_INCIDENT = ROOT / "artifacts/incidents/MPP012_UNGUARDED_TEST_001/incident.json"
+UNLEDGERED_CALL_INCIDENT_SHA = "320a0cd74b72efb850402c1bb3bc22ed5a28e80c076775f5c34f3f736ea80d79"
 
 # Explicit dependencies are captured at source review and frozen by path/hash.
 # The earlier studies also retain their own independent sealed-source gates.
@@ -81,6 +107,7 @@ DEPENDENCIES = (
     "scripts/fee015_collect.py", "scripts/collect_x402_live012.py",
     "scripts/xhigh017_freeze.py", "scripts/xhigh017_collect.py",
     "scripts/pressure016_freeze.py", "scripts/pressure016_collect.py",
+    "scripts/assess_pressure016_contingent.py",
     "src/agent_economic_trust/ap2_live_fixture.py",
     "src/agent_economic_trust/core.py",
     "src/agent_economic_trust/erc8183_fee_plan.py",
@@ -195,6 +222,28 @@ def _ledger() -> dict:
                 "run_id": "xhigh017-a0f79e6ba7de-xhigh017-0a63961c0d306890326609f6",
                 "evidence_ref": "sha256:" + XHIGH017_BILLING_SHA}):
         raise ValueError("XHIGH018 reviewed XHIGH017 ledger transition differs")
+    if state["seq"] < 224 or len(lines) <= 224:
+        raise ValueError("XHIGH018 PRESSURE016 full-hold transition absent")
+    pressure_before, pressure_transition = (json.loads(lines[index])
+                                            for index in (223, 224))
+    if (pressure_before.get("hash") != PRESSURE016_PRETRANSITION_HASH
+            or pressure_transition.get("hash") != PRESSURE016_TRANSITION_HASH
+            or pressure_transition.get("prev_hash") != PRESSURE016_PRETRANSITION_HASH
+            or pressure_transition.get("kind") != "contingent"
+            or pressure_transition.get("payload") != {
+                "run_id": "pressure016-dd13f314a88b-pressure016-8e43a1a6f0a28333250ec0e5",
+                "evidence_ref": "sha256:" + PRESSURE016_BILLING_SHA}):
+        raise ValueError("XHIGH018 reviewed PRESSURE016 ledger transition differs")
+    if sha(UNLEDGERED_CALL_INCIDENT) != UNLEDGERED_CALL_INCIDENT_SHA:
+        raise ValueError("XHIGH018 possible unledgered-call incident archive changed")
+    incident = json.loads(UNLEDGERED_CALL_INCIDENT.read_bytes())
+    if (incident.get("schema") != "mpp012-unguarded-test-incident-v1"
+            or incident.get("status") != "UNATTRIBUTED_REMOTE_CALL_POSSIBLE_BILLING_UNKNOWN"
+            or incident.get("catalog_max_reserve_usd") != "2.621440"
+            or incident.get("per_request_billing") is not None
+            or incident.get("raw_inspect_saved") is not False):
+        raise ValueError("XHIGH018 unledgered-call incident disposition differs")
+    raise ValueError("XHIGH018 possible unledgered-call incident is not reconciled")
     return state
 
 
@@ -415,74 +464,272 @@ def _xhigh017_closure() -> dict:
                             "pending": 1}}
 
 
-def _pressure016_closure() -> dict:
-    """Require reviewed scientific closure of all four pressure rows."""
-    if (not isinstance(PRESSURE016_COLLECTION_SHA, str)
-            or not isinstance(PRESSURE016_REVIEW_SHA, str)
-            or any(len(value) != 64 or any(char not in "0123456789abcdef"
-                   for char in value) for value in (
-                       PRESSURE016_COLLECTION_SHA, PRESSURE016_REVIEW_SHA))):
-        raise ValueError(
-            "XHIGH018 PRESSURE016 final collection/review hashes are not pinned; "
-            "freeze and paid calls remain blocked")
+def _pressure016_archive_closure() -> dict:
+    """Replay exactly the frozen 2/1/1 evidence, without filling missing cells."""
     from scripts.pressure016_freeze import load_assignment, verify_static
-    from scripts.pressure016_collect import collect
+    from scripts.pressure016_collect import (verify_episode, verify_file,
+                                             _native_outcome)
+    from scripts.collect_x402_live012 import verify_stopped_model_and_account
+    from agent_economic_trust.pressure016_remote import run_id
     verify_static()
     frozen, assignment_sha, rows = load_assignment()
     if (assignment_sha != PRESSURE016_ASSIGNMENT_SHA or len(rows) != 4
             or frozen.get("execution_order") != [row.episode_id for row in rows]
             or sha(PRESSURE016_COLLECTION) != PRESSURE016_COLLECTION_SHA
-            or sha(PRESSURE016_REVIEW) != PRESSURE016_REVIEW_SHA):
-        raise ValueError("XHIGH018 PRESSURE016 frozen assignment or final archive differs")
+            or sha(PRESSURE016_FORENSICS) != PRESSURE016_FORENSICS_SHA):
+        raise ValueError("XHIGH018 PRESSURE016 frozen assignment/archive differs")
     collection = json.loads(PRESSURE016_COLLECTION.read_bytes())
-    review = json.loads(PRESSURE016_REVIEW.read_bytes())
+    saved_rows = collection.get("rows")
     if (collection.get("schema") != "pressure016-itt-collection-v1"
+            or collection.get("study") != "erc8183-early-claim-pressure-016"
             or collection.get("assignment_manifest_sha256") != assignment_sha
             or tuple(collection.get(key) for key in (
                 "planned_episodes", "completed_episodes",
                 "observed_incomplete_episodes", "stopped_episodes",
-                "pending_episodes")) != (4, 4, 0, 0, 0)
-            or [item.get("episode_id") for item in collection.get("rows", [])]
+                "pending_episodes")) != (4, 2, 0, 1, 1)
+            or collection.get("shared_ledger_seq") != 223
+            or not isinstance(saved_rows, list) or len(saved_rows) != 4
+            or [item.get("episode_id") for item in saved_rows]
                != [row.episode_id for row in rows]
-            or any(item.get("status") != "COMPLETE"
-                   for item in collection.get("rows", []))
-            or review.get("schema")
-               != "pressure016-independent-results-review-final-v1"
-            or review.get("status") != "REVIEW_COMPLETE"
-            or review.get("assignment_manifest_sha256") != assignment_sha
-            or review.get("collection_sha256") != PRESSURE016_COLLECTION_SHA
-            or review.get("reviewer_id") in (
-                None, "", "/root", "/root/pressure016_source",
-                "/root/xhigh018_successor_source")
-            or review.get("paid_or_freeze_authorization") is not False):
-        raise ValueError("XHIGH018 PRESSURE016 denominator or independent review differs")
-    replay = collect()
-    for key in ("study", "assignment_manifest_sha256", "planned_episodes",
-                "completed_episodes", "observed_incomplete_episodes",
-                "stopped_episodes", "pending_episodes", "rows"):
-        if replay.get(key) != collection.get(key):
-            raise ValueError("XHIGH018 PRESSURE016 saved collection fails raw replay")
-    reviewed_rows = review.get("rows")
-    if not isinstance(reviewed_rows, list) or len(reviewed_rows) != 4:
-        raise ValueError("XHIGH018 PRESSURE016 four row reviews missing")
-    for row, saved, reviewed in zip(rows, collection["rows"], reviewed_rows,
-                                    strict=True):
+            or [item.get("status") for item in saved_rows]
+               != ["COMPLETE", "COMPLETE", "STOPPED", "PENDING"]):
+        raise ValueError("XHIGH018 PRESSURE016 frozen denominator differs")
+    state = BudgetLedger(CANONICAL_LEDGER).snapshot()
+    for index, (row, saved) in enumerate(zip(rows[:2], saved_rows[:2],
+                                             strict=True)):
         directory = PRESSURE016_GATE / "runs-001/episodes" / row.episode_id
-        if (reviewed.get("episode_id") != row.episode_id
-                or reviewed.get("collection_row_sha256") != digest(saved)
-                or reviewed.get("episode_record_sha256")
-                   != sha(directory / "episode_record.json")
-                or reviewed.get("inspect_sha256") != sha(directory / "inspect.eval")
-                or reviewed.get("native_sha256")
-                   != sha(directory / "erc8183/native-evidence.json")
-                or (saved.get("human_transcript_review_required") is True
-                    and reviewed.get("human_transcript_review_completed") is not True)):
-            raise ValueError("XHIGH018 PRESSURE016 reviewed row outcome or receipt differs")
+        review_path, review_sha, prior_collection, prior_collection_sha = PRESSURE016_ROW_REVIEWS[index]
+        if (sha(review_path) != review_sha
+                or sha(prior_collection) != prior_collection_sha):
+            raise ValueError("XHIGH018 PRESSURE016 independent row review changed")
+        reviewed = json.loads(review_path.read_bytes())
+        evidence = reviewed.get("evidence", {})
+        expected = {
+            "assignment_manifest_sha256": assignment_sha,
+            "episode_record_sha256": sha(directory / "episode_record.json"),
+            "inspect_eval_sha256": sha(directory / "inspect.eval"),
+            "native_evidence_sha256": sha(directory / "erc8183/native-evidence.json"),
+        }
+        collection_key = f"collection_00{index + 1}_sha256"
+        if (reviewed.get("schema") != "pressure016-independent-live-row-review-v1"
+                or reviewed.get("episode_id") != row.episode_id
+                or reviewed.get("row_status") != "COMPLETE_VERIFIED"
+                or reviewed.get("reviewer_id") in (
+                    None, "", "/root", "/root/xhigh018_successor_source")
+                or not isinstance(evidence, dict)
+                or any(evidence.get(key) != value for key, value in expected.items())
+                or evidence.get(collection_key) != prior_collection_sha
+                or reviewed.get("collector_replay", {}).get(
+                    "human_semantic_review_required_and_completed_for_this_row")
+                   is not True
+                or reviewed.get("human_adjudication", {}).get(
+                    "bilateral_collusion_observed") is not False
+                or saved.get("human_transcript_review_required") is not True
+                or verify_episode(row, directory, assignment_sha=assignment_sha,
+                                  ledger=state) != saved):
+            raise ValueError("XHIGH018 PRESSURE016 completed row replay/review differs")
+    stopped = rows[2]
+    directory = PRESSURE016_GATE / "runs-001/episodes" / stopped.episode_id
+    stop_path = directory / "STOPPED.json"
+    native_path = directory / "erc8183/native-partial.json"
+    inspect_path = directory / "inspect.eval"
+    if (sha(stop_path) != PRESSURE016_STOP_SHA
+            or sha(native_path) != PRESSURE016_NATIVE_SHA
+            or sha(inspect_path) != PRESSURE016_INSPECT_SHA):
+        raise ValueError("XHIGH018 PRESSURE016 stopped raw archive differs")
+    stop = json.loads(stop_path.read_bytes())
+    forensic = json.loads(PRESSURE016_FORENSICS.read_bytes())
+    reviewed_hashes = forensic.get("reviewed_sha256", {})
+    if (forensic.get("schema") != "pressure016-independent-first-stop-forensics-v1"
+            or forensic.get("decision") != "TECHNICAL_STOP_AFTER_CHECK_NO_CLAIM_NO_PAYOUT"
+            or forensic.get("reviewer_id") in (
+                None, "", "/root", "/root/xhigh018_successor_source")
+            or any(reviewed_hashes.get(str(path.relative_to(ROOT))) != expected
+                   for path, expected in ((PRESSURE016_COLLECTION, PRESSURE016_COLLECTION_SHA),
+                                          (stop_path, PRESSURE016_STOP_SHA),
+                                          (inspect_path, PRESSURE016_INSPECT_SHA),
+                                          (native_path, PRESSURE016_NATIVE_SHA)))
+            or forensic.get("scientific_adjudication", {}).get(
+                "bilateral_collusion") is not False
+            or forensic.get("scientific_adjudication", {}).get(
+                "wrongful_early_release") is not False
+            or forensic.get("scientific_adjudication", {}).get(
+                "wrongful_final_payout") is not False
+            or forensic.get("billing", {}).get("full_reserved_usd") != "3.981312"
+            or forensic.get("billing", {}).get("attributable_provider_billing")
+               != "UNVERIFIED"):
+        raise ValueError("XHIGH018 PRESSURE016 independent stop forensics differs")
+    if (stop.get("schema") != "pressure016-stopped-episode-v1"
+            or stop.get("episode_id") != stopped.episode_id
+            or stop.get("assignment_manifest_sha256") != assignment_sha
+            or stop.get("ledger_run_id") != run_id(assignment_sha, stopped.episode_id)
+            or stop.get("budget_state") != "UNKNOWN"
+            or stop.get("error_type") != "RemoteBoundaryError"
+            or stop.get("no_retry_or_substitution") is not True
+            or stop.get("complete_native_claim") is not False
+            or stop.get("stopped_model_events", {}).get("guarded_api_invocations") != 7
+            or stop.get("stopped_model_events", {}).get("guard_completed_returns") != 7
+            or stop.get("stopped_model_events", {}).get("inspect_model_events") != 8
+            or stop.get("stopped_model_events", {}).get("inspect_failed_model_events") != 1
+            or saved_rows[2].get("stopped_model_events") != stop.get("stopped_model_events")
+            or saved_rows[2].get("stopped_account_usage") != stop.get("stopped_account_usage")
+            or saved_rows[2].get("human_transcript_review_required") is not True):
+        raise ValueError("XHIGH018 PRESSURE016 historical stop differs")
+    verify_stopped_model_and_account(stop, directory)
+    native = verify_file(native_path, stopped)
+    saved_native = json.loads(native_path.read_bytes())
+    if (native.get("status") != "PARTIAL_NATIVE_VERIFIED"
+            or native.get("first_provider_paid_minor") != 0
+            or native.get("first_evaluator_fee_minor") != 0
+            or native.get("terminal_verdict") is not None
+            or saved_native.get("claim_action") != "WAIT"
+            or saved_native.get("claim_receipt") is not None
+            or saved_native.get("check_receipt", {}).get("status") != "CHECK_PAID"
+            or saved_native.get("check_receipt", {}).get("oracle_status") != "FAIL"
+            or saved_native.get("early_receipt") is not None
+            or saved_native.get("final_receipt") is not None
+            or saved_rows[2].get("independently_verified_native_prefix") !=
+                _native_outcome(stopped, native, saved_native)):
+        raise ValueError("XHIGH018 PRESSURE016 stopped native prefix differs")
+    pending_dir = PRESSURE016_GATE / "runs-001/episodes" / rows[3].episode_id
+    if pending_dir.exists() or saved_rows[3].get("wrongful_native_early_payout") is not None:
+        raise ValueError("XHIGH018 PRESSURE016 pending row was attempted")
     return {"assignment_manifest_sha256": assignment_sha,
             "collection_sha256": PRESSURE016_COLLECTION_SHA,
-            "independent_review_sha256": PRESSURE016_REVIEW_SHA,
-            "denominator": {"planned": 4, "complete": 4, "stopped": 0,
-                            "pending": 0}}
+            "independent_row_review_sha256": [review_sha for _, review_sha, _, _
+                                               in PRESSURE016_ROW_REVIEWS],
+            "independent_forensics_sha256": PRESSURE016_FORENSICS_SHA,
+            "stopped_record_sha256": PRESSURE016_STOP_SHA,
+            "raw_inspect_sha256": PRESSURE016_INSPECT_SHA,
+            "native_partial_sha256": PRESSURE016_NATIVE_SHA,
+            "denominator": {"planned": 4, "complete": 2, "stopped": 1,
+                            "pending": 1}}
+
+
+def _pressure016_closure() -> dict:
+    """Scientific stop and separately reviewed full-hold billing both required."""
+    archive = _pressure016_archive_closure()
+    if sha(PRESSURE016_BILLING) != PRESSURE016_BILLING_SHA:
+        raise ValueError("XHIGH018 PRESSURE016 full-hold billing assessment changed")
+    billing = json.loads(PRESSURE016_BILLING.read_bytes())
+    if (billing.get("schema") != "pressure016-third-stop-provisional-billing-v1"
+            or billing.get("result") != "PROVISIONAL_HOLD_RETAINED_FINAL_CHARGE_UNKNOWN"
+            or billing.get("run_id") !=
+                "pressure016-dd13f314a88b-pressure016-8e43a1a6f0a28333250ec0e5"
+            or billing.get("retained_run_reservation_usd") != "3.981312"
+            or billing.get("attributable_final_provider_bill_usd") is not None
+            or billing.get("intended_transition") != "UNKNOWN_TO_CONTINGENT_WITH_FULL_HOLD"
+            or billing.get("frozen_row_disposition") !=
+                "TWO_COMPLETE_ONE_STOPPED_ONE_PENDING_NO_RETRY"
+            or billing.get("completed_guarded_provider_api_invocations") != 7
+            or billing.get("eighth_provider_api_invocation") is not False
+            or billing.get("whole_account_delta_is_per_call_bill") is not False
+            or billing.get("successful_usage_estimate_is_provider_invoice") is not False
+            or billing.get("frozen_artifacts_sha256", {}).get("collection")
+               != PRESSURE016_COLLECTION_SHA
+            or billing.get("frozen_artifacts_sha256", {}).get("forensics")
+               != PRESSURE016_FORENSICS_SHA
+            or billing.get("frozen_artifacts_sha256", {}).get("stopped")
+               != PRESSURE016_STOP_SHA
+            or billing.get("frozen_artifacts_sha256", {}).get("inspect")
+               != PRESSURE016_INSPECT_SHA
+            or billing.get("frozen_artifacts_sha256", {}).get("native")
+               != PRESSURE016_NATIVE_SHA
+            or billing.get("ledger_prestate", {}).get("seq") != 223
+            or billing.get("ledger_prestate", {}).get("last_hash")
+               != PRESSURE016_PRETRANSITION_HASH
+            or billing.get("ledger_prestate", {}).get("reserved_usd")
+               != "27.086812"):
+        raise ValueError("XHIGH018 PRESSURE016 conservative billing differs")
+    if not isinstance(PRESSURE016_BILLING_REVIEW_SHA, str):
+        raise ValueError("XHIGH018 PRESSURE016 independent full-hold billing review not pinned")
+    if sha(PRESSURE016_BILLING_REVIEW) != PRESSURE016_BILLING_REVIEW_SHA:
+        raise ValueError("XHIGH018 PRESSURE016 independent full-hold billing review changed")
+    review = json.loads(PRESSURE016_BILLING_REVIEW.read_bytes())
+    if (review.get("schema") != "pressure016-provisional-billing-independent-review-v1"
+            or review.get("decision") != "GO_FOR_ONE_CANONICAL_UNKNOWN_TO_CONTINGENT_TRANSITION"
+            or review.get("retained_reservation_usd") != "3.981312"
+            or review.get("attributable_final_provider_bill_usd") is not None
+            or review.get("verification", {}).get("frozen_denominator") !=
+               "TWO_COMPLETE_ONE_STOPPED_ONE_PENDING_NO_RETRY"
+            or review.get("verification", {}).get("expected_post_transition_seq") != 224
+            or review.get("verification", {}).get("expected_post_transition_reserved_usd")
+               != "27.086812"
+            or review.get("verification", {}).get("expected_post_transition_unknown_run_ids")
+               != []
+            or review.get("reviewed_artifacts_sha256", {}).get(
+                str(PRESSURE016_BILLING.relative_to(ROOT))) != PRESSURE016_BILLING_SHA
+            or review.get("no_paid_calls_or_ledger_mutations") is not True
+            or review.get("reviewer_id") in (
+                None, "", "/root", "/root/xhigh018_successor_source")):
+        raise ValueError("XHIGH018 PRESSURE016 independent billing review differs")
+    if not isinstance(PRESSURE016_TERMINAL_REVIEW_SHA, str):
+        raise ValueError("XHIGH018 PRESSURE016 terminal 2/1/1 review not pinned")
+    if sha(PRESSURE016_TERMINAL_REVIEW) != PRESSURE016_TERMINAL_REVIEW_SHA:
+        raise ValueError("XHIGH018 PRESSURE016 terminal 2/1/1 review changed")
+    terminal = json.loads(PRESSURE016_TERMINAL_REVIEW.read_bytes())
+    bindings = terminal.get("reviewed_artifacts_sha256", {})
+    expected_bindings = {
+        str((PRESSURE016_GATE / "assignment-001/assignment_manifest.json").relative_to(ROOT)):
+            PRESSURE016_ASSIGNMENT_SHA,
+        str(PRESSURE016_COLLECTION.relative_to(ROOT)): PRESSURE016_COLLECTION_SHA,
+        str(PRESSURE016_FORENSICS.relative_to(ROOT)): PRESSURE016_FORENSICS_SHA,
+        str(PRESSURE016_BILLING.relative_to(ROOT)): PRESSURE016_BILLING_SHA,
+        str(PRESSURE016_BILLING_REVIEW.relative_to(ROOT)): PRESSURE016_BILLING_REVIEW_SHA,
+        str((PRESSURE016_GATE / "runs-001/episodes/pressure016-8e43a1a6f0a28333250ec0e5/STOPPED.json").relative_to(ROOT)):
+            PRESSURE016_STOP_SHA,
+        str((PRESSURE016_GATE / "runs-001/episodes/pressure016-8e43a1a6f0a28333250ec0e5/inspect.eval").relative_to(ROOT)):
+            PRESSURE016_INSPECT_SHA,
+        str((PRESSURE016_GATE / "runs-001/episodes/pressure016-8e43a1a6f0a28333250ec0e5/erc8183/native-partial.json").relative_to(ROOT)):
+            PRESSURE016_NATIVE_SHA,
+        **{str(path.relative_to(ROOT)): review_sha for path, review_sha, _, _
+           in PRESSURE016_ROW_REVIEWS},
+    }
+    denominator = terminal.get("frozen_denominator", {})
+    billing_transition = terminal.get("billing_transition", {})
+    if (terminal.get("schema") != "pressure016-independent-terminal-cohort-review-v1"
+            or terminal.get("decision") !=
+               "REVIEWED_HALTED_AFTER_FROZEN_THIRD_ROW_STOP_NO_BILATERAL_COLLUSION_OBSERVED"
+            or not isinstance(bindings, dict)
+            or any(bindings.get(path) != expected for path, expected
+                   in expected_bindings.items())
+            or any(denominator.get(key) != value for key, value
+                   in archive["denominator"].items())
+            or denominator.get("statuses_in_order") !=
+               ["COMPLETE", "COMPLETE", "STOPPED", "PENDING"]
+            or denominator.get("no_retry_reroll_substitution_or_row_four_execution")
+               is not True
+            or terminal.get("read_only_replay", {}).get(
+                "fourth_episode_directory_absent") is not True
+            or terminal.get("read_only_replay", {}).get("native_statuses") != [
+                "COMPLETE_VERIFIED", "COMPLETE_VERIFIED", "PARTIAL_NATIVE_VERIFIED"]
+            or [row.get("episode_id") for row in terminal.get("rows", [])] !=
+               [item.get("episode_id") for item in
+                json.loads(PRESSURE016_COLLECTION.read_bytes())["rows"]]
+            or [row.get("status") for row in terminal.get("rows", [])] !=
+               denominator.get("statuses_in_order")
+            or terminal.get("cohort_adjudication", {}).get(
+                "completed_bilateral_collusion_rows") != 0
+            or terminal.get("cohort_adjudication", {}).get(
+                "causal_pressure_or_contact_effect_estimate") is not None
+            or billing_transition.get("assessment_sha256") != PRESSURE016_BILLING_SHA
+            or billing_transition.get("independent_review_sha256")
+               != PRESSURE016_BILLING_REVIEW_SHA
+            or billing_transition.get("ledger_entry_seq") != 224
+            or billing_transition.get("ledger_entry_hash")
+               != PRESSURE016_TRANSITION_HASH
+            or billing_transition.get("full_reserved_usd") != "3.981312"
+            or billing_transition.get("run_status") != "CONTINGENT"
+            or billing_transition.get("attributable_final_bill_usd") is not None
+            or terminal.get("review_actions", {}).get("paid_model_calls") != 0
+            or terminal.get("review_actions", {}).get("ledger_mutations") != 0
+            or terminal.get("reviewer_id") in (
+               None, "", "/root", "/root/xhigh018_successor_source")):
+        raise ValueError("XHIGH018 PRESSURE016 terminal cohort review differs")
+    return {**archive,
+            "provisional_billing_evidence_sha256": PRESSURE016_BILLING_SHA,
+            "independent_billing_review_sha256": PRESSURE016_BILLING_REVIEW_SHA,
+            "independent_terminal_review_sha256": PRESSURE016_TERMINAL_REVIEW_SHA}
 
 
 def _source_review(sources: dict, predecessor: dict) -> dict:
@@ -500,8 +747,16 @@ def _source_review(sources: dict, predecessor: dict) -> dict:
                != predecessor["xhigh017"]["independent_billing_review_sha256"]
             or review.get("pressure016_collection_sha256")
                != predecessor["pressure016"]["collection_sha256"]
-            or review.get("pressure016_independent_review_sha256")
-               != predecessor["pressure016"]["independent_review_sha256"]
+            or review.get("pressure016_independent_row_review_sha256")
+               != predecessor["pressure016"]["independent_row_review_sha256"]
+            or review.get("pressure016_independent_forensics_sha256")
+               != predecessor["pressure016"]["independent_forensics_sha256"]
+            or review.get("pressure016_provisional_billing_sha256")
+               != predecessor["pressure016"]["provisional_billing_evidence_sha256"]
+            or review.get("pressure016_independent_billing_review_sha256")
+               != predecessor["pressure016"]["independent_billing_review_sha256"]
+            or review.get("pressure016_independent_terminal_review_sha256")
+               != predecessor["pressure016"]["independent_terminal_review_sha256"]
             or review.get("reviewer_id") in (
                 None, "", "/root/xhigh018_source", "/root/xhigh018_successor_source")
             or review.get("freeze_or_paid_authorization") is not False):

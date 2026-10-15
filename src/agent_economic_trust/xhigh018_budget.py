@@ -21,6 +21,11 @@ XHIGH017_STOP_RUN_ID = (
 XHIGH017_HOLD_USD = Decimal("4.718592")
 XHIGH017_EVIDENCE_SHA = "53bdf0afe52a99f0ee18ab48772fac41b1a7054cb3b8f34386d392205c9ca009"
 EXACT_OPEN_IDS.add(XHIGH017_STOP_RUN_ID)
+PRESSURE016_STOP_RUN_ID = (
+    "pressure016-dd13f314a88b-pressure016-8e43a1a6f0a28333250ec0e5")
+PRESSURE016_HOLD_USD = Decimal("3.981312")
+PRESSURE016_EVIDENCE_SHA = "704486b9214558eebafb18d86027666bcab898e897cf1e061cf8af0f6584b9f0"
+EXACT_OPEN_IDS.add(PRESSURE016_STOP_RUN_ID)
 
 
 def same_usd_amount(ledger_amount: object, saved_amount: object) -> bool:
@@ -43,7 +48,7 @@ def same_usd_amount(ledger_amount: object, saved_amount: object) -> bool:
 def exact_prior_holds(snapshot: Mapping[str, Any], *,
                       active_run_id: str | None = None,
                       active_reservation_usd: Decimal = Decimal(0)) -> dict:
-    """Retain all predecessor holds, including stopped XHIGH017 in full.
+    """Retain all six predecessor holds, including both stopped runs in full.
 
     Removing a *verified* active reservation from a local projection lets the
     existing predecessor verifier replay the exact saved sidecars unchanged.
@@ -72,11 +77,17 @@ def exact_prior_holds(snapshot: Mapping[str, Any], *,
         expected = EXACT_OPEN_IDS
     fee014 = runs.get(FEE014_STOP_RUN_ID, {})
     xhigh017 = runs.get(XHIGH017_STOP_RUN_ID, {})
+    pressure016 = runs.get(PRESSURE016_STOP_RUN_ID, {})
+    if (not isinstance(PRESSURE016_EVIDENCE_SHA, str)
+            or len(PRESSURE016_EVIDENCE_SHA) != 64
+            or any(c not in "0123456789abcdef" for c in PRESSURE016_EVIDENCE_SHA)):
+        raise ValueError("XHIGH018 PRESSURE016 full-hold evidence is not pinned")
     if (open_ids != expected or snapshot.get("blocked")
             or snapshot.get("unknown_run_ids")
             or set(snapshot.get("contingent_run_ids", []))
                != {MPP006_STOPPED_RUN_ID, X402011_RUN_ID,
-                   FEE014_STOP_RUN_ID, XHIGH017_STOP_RUN_ID}
+                   FEE014_STOP_RUN_ID, XHIGH017_STOP_RUN_ID,
+                   PRESSURE016_STOP_RUN_ID}
             or fee014.get("status") != "CONTINGENT"
             or Decimal(fee014.get("reserved_usd", "-1")) != FEE014_HOLD_USD
             or xhigh017.get("status") != "CONTINGENT"
@@ -84,18 +95,26 @@ def exact_prior_holds(snapshot: Mapping[str, Any], *,
             or xhigh017.get("evidence_ref") != "sha256:" + XHIGH017_EVIDENCE_SHA
             or xhigh017.get("contingent_evidence_ref") != "sha256:" + XHIGH017_EVIDENCE_SHA
             or xhigh017.get("prior_unknown_reason") != "RemoteBoundaryError"
+            or pressure016.get("status") != "CONTINGENT"
+            or Decimal(pressure016.get("reserved_usd", "-1")) != PRESSURE016_HOLD_USD
+            or pressure016.get("evidence_ref") != "sha256:" + PRESSURE016_EVIDENCE_SHA
+            or pressure016.get("contingent_evidence_ref") != "sha256:" + PRESSURE016_EVIDENCE_SHA
+            or pressure016.get("prior_unknown_reason") != "RemoteBoundaryError"
             or Decimal(snapshot.get("reserved_usd", "-1"))
                != BASE_HOLDS_USD + FEE014_HOLD_USD + XHIGH017_HOLD_USD
+                  + PRESSURE016_HOLD_USD
                   + active_reservation_usd):
-        raise ValueError("XHIGH018 open ledger hold set differs from five predecessors")
+        raise ValueError("XHIGH018 open ledger hold set differs from six predecessors")
     projection = dict(snapshot)
     projection["runs"] = {key: value for key, value in runs.items()
-                          if key not in {active_run_id, XHIGH017_STOP_RUN_ID}}
+                          if key not in {active_run_id, PRESSURE016_STOP_RUN_ID,
+                                         XHIGH017_STOP_RUN_ID}}
     projection["reserved_usd"] = str(BASE_HOLDS_USD + FEE014_HOLD_USD)
     projection["contingent_run_ids"] = [ident for ident in
-        snapshot.get("contingent_run_ids", []) if ident != XHIGH017_STOP_RUN_ID]
+        snapshot.get("contingent_run_ids", [])
+        if ident not in {PRESSURE016_STOP_RUN_ID, XHIGH017_STOP_RUN_ID}]
     old = xhigh017_prior_holds(projection)
     return {"exact_open_run_ids": sorted(EXACT_OPEN_IDS),
             "prior_reserved_usd": str(BASE_HOLDS_USD + FEE014_HOLD_USD
-                                      + XHIGH017_HOLD_USD),
+                                      + XHIGH017_HOLD_USD + PRESSURE016_HOLD_USD),
             "active_reservation_usd": str(active_reservation_usd)}

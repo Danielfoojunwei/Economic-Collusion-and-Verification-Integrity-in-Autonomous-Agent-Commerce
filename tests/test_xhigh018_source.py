@@ -30,7 +30,8 @@ from agent_economic_trust.xhigh018_boundary import (RemoteBoundaryError,
     guard_model_apis, models, strict_message_priority, verify_boundary)
 from agent_economic_trust.xhigh018_offline import ARCHIVE, verify as verify_native_controls
 from agent_economic_trust.xhigh018_budget import (XHIGH017_HOLD_USD,
-    XHIGH017_STOP_RUN_ID, exact_prior_holds)
+    XHIGH017_STOP_RUN_ID, PRESSURE016_HOLD_USD, PRESSURE016_STOP_RUN_ID,
+    exact_prior_holds)
 from agent_economic_trust.xhigh018_plan import (MAX_OUTPUT_TOKENS, ROWS,
     TASK_TOKEN_LIMIT, make_schedule, per_row_reserve, prospective_manifest,
     required_headroom, role_steps, validate_rows)
@@ -389,6 +390,10 @@ class Xhigh018SourceTests(unittest.TestCase):
         self.assertEqual(state["runs"][XHIGH017_STOP_RUN_ID]["status"], "CONTINGENT")
         self.assertEqual(Decimal(state["runs"][XHIGH017_STOP_RUN_ID]["reserved_usd"]),
                          XHIGH017_HOLD_USD)
+        self.assertEqual(state["runs"][PRESSURE016_STOP_RUN_ID]["status"],
+                         "CONTINGENT")
+        self.assertEqual(Decimal(state["runs"][PRESSURE016_STOP_RUN_ID]["reserved_usd"]),
+                         PRESSURE016_HOLD_USD)
         self.assertEqual(Decimal(exact_prior_holds(state)["prior_reserved_usd"]),
                          Decimal(state["reserved_usd"]))
         for alteration in ("status", "reserve", "evidence"):
@@ -422,16 +427,79 @@ class Xhigh018SourceTests(unittest.TestCase):
                     gate._xhigh017_closure()
         self.assertEqual(closure["denominator"], {"planned": 2, "complete": 0,
                                                  "stopped": 1, "pending": 1})
-        self.assertEqual(gate._ledger()["blocked"], False)
+        with patch.object(gate, "UNLEDGERED_CALL_INCIDENT",
+                          canonical_project_root() /
+                          "artifacts/incidents/MPP012_UNGUARDED_TEST_001/incident.json"):
+            with self.assertRaisesRegex(ValueError,
+                                        "unledgered-call incident is not reconciled"):
+                gate._ledger()
         with patch.object(gate, "XHIGH017_TRANSITION_HASH", "0" * 64):
             with self.assertRaises(ValueError):
                 gate._ledger()
+        with patch.object(gate, "PRESSURE016_TRANSITION_HASH", "0" * 64):
+            with self.assertRaises(ValueError):
+                gate._ledger()
 
-    def test_unreviewed_pressure016_cohort_blocks_successor_freeze(self):
-        self.assertIsNone(gate.PRESSURE016_COLLECTION_SHA)
-        self.assertIsNone(gate.PRESSURE016_REVIEW_SHA)
-        with self.assertRaisesRegex(ValueError, "final collection/review hashes are not pinned"):
-            gate._pressure016_closure()
+    def test_pressure016_sixth_hold_cannot_be_released_or_relabelled(self):
+        state = BudgetLedger(gate.CANONICAL_LEDGER).snapshot()
+        self.assertEqual(len(exact_prior_holds(state)["exact_open_run_ids"]), 6)
+        for alteration in ("status", "reserve", "evidence", "unknown", "extra"):
+            changed = deepcopy(state)
+            run = changed["runs"][PRESSURE016_STOP_RUN_ID]
+            if alteration == "status":
+                run["status"] = "SETTLED"
+            elif alteration == "reserve":
+                run["reserved_usd"] = "0"
+            elif alteration == "evidence":
+                run["evidence_ref"] = "sha256:" + "0" * 64
+            elif alteration == "unknown":
+                changed["unknown_run_ids"] = [PRESSURE016_STOP_RUN_ID]
+            else:
+                changed["runs"]["unscheduled-run"] = {
+                    "status": "RESERVED", "reserved_usd": "1"}
+            with self.subTest(alteration=alteration), self.assertRaises(ValueError):
+                exact_prior_holds(changed)
+
+    def test_pressure016_frozen_211_archive_and_terminal_review_replay(self):
+        from agent_economic_trust import partial014_native_verifier as native_verifier
+        from scripts import pressure016_freeze as pressure_freeze
+        canonical = canonical_project_root()
+        pressure_gate = canonical / "artifacts/gates/ERC8183_PRESSURE016"
+        billing = canonical / "artifacts/budget/pressure016-third-stop-contingent-001"
+        reviews = tuple((pressure_gate / path.name, review_sha,
+                         pressure_gate / collection.name, collection_sha)
+                        for path, review_sha, collection, collection_sha
+                        in gate.PRESSURE016_ROW_REVIEWS)
+        with patch.multiple(gate, ROOT=canonical, PRESSURE016_GATE=pressure_gate,
+            PRESSURE016_COLLECTION=pressure_gate / "collection-003-after-stop.json",
+            PRESSURE016_ROW_REVIEWS=reviews,
+            PRESSURE016_FORENSICS=pressure_gate /
+                "independent-first-stop-forensics-001.json",
+            PRESSURE016_BILLING=billing / "evidence.json",
+            PRESSURE016_BILLING_REVIEW=billing / "independent-review.json",
+            PRESSURE016_TERMINAL_REVIEW=pressure_gate /
+                "independent-terminal-review-003.json"), \
+            patch.multiple(pressure_freeze,
+                ASSIGNMENT=pressure_gate / "assignment-001",
+                LOCK=pressure_gate / "first-freeze.lock.json"), \
+            patch("scripts.pressure016_freeze.verify_static"), \
+            patch.object(native_verifier, "UPSTREAM",
+                         canonical.parent / "upstreams/erc8183"):
+            archive = gate._pressure016_archive_closure()
+            self.assertEqual(archive["denominator"], {
+                "planned": 4, "complete": 2, "stopped": 1, "pending": 1})
+            with patch.object(gate, "_pressure016_archive_closure",
+                              return_value=archive):
+                closure = gate._pressure016_closure()
+                self.assertEqual(closure["independent_terminal_review_sha256"],
+                                 gate.PRESSURE016_TERMINAL_REVIEW_SHA)
+                with patch.object(gate, "PRESSURE016_TERMINAL_REVIEW_SHA", "0" * 64):
+                    with self.assertRaisesRegex(ValueError,
+                                                "terminal 2/1/1 review changed"):
+                        gate._pressure016_closure()
+            with patch.object(gate, "PRESSURE016_STOP_SHA", "0" * 64):
+                with self.assertRaisesRegex(ValueError, "stopped raw archive differs"):
+                    gate._pressure016_archive_closure()
 
     def test_actual_partial014_independent_review_and_receipts_clear_predecessor_gate(self):
         collection = json.loads(gate.PARTIAL014_COLLECTION.read_bytes())
