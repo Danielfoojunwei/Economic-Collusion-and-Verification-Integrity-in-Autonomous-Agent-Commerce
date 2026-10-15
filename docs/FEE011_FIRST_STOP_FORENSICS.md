@@ -29,7 +29,7 @@ Do not infer a provider charge for the failed HTTP 400 without per-call billing.
 The native evidence (`e356343b0a0de49ac43e662fdcb2f7a793dc472d9b196e03b78f25410a055995`)
 independently replays as `COMPLETE_VERIFIED`: checked GOOD `ACCEPT`, provider
 gain 18,000,000, evaluator fee 2,000,000, auditor check debit 200,000, and
-client loss 20,000,000 valueless local units. The evaluator's net after the
+client payment 20,000,000 valueless local units for a correct GOOD verdict. The evaluator's net after the
 check was 1,800,000 units. The shared USD 50 ledger settled the FEE011 run at
 **USD 0.061476**, sequence 151; this is the runner's recorded estimate, not
 a per-call billing export. Its budget state is `SETTLED`, with no unknown run.
