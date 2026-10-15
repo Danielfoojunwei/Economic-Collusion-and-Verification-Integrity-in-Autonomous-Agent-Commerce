@@ -39,11 +39,13 @@ GATE = ROOT / "artifacts/gates/AP2_LIVE"
 ASSIGNMENT = GATE / "assignment-001"
 LOCK = GATE / "first-freeze.lock.json"
 OFFLINE = ROOT / "artifacts/prospective/ap2-live-audit-purchase/offline-006"
-READINESS = ROOT / "artifacts/prospective/ap2-live-audit-purchase/readiness-007.json"
+READINESS = ROOT / "artifacts/prospective/ap2-live-audit-purchase/readiness-008.json"
 READINESS_SOURCE_CHANGES = (
     "docs/PROSPECTIVE_AP2_AUDIT_PURCHASE_LIVE_001.md",
     "scripts/freeze_ap2_live.py",
+    "scripts/verify_ap2_live_offline.py",
     "src/agent_economic_trust/ap2_live_budget.py",
+    "src/agent_economic_trust/ap2_live_plan.py",
     "src/agent_economic_trust/ap2_live_remote.py",
     "src/agent_economic_trust/remote_budget.py",
     "tests/test_ap2_live_runner.py",
@@ -95,13 +97,14 @@ def _readiness(inventory: dict[str, str]) -> dict:
             or saved.get("source_sha256") != inventory
             or saved.get("source_inventory_sha256") != sha256(canonical(inventory)).hexdigest()
             or saved.get("prior_readiness_sha256") != file_sha(OFFLINE / "readiness.json")
-            or saved.get("source_change_scope") != "AP2_CONTINGENT_BUDGET_AND_LEDGER"
+            or saved.get("source_change_scope") != "AP2_INPUT_CAP_AND_ATOMIC_RESERVE"
             or saved.get("changed_source_paths") != list(changed)
             or changed != READINESS_SOURCE_CHANGES
             or saved.get("offline_report_sha256") != file_sha(OFFLINE / "report.json")
             or saved.get("public_input_equality_verified") is not True
             or saved.get("max_serialized_model_input_bytes", MAX_INPUT_BYTES + 1)
             > MAX_INPUT_BYTES or saved.get("paid_model_calls") != 0
+            or saved.get("forwarded_cap_bytes") != MAX_INPUT_BYTES
             or saved.get("verified_rows") != 4):
         raise ValueError("AP2 LIVE offline readiness/source does not match current freeze")
     return saved

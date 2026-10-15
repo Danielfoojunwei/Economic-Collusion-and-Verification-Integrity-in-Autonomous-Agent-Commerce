@@ -22,7 +22,8 @@ from inspect_ai.model import ContentReasoning, GenerateConfig, get_model
 
 from .ap2_live_plan import (CANONICAL_LEDGER_PATH, CONTINGENCY_USD,
     MAX_CALLS_PER_EPISODE, MAX_INPUT_BYTES, MAX_OUTPUT_TOKENS, MODEL_ID)
-from .ap2_live_budget import (UNASSIGNED_ACCOUNT_RESIDUAL_USD,
+from .ap2_live_budget import (MPP006_ORIGINAL_RESERVATION_USD,
+    UNASSIGNED_ACCOUNT_RESIDUAL_USD,
     mpp006_contingent_exposure, required_headroom)
 from .ap2_live_purchase import NativeAuditPurchase, validate_ap2_authorization
 from .ap2_live_purchase_verifier import verify_native_audit_purchase
@@ -103,6 +104,10 @@ def _require_contingent_ledger_state(state: dict, frozen: dict) -> None:
     if (state.get("cap_usd") != "50" or state.get("blocked")
             or state.get("unknown_run_ids") or state.get("reserved_usd") != "6.30784"):
         raise RemoteBoundaryError("shared USD50 ledger is blocked or concurrently reserved")
+    _require_mpp006_exposure(state, frozen)
+
+
+def _require_mpp006_exposure(state: dict, frozen: dict) -> None:
     try:
         if mpp006_contingent_exposure(state) != frozen["prior_mpp006_contingent_exposure"]:
             raise ValueError("frozen MPP006 exposure differs from current ledger")
@@ -110,6 +115,27 @@ def _require_contingent_ledger_state(state: dict, frozen: dict) -> None:
             raise ValueError("frozen unassigned account residual differs")
     except (KeyError, ValueError) as exc:
         raise RemoteBoundaryError("MPP006 contingent billing hold is not verified") from exc
+
+
+def post_reservation_budget(state: dict, frozen: dict, reserve: Decimal,
+                            remaining: int, run_id: str) -> None:
+    """Validate the atomic reserve result before native purchase or model use."""
+    if (state.get("cap_usd") != "50" or state.get("blocked")
+            or state.get("unknown_run_ids")):
+        raise RemoteBoundaryError("shared USD50 ledger changed during AP2 reservation")
+    _require_mpp006_exposure(state, frozen)
+    runs = state.get("runs")
+    run = runs.get(run_id) if isinstance(runs, dict) else None
+    try:
+        if (not isinstance(run, dict) or run.get("status") != "RESERVED"
+                or Decimal(run["reserved_usd"]) != reserve
+                or Decimal(state["reserved_usd"]) != MPP006_ORIGINAL_RESERVATION_USD + reserve):
+            raise ValueError("AP2 or concurrent reservation differs")
+        if required_headroom(reserve, remaining) > Decimal(state["available_usd"]):
+            raise RemoteBoundaryError(
+                "concurrent ledger use consumed AP2 headroom net of MPP006 hold")
+    except (KeyError, TypeError, ValueError) as exc:
+        raise RemoteBoundaryError("AP2 atomic reservation or contingent hold differs") from exc
 
 
 def post_settlement_budget(ledger: BudgetLedger, frozen: dict,
@@ -280,9 +306,8 @@ def execute_one(plan: Ap2LivePlan = Ap2LivePlan()) -> dict:
                                          "episode_id": row.episode_id,
                                          "assignment_sha": assignment_sha})
         reserved = True
-        if (Decimal(after["available_usd"])
-                < required_headroom(reserve, preview["remaining_rows"] - 1)):
-            raise RemoteBoundaryError("concurrent ledger use consumed AP2 headroom net of MPP006 hold")
+        post_reservation_budget(after, frozen, reserve,
+                                preview["remaining_rows"] - 1, ident)
         purchase_dir = directory / "audit-purchase"
         with NativeAuditPurchase(
             purchase_dir, auth_path, obligation_id=row.obligation_id,

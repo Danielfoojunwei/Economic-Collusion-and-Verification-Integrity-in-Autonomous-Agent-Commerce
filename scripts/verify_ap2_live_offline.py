@@ -18,6 +18,8 @@ from agent_economic_trust.ap2_live_fixture import protected_buyer_records
 from agent_economic_trust.ap2_live_open005_verifier import verify_ap2_native_evidence as verify_open005_native_evidence
 from scripts.run_ap2_live_offline import CHANNEL, MODEL, SEED
 
+OFFLINE_FORWARD_CAP_BYTES = 24_576  # Historical offline-006 assignment, not the future live cap.
+
 
 def sha(path: Path) -> str:
     return sha256(path.read_bytes()).hexdigest()
@@ -33,6 +35,7 @@ def verify(directory: Path) -> dict:
     rows = make_schedule(SEED)
     saved_assignment = json.loads((directory / "assignment.json").read_text())
     expected_assignment = manifest(SEED, rows)
+    expected_assignment["max_serialized_input_bytes"] = OFFLINE_FORWARD_CAP_BYTES
     expected_assignment["status"] = "SCRIPTED_OFFLINE_SMOKE_ONLY"
     require(saved_assignment == expected_assignment, "saved offline assignment differs")
     report = json.loads((directory / "report.json").read_text())

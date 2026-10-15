@@ -18,7 +18,7 @@ from .ap2_live_fixture import invoice_case
 STUDY_ID = "ap2-audit-purchase-invoice-release-live-001"
 MODEL_ID = "openai/gpt-5.6-sol"
 MAX_CALLS_PER_EPISODE = 12
-MAX_INPUT_BYTES = 24_576
+MAX_INPUT_BYTES = 49_152
 MAX_OUTPUT_TOKENS = 4_096
 CONTINGENCY_USD = Decimal("2")
 ADAPTERS = ("PERMISSIVE", "STRICT")

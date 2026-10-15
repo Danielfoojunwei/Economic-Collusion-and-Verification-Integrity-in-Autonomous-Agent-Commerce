@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from copy import deepcopy
 from decimal import Decimal
 from pathlib import Path
 from hashlib import sha256
@@ -14,18 +15,20 @@ from unittest.mock import patch
 
 from inspect_ai.model import ChatMessageUser, GenerateConfig
 
-from agent_economic_trust.ap2_live_plan import CANONICAL_LEDGER_PATH
+from agent_economic_trust.ap2_live_plan import CANONICAL_LEDGER_PATH, MAX_INPUT_BYTES
 from agent_economic_trust.ap2_live_plan import make_schedule
 from agent_economic_trust.ap2_live_budget import (
     EVIDENCE, MPP006_EVIDENCE_SHA256, MPP006_STOPPED_RUN_ID,
     mpp006_contingent_exposure, required_headroom)
 from agent_economic_trust.ap2_live_remote import (Ap2LivePlan, guard_api,
-    fresh_budget, post_settlement_budget, quarantine_unverified_record,
+    execute_one, fresh_budget, post_reservation_budget, post_settlement_budget,
+    quarantine_unverified_record,
     strict_tool_schemas)
+from agent_economic_trust.remote_pricing import reserve_worst_case
 from agent_economic_trust.ap2_live_fixture import invoice_case
 from agent_economic_trust.open005_native import Open005NativeController
 from agent_economic_trust.ap2_live_open005_verifier import verify_ap2_funded_evidence as verify_open005_funded_evidence
-from agent_economic_trust.remote import RemoteBoundaryError
+from agent_economic_trust.remote import RemoteBoundaryError, _safe_model_input_size
 from scripts.collect_ap2_live import (_channel_and_awareness,
     action_linked_candidate, collect)
 
@@ -66,6 +69,79 @@ class Ap2LiveRunnerTests(unittest.TestCase):
             with patch("agent_economic_trust.ap2_live_budget.EVIDENCE", tampered):
                 with self.assertRaisesRegex(ValueError, "evidence bytes differ"):
                     mpp006_contingent_exposure(state)
+
+    def test_48k_input_cap_and_four_row_pricing_fit_current_headroom(self):
+        self.assertEqual(MAX_INPUT_BYTES, 49_152)
+        prices = {"model_id": "openai/gpt-5.6-sol",
+                  "input_usd_per_token": "0.00001",
+                  "output_usd_per_token": "0.00003",
+                  "cache_read_usd_per_token": "0.00001",
+                  "cache_write_usd_per_token": "0.00001",
+                  "request_usd": "0", "input_framing_tokens_per_call": 8192,
+                  "max_completion_tokens": 4096, "context_length": 200_000}
+        reserve = reserve_worst_case(prices, 12, MAX_INPUT_BYTES, 4096)
+        self.assertEqual(reserve, Decimal("8.355840"))
+        self.assertEqual(required_headroom(reserve, 4), Decimal("35.4233942"))
+        self.assertLessEqual(required_headroom(reserve, 4), Decimal("37.99432"))
+
+    def test_atomic_post_reserve_requires_same_contingent_hold_and_only_ap2_reserve(self):
+        reserve = Decimal("8.355840")
+        run_id = "ap2live-test-row"
+        state = self.contingent_state("29.63848")
+        state["reserved_usd"] = "14.66368"
+        state["runs"][run_id] = {"status": "RESERVED", "reserved_usd": "8.35584"}
+        frozen = {"prior_mpp006_contingent_exposure": mpp006_contingent_exposure(state),
+                  "unassigned_account_residual_usd": "0.0000342"}
+        post_reservation_budget(state, frozen, reserve, 3, run_id)
+        released = deepcopy(state)
+        released["contingent_run_ids"] = []
+        released["runs"][MPP006_STOPPED_RUN_ID]["status"] = "SETTLED"
+        released["runs"]["other-run"] = {"status": "RESERVED", "reserved_usd": "6.30784"}
+        with self.assertRaisesRegex(RemoteBoundaryError, "contingent billing hold"):
+            post_reservation_budget(released, frozen, reserve, 3, run_id)
+        concurrent = deepcopy(state)
+        concurrent["reserved_usd"] = "15.66368"
+        concurrent["runs"]["other-run"] = {"status": "RESERVED", "reserved_usd": "1"}
+        with self.assertRaisesRegex(RemoteBoundaryError, "atomic reservation"):
+            post_reservation_budget(concurrent, frozen, reserve, 3, run_id)
+        underfunded = deepcopy(state)
+        underfunded["available_usd"] = "27.0675541"
+        with self.assertRaisesRegex(RemoteBoundaryError, "consumed AP2 headroom"):
+            post_reservation_budget(underfunded, frozen, reserve, 3, run_id)
+
+    def test_concurrent_reserve_change_stops_before_native_purchase(self):
+        row = make_schedule("ab" * 32)[0]
+        reserve = Decimal("8.355840")
+        state = self.contingent_state("29.63848")
+        state["reserved_usd"] = "15.66368"
+        state["runs"][f"ap2live-{'a' * 12}-{row.episode_id}"] = {
+            "status": "RESERVED", "reserved_usd": "8.35584"}
+        state["runs"]["other-run"] = {"status": "RESERVED", "reserved_usd": "1"}
+        frozen = {"authorization_records": {row.episode_id: {
+                      "path": "unused-signed-mandate.json",
+                      "trusted_issuer_public_sha256": "test-issuer"}},
+                  "prior_mpp006_contingent_exposure": mpp006_contingent_exposure(state),
+                  "unassigned_account_residual_usd": "0.0000342"}
+        # The pre-reserve check saw a valid block, but the locked reserve result
+        # now names another active run at the same available headroom.
+        with tempfile.TemporaryDirectory(dir="/tmp") as root:
+            plan = Ap2LivePlan(runs_dir=Path(root) / "runs")
+            with (patch.object(Ap2LivePlan, "validate", return_value=(frozen, "a" * 64, (row,))),
+                  patch("agent_economic_trust.ap2_live_remote.preflight", return_value={
+                      "next_index": 0, "remaining_rows": 4}),
+                  patch("agent_economic_trust.ap2_live_remote._enabled"),
+                  patch("agent_economic_trust.ap2_live_remote.validate_ap2_authorization"),
+                  patch("agent_economic_trust.ap2_live_remote.fresh_budget",
+                        return_value=({}, reserve, self.contingent_state("37.99432"))),
+                  patch("agent_economic_trust.ap2_live_remote.BudgetLedger") as ledger,
+                  patch("agent_economic_trust.ap2_live_remote.NativeAuditPurchase") as purchase):
+                ledger.return_value.reserve.return_value = state
+                with self.assertRaisesRegex(RemoteBoundaryError, "atomic reservation"):
+                    execute_one(plan)
+                purchase.assert_not_called()
+                ledger.return_value.settle.assert_called_once()
+                stopped = next((Path(root) / "runs/episodes").glob("*/STOPPED.json"))
+                self.assertFalse(json.loads(stopped.read_text())["provider_api_invoked"])
 
     def test_freeze_and_preflight_require_full_contingent_headroom(self):
         from scripts.freeze_ap2_live import _budget_gate
@@ -131,6 +207,27 @@ class Ap2LiveRunnerTests(unittest.TestCase):
         self.assertTrue(all(item["provider_api_invoked"] is False
                             and item["network_forwarding"] == "NO_LOCAL_REJECTION"
                             for item in observed))
+
+    def test_exact_48k_forwarded_cap_rejects_next_byte_locally(self):
+        calls = []
+
+        async def provider(*args):
+            calls.append(args)
+            return SimpleNamespace()
+
+        model = SimpleNamespace(api=SimpleNamespace(generate=provider))
+        observed = guard_api(model, Ap2LivePlan())
+        base_size = _safe_model_input_size([ChatMessageUser(content="")], [])
+        within = [ChatMessageUser(content="X" * (MAX_INPUT_BYTES - base_size))]
+        beyond = [ChatMessageUser(content="X" * (MAX_INPUT_BYTES - base_size + 1))]
+        config = GenerateConfig(reasoning_effort="high", reasoning_history="none",
+                                max_tokens=4096, max_retries=0)
+        self.assertEqual(_safe_model_input_size(within, []), MAX_INPUT_BYTES)
+        asyncio.run(model.api.generate(within, [], "auto", config))
+        with self.assertRaisesRegex(RemoteBoundaryError, "exceeded frozen"):
+            asyncio.run(model.api.generate(beyond, [], "auto", config))
+        self.assertEqual(len(calls), 1)
+        self.assertEqual([item["provider_api_invoked"] for item in observed], [True, False])
 
     def test_optional_tool_property_is_rejected_before_provider(self):
         calls = []
