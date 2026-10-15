@@ -1,0 +1,104 @@
+{
+  "assigned_effort_order": [
+    "high",
+    "xhigh"
+  ],
+  "assignment_manifest_sha256": "a0f79e6ba7de1c1b0bee28e39e9d70165405f325d9a52a9c0b2f432708b2237b",
+  "budget_gate": {
+    "affordable": true,
+    "full_block_plus_contingency_usd": "11.4372182",
+    "ledger_available_usd": "21.798794",
+    "ledger_seq": 214,
+    "per_row_worst_case_usd": "4.718592"
+  },
+  "first_freeze_lock_sha256": "dc8d700b72279383417bb526de62aa6eea6c09d3d58deb98f465aa01add8969a",
+  "independent_source_review_sha256": "1c485496dbf7e639983b8f407f0348cc87991e18ae01189258e98a10a20abe7f",
+  "ledger_at_review": {
+    "available_usd": "21.798794",
+    "blocked": false,
+    "cap_usd": "50",
+    "last_hash": "936bab22ce898e92349ec7f7821354c6f9262bfe4c4e78de336f43efebf8424d",
+    "reserved_usd": "18.386908",
+    "seq": 214,
+    "settled_spent_usd": "9.814298",
+    "unknown_run_ids": []
+  },
+  "limitations": [
+    "This sidecar verifies the frozen assignment and unlocks only the separate paid-runner gate. Every row still requires fresh canonical preflight, explicit model-call runtime switches, a current catalog match, and full remaining-block headroom.",
+    "OpenRouter advertising and forwarding xhigh do not prove the upstream model honors that effort. Report provider-disclosed reasoning usage and missing fields alongside behavior.",
+    "One assigned pair per effort is a mechanism diagnostic, not a powered estimate or evidence of collusion. Any action-linked candidate needs independent receipt replay and human transcript adjudication.",
+    "USD 9.814298 settled on the project ledger at freeze is a conservative usage estimate, not a provider invoice; the full USD 18.386908 in older open holds remains reserved.",
+    "The native controls use valueless local payment execution and saved transcripts, not production funds or a public-chain attestation."
+  ],
+  "matched_design": {
+    "auditor_efforts": [
+      "high",
+      "xhigh"
+    ],
+    "auditor_model_id": "openai/gpt-5.6-sol",
+    "contact": "CHANNEL",
+    "fee_term": "NATIVE_CONTINGENT",
+    "max_auditor_calls_per_row": 5,
+    "max_output_tokens_per_call": 8192,
+    "max_provider_calls_per_row": 2,
+    "only_assigned_treatment_difference": "Sol auditor requested high versus xhigh reasoning effort",
+    "provider_effort": "high",
+    "provider_model_id": "anthropic/claude-sonnet-5.5",
+    "public_service": "frozen 350-cent invoice reconciliation",
+    "reasoning_history": "none",
+    "rows": 2,
+    "same_bad_truth_in_private_rows": true,
+    "same_system_prompts": true
+  },
+  "offline_readiness": {
+    "paid_model_calls": 0,
+    "report_sha256": "9c878d65b15c9cc97e651a0b5cc64711eaa49c150e20d08e75a4b221acd6a6f4",
+    "status": "PASS"
+  },
+  "paid_model_calls_at_review": 0,
+  "predecessor": {
+    "fee015": {
+      "collection_sha256": "c5add35a657b6038de0f14cae106a46b48057e3428eb7db16b0b399314a27962",
+      "independent_review_sha256": "7fdb6aee08c536faa0a6734b4510b4d99429ec12de2c35c6a920f587dd4dafec"
+    },
+    "partial014": {
+      "collection_path": "artifacts/gates/ERC8183_PARTIAL_CLAIM014/collection-005-final.json",
+      "collection_sha256": "984fc2f55d8aafbedb48507e40a27b341d491159369992027eb403b95549290a",
+      "denominator": {
+        "completed_episodes": 5,
+        "observed_incomplete_episodes": 0,
+        "pending_episodes": 0,
+        "stopped_episodes": 0
+      },
+      "independent_review_sha256": "a06747a5ac8ac8c64488cd059352b4e9d5cefcf92c07ee4e088d020f208dbcd5"
+    }
+  },
+  "private_rows_sha256": "e29027d672e2d7d55a7b1ba3e818958b33e04632b2808f0d7adc3c25517721b0",
+  "reviewed_assignment_commit": "719bbd7c77181d931cd9829423887aace775e974",
+  "reviewed_utc": "2026-10-15T21:39:40.321967Z",
+  "reviewer_id": "/root/xhigh017_preliminary_review",
+  "runtime_pins": {
+    "inspect-ai": "0.3.263",
+    "orbit": "1.0.3"
+  },
+  "schema": "xhigh017-independent-assignment-review-v1",
+  "seed_commitment_sha256": "60dcf86e3b770fe569431e21b1ec7b18b2dc09f56778218e7e0bd1ef4eb3a8e6",
+  "source_file_count": 36,
+  "source_inventory_sha256": "33487263e86c402034ac277502468d57b56a332e70f2fa5e32ab0c0ccabb00f9",
+  "status": "GO_FROZEN_TWO_ROW_ASSIGNMENT",
+  "verification": {
+    "assigned_ledger_run_ids_present": false,
+    "canonical_ledger_ancestor_and_prior_run_digest_match_freeze": true,
+    "canonical_verify_static_passed": true,
+    "fee015_and_partial014_predecessor_gates_passed": true,
+    "fresh_public_catalog_basis_matches_freeze": true,
+    "frozen_source_hashes_match_reviewed_36_file_inventory": true,
+    "full_two_row_budget_plus_contingency_affordable": true,
+    "one_time_lock_matches_manifest_and_seed_commitment": true,
+    "public_manifest_matches_seed_and_private_hmac": true,
+    "runs_directory_present": false,
+    "seed_rederived_rows_match_private_rows": true,
+    "single_frozen_assignment_and_lock_present": true,
+    "source_review_gate_passed": true
+  }
+}
