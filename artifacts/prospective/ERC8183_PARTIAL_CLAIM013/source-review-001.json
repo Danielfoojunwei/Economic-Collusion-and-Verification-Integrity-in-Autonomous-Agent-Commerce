@@ -1,0 +1,50 @@
+{
+  "schema": "partial013-live-source-review-v1",
+  "status": "GO_SOURCE_MERGE_ONLY",
+  "reviewer_id": "/root/partial_claim_live_implementation/partial_live_source_review",
+  "independent_read_only_source_review": true,
+  "source_commit": "2689d23f79c5c52b93525ee5a22717bb2530ff5c",
+  "source_inventory_sha256": "0fa6ffe17966bdce55bcbb02169876a4d00055043e77e38330a5ce779d0c9435",
+  "source_files_rehashed": 58,
+  "tests": {
+    "command": "PYTHONPATH=src:scripts:. PYTHON_DOTENV_DISABLED=1 XDG_DATA_HOME=/workspace/.local/share XDG_CACHE_HOME=/workspace/.cache XDG_CONFIG_HOME=/workspace/.config /workspace/upstreams/orbit-smoke/.venv/bin/python -m unittest tests.test_partial_claim_live_source tests.test_partial_claim_task tests.test_partial_claim_plan tests.test_partial_claim_verifier -q",
+    "passed": 20,
+    "failed": 0,
+    "skipped": 0,
+    "paid_model_calls": 0
+  },
+  "evidence_checks": {
+    "canonical_source_inventory_clean_and_complete": "PASS",
+    "frozen_five_row_bad_fee_by_contact_schedule_prespecified": "PASS",
+    "distinct_sol_provider_sonnet_auditor_high_reasoning_boundary": "PASS",
+    "poll_only_attributed_channel_exposure_before_early_decision": "PASS",
+    "untrusted_provider_text_rejected_if_promoted_to_system": "PASS",
+    "native_claim_and_report_preimage_bound_to_exact_receipts": "PASS",
+    "buyer_ledger_revealed_early_only_after_paid_check": "PASS",
+    "early_payout_preserved_after_later_native_reject": "PASS",
+    "stopped_paid_prefix_separate_from_collusion_candidate": "PASS",
+    "inspect_actions_native_transfers_and_settled_ledger_linked": "PASS",
+    "decimal_equal_billing_scale_compared_numerically": "PASS",
+    "one_row_per_invocation_no_retry_and_stop_gate": "PASS",
+    "eleven_scripted_native_cases_replayed": "PASS",
+    "eleven_native_tamper_negatives_rejected": "PASS",
+    "archived_artifact_path_normalized_only_after_exact_current_hash_check": "PASS",
+    "fee013_six_row_final_denominator_replayed_in_clearance_preview": "PASS",
+    "three_prior_unresolved_billing_holds_preserved": "PASS"
+  },
+  "offline_controls": {
+    "report_sha256": "46f9121159446ded998cee3d09e64111ece57d392a2db267ed630b4b25a6847d",
+    "scripted_native_cases_reverified": 11,
+    "tamper_negatives_reverified": 11,
+    "paid_then_interrupted_prefix_controls": 1,
+    "paid_model_calls": 0
+  },
+  "scope_limitations": [
+    "This review covers source and scripted local controls only; no PARTIAL013 live assignment was frozen and no paid model call was made.",
+    "The archived Anvil transcript is replayed, not authenticated against a surviving chain.",
+    "The buyer-prepaid arm differs in payment timing and client outlay as well as native evaluator fee.",
+    "One model pair per cell is descriptive; a bilateral collusion candidate requires independent human transcript adjudication and replication.",
+    "High reasoning is requested, while disclosed reasoning-token counts do not reveal private reasoning depth."
+  ],
+  "freeze_or_paid_authorization": false
+}
