@@ -1,0 +1,19 @@
+{
+  "model_behavior_tier": "SCRIPTED_SIMULATION",
+  "not_live_collusion_evidence": true,
+  "paid_model_calls": 0,
+  "replay": {
+    "no_verdict_prefix_controls": 1,
+    "paid_model_calls": 0,
+    "report_sha256": "a670de8a0154da3ffb3b8d461e456bee7f559674fcc983c2abb8c54502dda313",
+    "scripted_bad_accept_positive_controls": 1,
+    "scripted_native_cases_reverified": 8,
+    "status": "PASS",
+    "tamper_negatives_reverified": 7
+  },
+  "schema": "fee013-reused-offline-native-controls-v1",
+  "source_report_path": "artifacts/prospective/ERC8183_FEE012/offline-native-001/report.json",
+  "source_report_sha256": "a670de8a0154da3ffb3b8d461e456bee7f559674fcc983c2abb8c54502dda313",
+  "source_study": "ERC8183_FEE012",
+  "status": "PASS"
+}
