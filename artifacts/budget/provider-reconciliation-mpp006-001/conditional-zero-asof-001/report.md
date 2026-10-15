@@ -18,29 +18,26 @@ The model-charge inference holds only if the uploaded exports cover this key and
 
 The official source pages were fetched with HTTP 200 and archived byte for byte in compressed form. Their original page SHA-256 values are: Errors and Debugging `0fba9ed243296de460a5800d8717d394cd854577068be5588cb3055dd264f1e0`, Zero Completion Insurance `9e8a4e965717deb6de80899d030b82943ef91381184f7cf9cbf270626d67c137`, and Activity Export `2a39f416b8b69ee018b34032df17258567e0a22bcf784d6653a8a82e1b5af9a5`. See [source metadata](official-docs.json) for UTC GET times, URLs, archive hashes, and sizes.
 
-## Budget decision for independent review
+## Budget decision after independent review
 
 The original [prestate ledger](prestate-openrouter-ledger.jsonl) SHA-256 is `e5067415a2abfd589cfa9c3073e8dedcc0cbc25ce2af4635978fea7c3486b440`; its [anchor](prestate-openrouter-ledger.jsonl.anchor) SHA-256 is `c77675a2510594e4c9eac42becd5abc6c01e135cfad2f313e39969f0aa1067b7`. It validates at sequence 132 with USD 50 cap, USD 5.313220 settled, and USD 6.307840 reserved for `mpp006-0e11d0595056-mpp006-bc092a2baae1584874c4f308`. The full reserved sum remains contingent exposure until an actual ledger settlement; it is not observed spend. Original `STOPPED.json` and collection SHA-256 are pinned by the verifier and must remain unchanged after any billing reconciliation.
 
-An independent reviewer can accept or reject the conditional **USD 0 final-total assumption**, including the absence of delayed or auxiliary charges. **Only if accepted**, recheck the current key activity and ledger first, then a prospective post-hoc ledger operation would be:
+Independent review **accepted this evidence sidecar** and **rejected `settle(actual_usd="0")`**: the final actual charge remains unknown. The earlier suggestion to settle at zero is superseded. This evidence supports a separate `CONTINGENT` ledger transition that retains the full USD 6.307840 reservation against the USD 50 cap while allowing later reservations only within the remaining headroom, provided no other `UNKNOWN` run blocks the ledger.
 
-```python
-from agent_economic_trust.remote_budget import BudgetLedger
+The narrow [operator script](../../../../scripts/mark_mpp006_contingent.py) first reruns the offline verifier, checks the saved [evidence JSON](evidence.json) SHA-256 `1b06d264b6a60bdfcff4e4a6de5bfe26c0fdf6e3d5aa61483b45cf4d5ddc8fc3`, demands the original sequence-132 `UNKNOWN` ledger and exact anchor, and rechecks frozen `STOPPED.json` and collection hashes. Its default invocation is read-only. The prospective `BudgetLedger.mark_contingent` API and three operator tests passed against a temporary clone of the archived prestate ledger. A deliberate one-time invocation, after integration review, is:
 
-BudgetLedger("artifacts/budget/openrouter-ledger.jsonl").settle(
-    run_id="mpp006-0e11d0595056-mpp006-bc092a2baae1584874c4f308",
-    actual_usd="0",
-    evidence_ref="sha256:1b06d264b6a60bdfcff4e4a6de5bfe26c0fdf6e3d5aa61483b45cf4d5ddc8fc3",
-)
+```bash
+PYTHONPATH=src:scripts /workspace/upstreams/orbit-smoke/.venv/bin/python scripts/mark_mpp006_contingent.py --apply
 ```
 
-That `evidence_ref` is the SHA-256 of the immutable [conditional evidence JSON](evidence.json). It labels a **conditional as-of-export accounting resolution**, not a provider invoice. If a later attributable charge appears, record it in a new forensic sidecar and reconcile the ledger explicitly; never edit the frozen experimental row or pretend the original stop was a completed trial. If the reviewer needs an exact invoice instead, retain `UNKNOWN` and the USD 6.307840 hold.
+The operator has **not been applied to the canonical ledger** in this sidecar. `CONTINGENT` is an unresolved exposure, not actual spending or a waiver. If a later attributable charge appears, record it in a new forensic sidecar and settle against that evidence; never edit the frozen experimental row or pretend the original stop was a completed trial. If the contingent transition is unavailable or its preconditions have changed, retain `UNKNOWN` and the USD 6.307840 hold.
 
 ## Reproduction
 
 ```bash
 /workspace/upstreams/orbit-smoke/.venv/bin/python scripts/verify_mpp006_conditional_zero.py
 PYTHONPATH=src:scripts /workspace/upstreams/orbit-smoke/.venv/bin/python -m unittest tests.test_mpp006_conditional_zero -v
+PYTHONPATH=src:scripts /workspace/upstreams/orbit-smoke/.venv/bin/python -m unittest tests.test_mark_mpp006_contingent -v
 ```
 
-The verifier is offline and read-only. It rechecks all three owner CSVs against 46 saved model events, the absent failed session, pinned raw Inspect error and frozen statuses, public pricing, archived OpenRouter documentation, the key aggregate residual, and the copied hash-chain ledger and anchor. It prints the [saved result](evidence.json) without writing the ledger or calling a model. The positive and tamper tests pass (3/3). The three original owner files are SHA-256 `29481fb76fd22888d810ea58d9bc42ce624bc935e842b54ea2030f28c158ff39`, `f1e30259ab4c3a22576ee79906fc7d61ffff4708f689d6b6b2a9b3620d576372`, and `900a5135005e16e5aee31eb2d6f0cd96da714e6ddba47cca898323310377fdc3`, respectively.
+The verifier is offline and read-only. It rechecks all three owner CSVs against 46 saved model events, the absent failed session, pinned raw Inspect error and frozen statuses, public pricing, archived OpenRouter documentation, the key aggregate residual, and the copied hash-chain ledger and anchor. It prints the [saved result](evidence.json) without writing the ledger or calling a model. Evidence and operator positive/tamper tests pass (6/6); operator apply tests touch a temporary cloned ledger only. The three original owner files are SHA-256 `29481fb76fd22888d810ea58d9bc42ce624bc935e842b54ea2030f28c158ff39`, `f1e30259ab4c3a22576ee79906fc7d61ffff4708f689d6b6b2a9b3620d576372`, and `900a5135005e16e5aee31eb2d6f0cd96da714e6ddba47cca898323310377fdc3`, respectively.
