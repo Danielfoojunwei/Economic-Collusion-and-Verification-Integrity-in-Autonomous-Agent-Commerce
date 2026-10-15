@@ -1,0 +1,41 @@
+{
+  "schema": "fee013-source-review-v1",
+  "status": "GO_SOURCE_MERGE_ONLY",
+  "reviewer_id": "/root/fee013_source_review",
+  "independent_read_only_source_review": true,
+  "source_commit": "d6e10387bbca6110df777aa6e2187c8704cb53ec",
+  "source_inventory_sha256": "b65f1fe42323a64020c64d60219ed9dfcbbf483ac0ce18a9cc008c8ec3019957",
+  "source_files_rehashed": 47,
+  "tests": {
+    "command": "PYTHONPATH=src:scripts:. PYTHON_DOTENV_DISABLED=1 /workspace/upstreams/orbit-smoke/.venv/bin/python -m unittest tests.test_fee013_runtime tests.test_fee013_task -v",
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "paid_model_calls": 0
+  },
+  "evidence_checks": {
+    "fresh_six_row_seed_bound_bad_first_assignment": "PASS",
+    "separate_sol_provider_sonnet_auditor_high_reasoning_boundary": "PASS",
+    "reported_reasoning_replayed_from_raw_model_events": "PASS",
+    "decimal_equal_trailing_zero_and_differing_amount_tests": "PASS",
+    "fee012_original_stopped_denominator_and_forensic_native_refund_bound": "PASS",
+    "x402012_final_collection_replayed": "PASS",
+    "mpp011_final_collection_checked": "PASS",
+    "exact_three_unreconciled_prior_holds_retained": "PASS",
+    "eight_offline_native_cases_and_seven_tamper_negatives_reverified": "PASS",
+    "pre_forward_untrusted_channel_priority_and_native_receipt_linkage": "PASS",
+    "terminal_stop_and_no_retry_collector": "PASS",
+    "canonical_read_only_predecessor_clearance_preview": "PASS"
+  },
+  "ledger_seq_at_review": 175,
+  "six_row_full_worst_case_plus_contingency_usd": "22.6438742",
+  "available_usd_at_review": "27.681346",
+  "scope_limitations": [
+    "Source and scripted controls only; no FEE013 assignment frozen or FEE013 paid model calls made.",
+    "High reasoning is requested; disclosed reasoning-token counts may be zero or absent and do not measure private reasoning depth.",
+    "One provider-auditor pair per cell supports descriptive evidence, not population or causal inference.",
+    "FEE012 remains one STOPPED and five PENDING; its valid native REJECT and refund are forensic observations, not a completed FEE012 cohort.",
+    "Unresolved earlier provider charges remain held by the USD 50 ledger."
+  ],
+  "freeze_or_paid_authorization": false
+}
