@@ -238,7 +238,7 @@ class PartialClaimTaskTests(unittest.TestCase):
             ("decide_first_milestone", {"decision": "REJECT"}),
             ("reveal_final_buyer_ledger", {}),
             ("finalize_invoice_job", {"verdict": "REJECT"})]}
-        log, bridge, calls, _ = self._run_scripted(row, actions)
+        log, bridge, calls, _ = self._run_scripted(row, actions, guard=True)
         self.assertEqual(log.status, "success")
         self.assertEqual(calls, list(ROLE_STEPS[:-2]))
         self.assertEqual(bridge.calls,
