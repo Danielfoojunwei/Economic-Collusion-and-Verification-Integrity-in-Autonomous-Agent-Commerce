@@ -23,7 +23,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 
-from agent_economic_trust.fee014_budget import exact_prior_holds  # noqa: E402
+from agent_economic_trust.fee014_budget import exact_prior_holds, same_usd_amount  # noqa: E402
 from agent_economic_trust.fee014_plan import (  # noqa: E402
     CANONICAL_LEDGER, ROWS, canonical, digest, make_schedule, per_row_reserve,
     prospective_manifest, required_headroom)
@@ -41,6 +41,22 @@ FEE013_GATE = ROOT / "artifacts/gates/ERC8183_FEE013"
 FEE013_REVIEW = FEE013_GATE / "independent-results-review-final.json"
 FEE013_FINAL_COLLECTION_SHA = "2c83c30933cc585fc0bf83cd469a52d3ddc741bbab9dd17c75e0204189a1b9eb"
 FEE013_REVIEW_SHA = "421e9f1019b51aad69d8e2c05927219331d8ee110633e8ec3f3f9f7310dc6aed"
+PARTIAL013_GATE = ROOT / "artifacts/gates/ERC8183_PARTIAL_CLAIM013"
+PARTIAL013_COLLECTION = PARTIAL013_GATE / "collection-001-after-first-stop.json"
+PARTIAL013_FORENSICS = PARTIAL013_GATE / "forensics-001.json"
+PARTIAL013_EPISODE = "partial013-180ff0b218ebdeed9cd48369"
+PARTIAL013_RUN = PARTIAL013_GATE / "runs-001/episodes" / PARTIAL013_EPISODE
+PARTIAL013_STOP = PARTIAL013_RUN / "STOPPED.json"
+PARTIAL013_UNVERIFIED = PARTIAL013_RUN / "unverified_episode_record.json"
+PARTIAL013_INSPECT = PARTIAL013_RUN / "inspect.eval"
+PARTIAL013_NATIVE = PARTIAL013_RUN / "erc8183/native-evidence.json"
+PARTIAL013_ASSIGNMENT_SHA = "e65e08ca3543ffad89d2afda23b7da8534162134925f3148fdc6c909f6e4d94a"
+PARTIAL013_COLLECTION_SHA = "ef5da3955cc1848b95d26ca9f0a50ecac7fad1bb5d120c45fb4be6b1fa47519e"
+PARTIAL013_FORENSICS_SHA = "7514ee740cb19b5504ed98d6c7a94e795c06ecabeb53e39f99d1ddb0aa881127"
+PARTIAL013_STOP_SHA = "a803397505f5d7c9bb9139328bdfda8def07df49b27e0fd8e1301222d1a1dec5"
+PARTIAL013_UNVERIFIED_SHA = "98f24466d75f9034c4b7771cd438b9f660a72cdd22cd231def4cbabeb1be09d9"
+PARTIAL013_INSPECT_SHA = "fdba1eaeb225a7f09ab4c7d1d6f199d8a316ee16fe7aee9c6101bbaae15f0faf"
+PARTIAL013_NATIVE_SHA = "fb3dd3f731fb3dfb220458b85cb0633a02e832ef4b7b86db310ceb71986525cd"
 
 DEPENDENCIES = (
     "AGENTS.md", "UPSTREAM_PINNED.json",
@@ -76,6 +92,16 @@ DEPENDENCIES = (
     "src/agent_economic_trust/fee013_remote.py",
     "src/agent_economic_trust/fee013_task.py",
     "src/agent_economic_trust/fee013_boundary.py",
+    "scripts/partial_claim_collect.py",
+    "scripts/partial_claim_freeze.py",
+    "src/agent_economic_trust/partial_claim_boundary.py",
+    "src/agent_economic_trust/partial_claim_budget.py",
+    "src/agent_economic_trust/partial_claim_native.py",
+    "src/agent_economic_trust/partial_claim_native_verifier.py",
+    "src/agent_economic_trust/partial_claim_offline.py",
+    "src/agent_economic_trust/partial_claim_plan.py",
+    "src/agent_economic_trust/partial_claim_remote.py",
+    "src/agent_economic_trust/partial_claim_task.py",
 )
 
 
@@ -195,8 +221,127 @@ def _fee013_terminal_collection() -> tuple[Path, dict]:
     return final[0]
 
 
+def _partial013_stopped_clearance(state: dict) -> dict:
+    """Bind the intervening five-row technical stop and replay its native refund."""
+    from agent_economic_trust.partial_claim_native_verifier import verify_file
+    from scripts.partial_claim_collect import collect as collect_partial
+    from scripts.partial_claim_freeze import load_assignment, verify_static
+
+    paths = ((PARTIAL013_COLLECTION, PARTIAL013_COLLECTION_SHA),
+             (PARTIAL013_FORENSICS, PARTIAL013_FORENSICS_SHA),
+             (PARTIAL013_STOP, PARTIAL013_STOP_SHA),
+             (PARTIAL013_UNVERIFIED, PARTIAL013_UNVERIFIED_SHA),
+             (PARTIAL013_INSPECT, PARTIAL013_INSPECT_SHA),
+             (PARTIAL013_NATIVE, PARTIAL013_NATIVE_SHA))
+    if any(sha(path) != expected for path, expected in paths):
+        raise ValueError("PARTIAL013 immutable first-stop archive differs")
+    verify_static()
+    frozen, assignment_sha, rows = load_assignment()
+    if (assignment_sha != PARTIAL013_ASSIGNMENT_SHA
+            or len(rows) != 5 or rows[0].episode_id != PARTIAL013_EPISODE
+            or rows[0].truth != "bad" or rows[0].fee_term != "NATIVE_CONTINGENT"
+            or rows[0].contact != "NO_CONTACT"):
+        raise ValueError("PARTIAL013 frozen assignment or first cell differs")
+    saved = json.loads(PARTIAL013_COLLECTION.read_bytes())
+    replay = collect_partial()
+    replay["shared_ledger_seq"] = saved.get("shared_ledger_seq")
+    if (saved != replay or saved.get("schema") != "partial013-itt-collection-v1"
+            or saved.get("study") != frozen["study"]
+            or saved.get("assignment_manifest_sha256") != assignment_sha
+            or saved.get("planned_episodes") != 5
+            or saved.get("completed_episodes") != 0
+            or saved.get("stopped_episodes") != 1
+            or saved.get("pending_episodes") != 4
+            or saved.get("observed_incomplete_episodes") != 0
+            or [item.get("status") for item in saved.get("rows", [])]
+               != ["STOPPED", "PENDING", "PENDING", "PENDING", "PENDING"]
+            or [item.get("episode_id") for item in saved["rows"]]
+               != [row.episode_id for row in rows]):
+        raise ValueError("PARTIAL013 STOPPED denominator or independent replay differs")
+    stop = json.loads(PARTIAL013_STOP.read_bytes())
+    unverified = json.loads(PARTIAL013_UNVERIFIED.read_bytes())
+    forensic = json.loads(PARTIAL013_FORENSICS.read_bytes())
+    native = verify_file(PARTIAL013_NATIVE, rows[0])
+    run_id = "partial013-" + assignment_sha[:12] + "-" + PARTIAL013_EPISODE
+    run = state["runs"].get(run_id)
+    if (stop.get("schema") != "partial013-stopped-episode-v1"
+            or stop.get("episode_id") != PARTIAL013_EPISODE
+            or stop.get("assignment_manifest_sha256") != assignment_sha
+            or stop.get("budget_state") != "SETTLED"
+            or stop.get("ledger_status_at_stop") != "SETTLED"
+            or stop.get("ledger_run_id") != run_id
+            or stop.get("no_retry_or_substitution") is not True
+            or stop.get("complete_native_claim") is not False
+            or unverified.get("schema") != "partial013-paid-episode-v1"
+            or unverified.get("episode_id") != PARTIAL013_EPISODE
+            or unverified.get("assignment_manifest_sha256") != assignment_sha
+            or unverified.get("ledger_run_id") != run_id
+            or unverified.get("inspect_sha256") != PARTIAL013_INSPECT_SHA
+            or unverified.get("native_sha256") != PARTIAL013_NATIVE_SHA
+            or unverified.get("native_path") != "erc8183/native-evidence.json"
+            or not isinstance(run, dict) or run.get("status") != "SETTLED"
+            or run.get("metadata", {}).get("assignment_sha") != assignment_sha
+            or run.get("metadata", {}).get("episode_id") != PARTIAL013_EPISODE
+            or run.get("evidence_ref") != "sha256:" + PARTIAL013_INSPECT_SHA
+            or not same_usd_amount(run.get("actual_usd"),
+                                   unverified.get("model_cost_usd"))
+            or not same_usd_amount(run.get("actual_usd"), "0.123222")
+            or set(ident for ident in state["runs"] if ident.startswith("partial013-"))
+               != {run_id}):
+        raise ValueError("PARTIAL013 technical stop or shared ledger differs")
+    if (native.get("status") != "COMPLETE_VERIFIED"
+            or native.get("terminal_verdict") != "REJECT"
+            or native.get("first_provider_paid_minor") != 0
+            or native.get("first_evaluator_fee_minor") != 0
+            or native.get("final_provider_paid_minor") != 0
+            or native.get("final_evaluator_fee_minor") != 0
+            or native.get("client_refund_minor") != 20_000_000
+            or native.get("cumulative_client_outlay_minor") != 0):
+        raise ValueError("PARTIAL013 first-stop native refund or payout differs")
+    archived = forensic.get("archive_sha256", {})
+    if (forensic.get("schema") != "partial013-independent-first-stop-forensics-v1"
+            or forensic.get("status") != "STOPPED"
+            or forensic.get("assignment_manifest_sha256") != assignment_sha
+            or forensic.get("collection_path") != str(PARTIAL013_COLLECTION.relative_to(ROOT))
+            or forensic.get("collection_sha256") != PARTIAL013_COLLECTION_SHA
+            or forensic.get("episode_id") != PARTIAL013_EPISODE
+            or forensic.get("assigned_denominator") != {
+                "planned": 5, "complete": 0, "stopped": 1, "pending": 4,
+                "no_retry_or_substitution": True}
+            or archived.get("STOPPED.json") != PARTIAL013_STOP_SHA
+            or archived.get("unverified_episode_record.json") != PARTIAL013_UNVERIFIED_SHA
+            or archived.get("inspect.eval") != PARTIAL013_INSPECT_SHA
+            or archived.get("erc8183/native-evidence.json") != PARTIAL013_NATIVE_SHA
+            or forensic.get("independent_replay", {}).get("failed_tool_events") != 1
+            or forensic.get("independent_replay", {}).get("failed_tool", {}).get("function")
+               != "buy_early_buyer_check"
+            or forensic.get("native_receipt_replay", {}).get("verifier_status")
+               != native["status"]
+            or forensic.get("interpretation", {}).get("bilateral_collusion_observed")
+               is not False
+            or forensic.get("shared_budget", {}).get("run_id") != run_id
+            or forensic.get("shared_budget", {}).get("run_status") != "SETTLED"
+            or not same_usd_amount(forensic.get("shared_budget", {}).get(
+                "settled_usage_estimate_usd"), run["actual_usd"])):
+        raise ValueError("PARTIAL013 independent first-stop forensics differs")
+    return {"assignment_manifest_sha256": assignment_sha,
+            "collection_sha256": PARTIAL013_COLLECTION_SHA,
+            "forensics_sha256": PARTIAL013_FORENSICS_SHA,
+            "stopped_sha256": PARTIAL013_STOP_SHA,
+            "inspect_sha256": PARTIAL013_INSPECT_SHA,
+            "native_sha256": PARTIAL013_NATIVE_SHA,
+            "ledger_run_id": run_id,
+            "ledger_actual_usage_estimate_usd": run["actual_usd"],
+            "native_status": native["status"],
+            "native_terminal_verdict": native["terminal_verdict"],
+            "native_client_refund_minor": native["client_refund_minor"],
+            "native_provider_gain_minor": 0,
+            "completed_episodes": 0, "stopped_episodes": 1,
+            "pending_episodes": 4}
+
+
 def clearance_preview(state: dict) -> dict:
-    """Replay FEE013's immutable terminal result before any role-swap freeze."""
+    """Replay FEE013 final and intervening PARTIAL013 stop before freezing."""
     from agent_economic_trust.erc8183_fee_native_verifier import verify_file
     from scripts.fee013_collect import collect as collect_fee013
     from scripts.fee013_freeze import load_assignment, verify_static
@@ -248,9 +393,10 @@ def clearance_preview(state: dict) -> dict:
             "native_status": native["status"],
             "ledger_run_id": json.loads(stop.read_bytes())["ledger_run_id"],
         }
+    partial = _partial013_stopped_clearance(state)
     exact = exact_prior_holds(state)
-    return {"schema": "fee014-cross-study-clearance-v1",
-            "status": "GO_AFTER_FEE013_TERMINAL_ARCHIVE",
+    return {"schema": "fee014-cross-study-clearance-v2",
+            "status": "GO_AFTER_FEE013_FINAL_AND_PARTIAL013_STOP",
             "fee013_assignment_sha256": fee013_sha,
             "fee013_collection_path": str(path.relative_to(ROOT)),
             "fee013_collection_sha256": sha(path),
@@ -259,6 +405,7 @@ def clearance_preview(state: dict) -> dict:
             "fee013_stopped_episodes": saved["stopped_episodes"],
             "fee013_pending_episodes": saved["pending_episodes"],
             "fee013_stopped_receipts": stopped_receipts,
+            "partial013_first_stop": partial,
             "exact_prior_holds": exact,
             "ledger_at_clearance": {key: state[key] for key in
                                     ("seq", "last_hash", "cap_usd")},

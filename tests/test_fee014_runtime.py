@@ -19,7 +19,9 @@ from agent_economic_trust.fee014_plan import (CANONICAL_LEDGER, SONNET, SOL,
                                               per_row_reserve, required_headroom)
 from agent_economic_trust.fee014_boundary import reported_reasoning
 from agent_economic_trust.remote_budget import BudgetLedger
+from agent_economic_trust import partial_claim_native_verifier
 from scripts import fee014_freeze
+from scripts import partial_claim_freeze
 
 
 class Fee014RuntimeGates(unittest.TestCase):
@@ -99,6 +101,26 @@ class Fee014RuntimeGates(unittest.TestCase):
                 archive(root, "collection-003.json", 6, 0, 0)
                 with self.assertRaises(ValueError):
                     fee014_freeze._fee013_terminal_collection()
+
+    def test_intervening_partial_stop_raw_native_refund_and_ledger_gate(self):
+        state = BudgetLedger(CANONICAL_LEDGER).snapshot()
+        with (patch.object(partial_claim_freeze, "_canonical_root", lambda: None),
+              patch.object(partial_claim_native_verifier, "UPSTREAM",
+                           Path("/workspace/upstreams/erc8183"))):
+            result = fee014_freeze._partial013_stopped_clearance(state)
+            self.assertEqual(result["completed_episodes"], 0)
+            self.assertEqual(result["stopped_episodes"], 1)
+            self.assertEqual(result["pending_episodes"], 4)
+            self.assertEqual(result["native_terminal_verdict"], "REJECT")
+            self.assertEqual(result["native_client_refund_minor"], 20_000_000)
+            self.assertEqual(result["native_provider_gain_minor"], 0)
+            with patch.object(fee014_freeze, "PARTIAL013_FORENSICS_SHA", "0" * 64):
+                with self.assertRaises(ValueError):
+                    fee014_freeze._partial013_stopped_clearance(state)
+            changed = json.loads(json.dumps(state))
+            changed["runs"][result["ledger_run_id"]]["actual_usd"] = "0.123223"
+            with self.assertRaises(ValueError):
+                fee014_freeze._partial013_stopped_clearance(changed)
 
     def test_eight_predecessor_native_cases_and_seven_tamper_negatives(self):
         report = verify_offline(ARCHIVE)

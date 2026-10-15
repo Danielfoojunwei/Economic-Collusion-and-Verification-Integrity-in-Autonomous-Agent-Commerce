@@ -32,8 +32,14 @@ bilateral collusion.
 
 Before freeze, source and offline controls need independent review; the
 FEE013 assigned-denominator terminal collection must be archived and replayed.
-The freeze binds its exact assignment/collection hash and every stopped-row
-native receipt. The three older unresolved billing holds remain reserved. A
+The freeze binds its exact assignment/collection hash and independent final
+review. PARTIAL013 then stopped after its first assigned row because an auditor
+tool-order error occurred before the successful native check and REJECT. The
+FEE014 clearance also binds that five-row STOPPED denominator, its independent
+forensic report, the exact settled ledger run, and the verified full local
+refund with zero provider payout. The stopped PARTIAL013 row remains a technical
+stop, not a completed collusion observation. The three older unresolved billing
+holds remain reserved. A
 fresh public catalog and the shared USD 50 ledger must fund all five rows at
 the worst-case bound, plus the USD 2 contingency and unassigned residual. A
 technical stop ends this cohort with later rows PENDING; there is no reroll.
