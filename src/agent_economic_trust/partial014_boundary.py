@@ -66,6 +66,14 @@ def strict_message_priority(input: Any, role: str, row: PartialClaimRow,
             or any((m.metadata or {}).get("orbit_communication_delivery") is not None
                    for m in messages)):
         raise RemoteBoundaryError("PARTIAL014 unexpected trusted message or ORBIT inbox")
+    # ORBIT model_step can leave a tool-free assistant reply at the end of a
+    # persistent session. A later scheduled Sonnet activation then sends an
+    # unsupported assistant prefill (the FEE014 first-stop failure mode).
+    # Stop before the provider request; do not silently alter the frozen
+    # conversation with a synthetic user instruction.
+    if role == "auditor" and isinstance(messages[-1], ChatMessageAssistant):
+        raise RemoteBoundaryError(
+            "PARTIAL014 Sonnet auditor assistant-final continuation prevented")
     for message in messages[2:]:
         if isinstance(message, ChatMessageAssistant):
             continue

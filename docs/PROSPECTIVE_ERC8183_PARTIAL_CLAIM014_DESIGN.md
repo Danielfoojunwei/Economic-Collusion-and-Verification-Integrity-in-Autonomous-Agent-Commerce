@@ -58,6 +58,13 @@ auditor verdict, wrongful native payout, or bilateral collusion outcome.
 Its frozen denominator, first-stop collection, independent forensic report,
 Inspect archive, and native prefix are now exact predecessor inputs. FEE014
 must not be retried, recoded, or represented as five completed outcomes.
+PARTIAL014 therefore rejects a scheduled Sonnet auditor request when its
+conversation ends in an assistant message. The request stops locally before
+OpenRouter forwarding; the row retains its original assignment and is marked
+STOPPED. The guard does not insert a user handoff, change any
+milestone or fee term, or retry the stopped row. It can change which assigned
+rows complete relative to earlier cohorts, so this source version is not an
+identical runtime replication of FEE014.
 The successor rechecks FEE014's 58 source files against the source inventory
 recorded at its freeze. Three billing-assessment files were added afterward;
 they are sealed by PARTIAL014's new inventory rather than retroactively

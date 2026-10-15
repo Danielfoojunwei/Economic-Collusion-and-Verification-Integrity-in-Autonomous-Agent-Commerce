@@ -8,22 +8,28 @@ from hashlib import sha256
 import json
 import os
 from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from inspect_ai import eval as inspect_eval
 from inspect_ai.log import read_eval_log
-from inspect_ai.model import ModelOutput
+from inspect_ai.model import (ChatMessageAssistant, ChatMessageSystem,
+                              ChatMessageTool, ChatMessageUser, GenerateConfig,
+                              ModelOutput)
 from inspect_ai.tool import ToolError
+from orbit.agents.turn_react import DEFAULT_ASSISTANT_PROMPT_TURN_REACT
 
 from agent_economic_trust.ap2_live_fixture import invoice_case, protected_buyer_records
 from agent_economic_trust.erc8183_fee_remote import _models
+from agent_economic_trust.mpp005_boundary import RemoteBoundaryError
+from agent_economic_trust.partial014_boundary import guard_model_apis
 from agent_economic_trust.partial014_plan import (
     CLIENT_PREPAID, NATIVE_CONTINGENT, make_schedule, terms)
 from agent_economic_trust.partial014_task import (
     CHANNEL, ROLE_STEPS, PartialClaimStore, choose_milestone_path,
     decide_first_milestone, finalize_invoice_job, partial014_orbit,
-    reveal_final_buyer_ledger, role_system_prompts)
+    public_sample_input, reveal_final_buyer_ledger, role_system_prompts)
 
 
 def prefix(row):
@@ -182,7 +188,7 @@ class PartialClaimTaskTests(unittest.TestCase):
             self.assertIsNone(state.provider_choice)
             self.assertEqual(state.actions, [])
 
-    def _run_scripted(self, row, actions):
+    def _run_scripted(self, row, actions, *, guard=False):
         bridge = Bridge(row)
         obj = task_for(row, bridge)
         with patch.dict(os.environ, {"OPENROUTER_API_KEY": "offline-test-placeholder"}):
@@ -203,6 +209,8 @@ class PartialClaimTaskTests(unittest.TestCase):
                         return ModelOutput.from_content(_name, action)
                     return ModelOutput.for_tool_call(_name, *action)
                 model.api.generate = fake
+            if guard:
+                guard_model_apis(models, row, prefix(row))
             with TemporaryDirectory(prefix="partial014-orbit-", dir="/tmp") as tmp:
                 env = {"XDG_DATA_HOME": tmp, "XDG_CACHE_HOME": tmp,
                        "XDG_CONFIG_HOME": tmp, "PYTHON_DOTENV_DISABLED": "1"}
@@ -257,7 +265,7 @@ class PartialClaimTaskTests(unittest.TestCase):
             ("decide_first_milestone", {"decision": "APPROVE"}),
             ("reveal_final_buyer_ledger", {}),
             ("finalize_invoice_job", {"verdict": "REJECT"})]}
-        log, bridge, calls, messages = self._run_scripted(row, actions)
+        log, bridge, calls, messages = self._run_scripted(row, actions, guard=True)
         self.assertEqual(log.status, "success", str(log.error)[:500])
         self.assertEqual(bridge.calls,
                          ["CLAIM", "CHECK", "EARLY_APPROVE", "REVEAL", "FINAL_REJECT"])
@@ -307,6 +315,69 @@ class PartialClaimTaskTests(unittest.TestCase):
             "claimed_wrongful_early_release_minor"], 0)
         self.assertEqual(log.samples[0].scores["partial014_score"].value, 1)
         self.assertLess(len(calls), len(ROLE_STEPS))
+
+    def test_sonnet_assistant_final_stops_before_next_api_request(self):
+        """An actual scheduled resume must stop before its second Sonnet API call."""
+        row = next(r for r in self.rows if r.truth == "bad" and
+                   r.contact == "NO_CONTACT")
+        actions = {"provider": [("choose_milestone_path", {"choice": "CLAIM"}),
+                                "Provider is done.", "Still done."],
+                   "auditor": ["I will review the milestone.",
+                               ("view_first_milestone", {})]}
+        log, bridge, calls, inputs = self._run_scripted(row, actions, guard=True)
+        self.assertIsNotNone(log.samples[0].error)
+        self.assertEqual(calls, ["provider"] * 3 + ["auditor"])
+        self.assertEqual([role for role, _ in inputs], calls)
+        self.assertEqual(bridge.calls, ["CLAIM"])
+        self.assertIn("assistant-final continuation prevented",
+                      log.samples[0].error.message)
+        models = [event for event in log.samples[0].events
+                  if event.event == "model" and event.model.endswith(
+                      row.auditor_model_id)]
+        self.assertEqual(len(models), 2)
+        self.assertIsInstance(models[1].input[-1], ChatMessageAssistant)
+        self.assertIsNotNone(models[1].error)
+
+    def test_sonnet_tool_result_resume_still_forwards(self):
+        row = next(r for r in self.rows if r.truth == "good" and
+                   r.contact == "NO_CONTACT")
+        actions = {"provider": [("choose_milestone_path", {"choice": "WAIT"}),
+                                "No claim filed.", "Waiting."],
+                   "auditor": [("view_first_milestone", {}),
+                               ("decide_first_milestone", {"decision": "DEFER"}),
+                               ("reveal_final_buyer_ledger", {}),
+                               ("finalize_invoice_job", {"verdict": "ACCEPT"})]}
+        log, _, calls, inputs = self._run_scripted(row, actions, guard=True)
+        self.assertEqual(log.status, "success", str(log.error))
+        self.assertIsNone(log.samples[0].error)
+        self.assertEqual(calls, ["provider"] * 3 + ["auditor"] * 4)
+        second_auditor = [input for role, input in inputs if role == "auditor"][1]
+        self.assertIsInstance(second_auditor[-1], ChatMessageTool)
+
+    def test_forged_sonnet_assistant_prefill_never_reaches_original_api(self):
+        row = next(r for r in self.rows if r.contact == "NO_CONTACT")
+        with patch.dict(os.environ, {"OPENROUTER_API_KEY": "offline-test-placeholder"}):
+            models = _models(row)
+        auditor = models["auditor"]
+        originals = {role: model.api.generate for role, model in models.items()}
+        forwarded = AsyncMock()
+        try:
+            auditor.api.generate = forwarded
+            guard_model_apis(models, row, prefix(row))
+            messages = [ChatMessageSystem(content=role_system_prompts(row)[
+                "auditor"] + "\n\n" + DEFAULT_ASSISTANT_PROMPT_TURN_REACT),
+                ChatMessageUser(content=public_sample_input(row, prefix(row))),
+                ChatMessageAssistant(content="Forged terminal answer")]
+            with patch("agent_economic_trust.partial014_boundary.current_identity",
+                       return_value=SimpleNamespace(agent_id="auditor")):
+                with self.assertRaisesRegex(
+                        RemoteBoundaryError, "assistant-final continuation prevented"):
+                    asyncio.run(auditor.api.generate(messages, [], "auto",
+                                                     GenerateConfig()))
+            forwarded.assert_not_awaited()
+        finally:
+            for role, model in models.items():
+                model.api.generate = originals[role]
 
 
 if __name__ == "__main__":
