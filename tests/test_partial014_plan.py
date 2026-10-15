@@ -57,8 +57,8 @@ class PartialClaimPlanTests(unittest.TestCase):
             result = partial014_freeze._fee014_predecessor(state)
             self.assertEqual(result["row_statuses"],
                              ["COMPLETE", "STOPPED", "PENDING", "PENDING", "PENDING"])
-            self.assertIn(result["stopped_charge_disposition"]["fee014_charge_status"],
-                          {"CONTINGENT", "SETTLED"})
+            self.assertEqual(result["stopped_charge_disposition"]["fee014_charge_status"],
+                             "CONTINGENT")
             with patch.object(partial014_freeze, "FEE014_BILLING_REVIEW",
                               partial014_freeze.FEE014_BILLING):
                 with self.assertRaises(ValueError):
@@ -99,13 +99,6 @@ class PartialClaimPlanTests(unittest.TestCase):
         fee["evidence_ref"] = "provider-billing:sha256:" + "2" * 64
         settled["contingent_run_ids"].remove(FEE014_STOPPED_RUN_ID)
         settled["reserved_usd"] = str(BASE_HOLDS_USD)
-        self.assertEqual(exact_prior_holds(settled)["fee014_charge_status"],
-                         "SETTLED")
-        fee["evidence_ref"] = "sha256:" + "2" * 64
-        with self.assertRaises(ValueError):
-            exact_prior_holds(settled)
-        fee["evidence_ref"] = "provider-billing:sha256:" + "2" * 64
-        fee.pop("contingent_evidence_ref")
         with self.assertRaises(ValueError):
             exact_prior_holds(settled)
 

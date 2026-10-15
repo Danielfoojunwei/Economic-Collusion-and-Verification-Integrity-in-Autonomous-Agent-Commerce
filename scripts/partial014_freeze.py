@@ -339,7 +339,7 @@ def _fee014_predecessor(state: dict) -> dict:
     """Replay FEE014's fixed denominator despite later billing disposition.
 
     The FEE014 collector recorded UNKNOWN at stop, so its old all-row check
-    deliberately cannot be rerun after that run becomes CONTINGENT/SETTLED.
+    deliberately cannot be rerun after that run becomes CONTINGENT.
     Reopen each archived row and bind the frozen collection bytes instead.
     """
     from scripts import fee014_freeze

@@ -68,8 +68,10 @@ files cannot invalidate the fixed assignment's source seal.
 The stopped FEE014 model charge is initially UNKNOWN and blocks PARTIAL014
 clearance and freeze. A prospective clearance may proceed only after the
 shared ledger records the reviewed provisional CONTINGENT disposition with
-the full $4.292608 reserve retained, or a later attributable provider bill
-settles it. The provisional evidence digest is pinned in the successor gate;
+the full $4.292608 reserve retained. This source version fails closed if
+FEE014 later becomes SETTLED: an attributable provider bill, its exact bytes,
+and independent review must be pinned in a new source update. The provisional
+evidence digest is pinned in the successor gate;
 an aggregate OpenRouter account delta is not a per-request invoice or proof
 of a zero charge. The three older unresolved holds remain reserved. This
 source-only successor does not make a paid call or allocate a new row.

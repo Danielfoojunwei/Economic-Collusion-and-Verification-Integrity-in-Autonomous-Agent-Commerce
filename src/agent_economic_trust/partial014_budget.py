@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from decimal import Decimal, InvalidOperation
-import re
 from typing import Any, Mapping
 
 from .mpp008_budget import MPP006_STOPPED_RUN_ID
@@ -23,7 +22,6 @@ FEE014_METADATA = {
     "provider_model_id": "anthropic/claude-sonnet-5.5",
     "auditor_model_id": "openai/gpt-5.6-sol",
 }
-_BILLING_REF = re.compile(r"provider-billing:sha256:[0-9a-f]{64}\Z")
 
 
 def same_usd_amount(ledger_amount: object, saved_amount: object) -> bool:
@@ -46,7 +44,7 @@ def same_usd_amount(ledger_amount: object, saved_amount: object) -> bool:
 def exact_prior_holds(snapshot: Mapping[str, Any], *,
                       active_run_id: str | None = None,
                       active_reservation_usd: Decimal = Decimal(0)) -> dict:
-    """Retain all old holds and a reviewed FEE014 charge disposition.
+    """Retain all old holds and FEE014's exact reviewed full contingent hold.
 
     Removing a *verified* active reservation from a local projection lets the
     existing predecessor verifier replay the exact saved sidecars unchanged.
@@ -62,26 +60,13 @@ def exact_prior_holds(snapshot: Mapping[str, Any], *,
     if (not isinstance(fee014, Mapping)
             or fee014.get("metadata") != FEE014_METADATA
             or fee014.get("reserved_usd") != str(FEE014_FULL_HOLD_USD)
-            or fee014.get("status") not in {"CONTINGENT", "SETTLED"}):
+            or fee014.get("status") != "CONTINGENT"):
         raise ValueError("FEE014 stopped charge lacks reviewed full-hold disposition")
-    contingent = fee014["status"] == "CONTINGENT"
-    if contingent:
-        evidence = fee014.get("evidence_ref")
-        if (evidence != FEE014_PROVISIONAL_EVIDENCE_REF
-                or fee014.get("contingent_evidence_ref") != evidence
-                or "actual_usd" in fee014):
-            raise ValueError("FEE014 contingent hold evidence differs")
-    else:
-        try:
-            actual = Decimal(fee014["actual_usd"])
-        except (KeyError, InvalidOperation, TypeError) as exc:
-            raise ValueError("FEE014 settled bill is absent") from exc
-        evidence = fee014.get("evidence_ref")
-        if (not actual.is_finite() or not 0 <= actual <= FEE014_FULL_HOLD_USD
-                or not isinstance(evidence, str)
-                or not _BILLING_REF.fullmatch(evidence)
-                or fee014.get("contingent_evidence_ref") != FEE014_PROVISIONAL_EVIDENCE_REF):
-            raise ValueError("FEE014 settled provider bill differs")
+    evidence = fee014.get("evidence_ref")
+    if (evidence != FEE014_PROVISIONAL_EVIDENCE_REF
+            or fee014.get("contingent_evidence_ref") != evidence
+            or "actual_usd" in fee014):
+        raise ValueError("FEE014 contingent hold evidence differs")
     open_ids = {ident for ident, row in runs.items()
                 if row.get("status") in {"RESERVED", "CONTINGENT", "UNKNOWN"}}
     if active_reservation_usd:
@@ -97,18 +82,15 @@ def exact_prior_holds(snapshot: Mapping[str, Any], *,
         raise ValueError("PARTIAL014 active run without reserve")
     else:
         expected = set(EXACT_OPEN_IDS)
-    if contingent:
-        expected.add(FEE014_STOPPED_RUN_ID)
-    expected_contingent = {MPP006_STOPPED_RUN_ID, X402011_RUN_ID}
-    if contingent:
-        expected_contingent.add(FEE014_STOPPED_RUN_ID)
-    fee014_hold = FEE014_FULL_HOLD_USD if contingent else Decimal(0)
+    expected.add(FEE014_STOPPED_RUN_ID)
+    expected_contingent = {MPP006_STOPPED_RUN_ID, X402011_RUN_ID,
+                           FEE014_STOPPED_RUN_ID}
     if (open_ids != expected or snapshot.get("blocked")
             or snapshot.get("unknown_run_ids")
             or set(snapshot.get("contingent_run_ids", []))
                != expected_contingent
             or Decimal(snapshot.get("reserved_usd", "-1"))
-               != BASE_HOLDS_USD + fee014_hold + active_reservation_usd):
+               != BASE_HOLDS_USD + FEE014_FULL_HOLD_USD + active_reservation_usd):
         raise ValueError("PARTIAL014 open ledger hold set differs from reviewed predecessors")
     projection = dict(snapshot)
     projection["runs"] = {key: value for key, value in runs.items()
@@ -123,6 +105,6 @@ def exact_prior_holds(snapshot: Mapping[str, Any], *,
             "fee014_stopped_run_id": FEE014_STOPPED_RUN_ID,
             "fee014_charge_status": fee014["status"],
             "fee014_full_reserved_usd": str(FEE014_FULL_HOLD_USD),
-            "fee014_active_hold_usd": str(fee014_hold),
+            "fee014_active_hold_usd": str(FEE014_FULL_HOLD_USD),
             "fee014_billing_evidence_ref": evidence,
             "active_reservation_usd": str(active_reservation_usd)}
