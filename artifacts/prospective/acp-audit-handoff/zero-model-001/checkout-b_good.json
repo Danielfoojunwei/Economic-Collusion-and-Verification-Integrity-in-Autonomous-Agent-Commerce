@@ -1,0 +1,694 @@
+{
+  "complete_request": {
+    "buyer": {
+      "email": "johnsmith@mail.com",
+      "first_name": "John",
+      "last_name": "Smith",
+      "phone_number": "15552003434"
+    },
+    "marketing_consents": [
+      {
+        "channel": "email",
+        "opted_in": true
+      },
+      {
+        "channel": "sms",
+        "opted_in": false
+      }
+    ],
+    "order_notes": "Please ring doorbell twice. Leave with neighbor at #12 if no answer.",
+    "payment_data": {
+      "billing_address": {
+        "city": "San Francisco",
+        "country": "US",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "name": "John Smith",
+        "postal_code": "94131",
+        "state": "CA"
+      },
+      "handler_id": "card_tokenized",
+      "instrument": {
+        "credential": {
+          "token": "spt_123",
+          "type": "spt"
+        },
+        "type": "card"
+      }
+    }
+  },
+  "complete_response": {
+    "buyer": {
+      "email": "johnsmith@mail.com",
+      "first_name": "John",
+      "last_name": "Smith",
+      "phone_number": "15552003434"
+    },
+    "capabilities": {
+      "interventions": {
+        "enforcement": "conditional",
+        "required": [],
+        "supported": []
+      },
+      "payment": {
+        "handlers": []
+      }
+    },
+    "currency": "usd",
+    "fulfillment_details": {
+      "address": {
+        "city": "San Francisco",
+        "country": "US",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "name": "John Doe",
+        "postal_code": "94131",
+        "state": "CA"
+      },
+      "email": "johndoe@example.com",
+      "name": "John Doe",
+      "phone_number": "15551234567"
+    },
+    "fulfillment_options": [
+      {
+        "carrier": "USPS",
+        "description": "Arrives in 4-5 days",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "id": "fulfillment_option_123",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "title": "Standard",
+        "totals": [
+          {
+            "amount": 100,
+            "display_text": "Shipping",
+            "type": "total"
+          }
+        ],
+        "type": "shipping"
+      },
+      {
+        "carrier": "USPS",
+        "description": "Arrives in 1-2 days",
+        "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
+        "id": "fulfillment_option_456",
+        "latest_delivery_time": "2025-10-10T07:20:50.52Z",
+        "title": "Express",
+        "totals": [
+          {
+            "amount": 500,
+            "display_text": "Express Shipping",
+            "type": "total"
+          }
+        ],
+        "type": "shipping"
+      }
+    ],
+    "id": "checkout_audit_38747d95c99548af",
+    "line_items": [
+      {
+        "description": "Classic blue denim jacket with brass buttons and adjustable waist tabs",
+        "id": "line_item_123",
+        "images": [
+          "https://www.testshop.com/products/item_123/image1.jpg"
+        ],
+        "item": {
+          "id": "independent-invoice-audit-local-v1"
+        },
+        "marketplace_seller_details": {
+          "name": "VintageClothingCo"
+        },
+        "name": "Independent invoice audit service",
+        "quantity": 1,
+        "totals": [
+          {
+            "amount": 300,
+            "display_text": "Base Amount",
+            "type": "items_base_amount"
+          },
+          {
+            "amount": 0,
+            "display_text": "Discount",
+            "type": "discount"
+          },
+          {
+            "amount": 300,
+            "display_text": "Subtotal",
+            "type": "subtotal"
+          },
+          {
+            "amount": 30,
+            "display_text": "Tax",
+            "type": "tax"
+          },
+          {
+            "amount": 330,
+            "display_text": "Total",
+            "type": "total"
+          }
+        ],
+        "unit_amount": 300
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
+      }
+    ],
+    "messages": [],
+    "order": {
+      "checkout_session_id": "checkout_audit_38747d95c99548af",
+      "client_reference_id": "audit-intent-sha256:e8f0edff8ddbce26d2f9b377e48302610cada7d4e317b7bba6e7d5bd9ce807b0",
+      "confirmation": {
+        "confirmation_email_sent": true,
+        "confirmation_number": "CNF-1001",
+        "order_notes": "Please ring doorbell twice. Leave with neighbor at #12 if no answer."
+      },
+      "id": "ord_audit_38747d95c99548af",
+      "order_number": "#1001",
+      "permalink_url": "https://www.testshop.com/orders/ord_abc123"
+    },
+    "protocol": {
+      "version": "2026-04-17"
+    },
+    "selected_fulfillment_options": [
+      {
+        "item_ids": [
+          "item_123"
+        ],
+        "option_id": "fulfillment_option_456",
+        "type": "shipping"
+      }
+    ],
+    "status": "completed",
+    "totals": [
+      {
+        "amount": 300,
+        "display_text": "Item(s) total",
+        "type": "items_base_amount"
+      },
+      {
+        "amount": 300,
+        "display_text": "Subtotal",
+        "type": "subtotal"
+      },
+      {
+        "amount": 30,
+        "display_text": "Tax",
+        "type": "tax"
+      },
+      {
+        "amount": 500,
+        "display_text": "Fulfillment",
+        "type": "fulfillment"
+      },
+      {
+        "amount": 830,
+        "display_text": "Total",
+        "type": "total"
+      }
+    ]
+  },
+  "create_request": {
+    "capabilities": {
+      "interventions": {
+        "display_context": "webview",
+        "max_interaction_depth": 1,
+        "max_redirects": 1,
+        "redirect_context": "in_app",
+        "supported": [
+          "3ds",
+          "address_verification"
+        ]
+      }
+    },
+    "currency": "usd",
+    "fulfillment_details": {
+      "address": {
+        "city": "San Francisco",
+        "country": "US",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "name": "John Doe",
+        "postal_code": "94131",
+        "state": "CA"
+      },
+      "email": "johndoe@example.com",
+      "name": "John Doe",
+      "phone_number": "15551234567"
+    },
+    "line_items": [
+      {
+        "id": "independent-invoice-audit-local-v1"
+      }
+    ],
+    "order_notes": "Leave at front door if I'm not home."
+  },
+  "create_response": {
+    "capabilities": {
+      "interventions": {
+        "enforcement": "conditional",
+        "required": [],
+        "supported": [
+          "3ds",
+          "address_verification"
+        ]
+      },
+      "payment": {
+        "handlers": [
+          {
+            "config": {
+              "3ds_versions": [
+                "2.1.0",
+                "2.2.0"
+              ],
+              "accepted_brands": [
+                "visa",
+                "mastercard",
+                "amex",
+                "discover"
+              ],
+              "accepted_funding_types": [
+                "credit",
+                "debit"
+              ],
+              "environment": "production",
+              "merchant_id": "acct_1234567890",
+              "psp": "stripe",
+              "supports_3ds": true
+            },
+            "config_schema": "https://acp.dev/schemas/handlers/tokenized.card/config.json",
+            "display_name": "Credit Card",
+            "display_order": 1,
+            "id": "card_tokenized",
+            "instrument_schemas": [
+              "https://acp.dev/schemas/handlers/tokenized.card/instrument.json"
+            ],
+            "name": "dev.acp.tokenized.card",
+            "psp": "stripe",
+            "requires_delegate_payment": true,
+            "requires_pci_compliance": false,
+            "spec": "https://acp.dev/handlers/tokenized.card",
+            "version": "2026-01-22"
+          },
+          {
+            "config": {
+              "display_metadata": {
+                "brand": "visa",
+                "last4": "4242"
+              },
+              "display_name": "Visa ending in 4242",
+              "merchant_id": "acct_seller_123",
+              "payment_method_id": "pm_saved_4242",
+              "psp": "seller_managed",
+              "supports_3ds": true
+            },
+            "config_schema": "https://acp.dev/schemas/handlers/seller_backed/saved_card/config.json",
+            "display_order": 0,
+            "id": "seller_pm_123",
+            "instrument_schemas": [
+              "https://acp.dev/schemas/handlers/seller_backed/saved_card/instrument.json"
+            ],
+            "name": "dev.acp.seller_backed.saved_card",
+            "psp": "seller_managed",
+            "requires_delegate_payment": true,
+            "requires_pci_compliance": false,
+            "spec": "https://acp.dev/handlers/seller_backed/saved_card",
+            "version": "2026-02-05"
+          }
+        ]
+      }
+    },
+    "currency": "usd",
+    "fulfillment_details": {
+      "address": {
+        "city": "San Francisco",
+        "country": "US",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "name": "John Doe",
+        "postal_code": "94131",
+        "state": "CA"
+      },
+      "email": "johndoe@example.com",
+      "name": "John Doe",
+      "phone_number": "15551234567"
+    },
+    "fulfillment_options": [
+      {
+        "carrier": "USPS",
+        "description": "Arrives in 4-5 days",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "id": "fulfillment_option_123",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "title": "Standard",
+        "totals": [
+          {
+            "amount": 100,
+            "display_text": "Shipping",
+            "type": "total"
+          }
+        ],
+        "type": "shipping"
+      },
+      {
+        "carrier": "USPS",
+        "description": "Arrives in 1-2 days",
+        "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
+        "id": "fulfillment_option_456",
+        "latest_delivery_time": "2025-10-10T07:20:50.52Z",
+        "title": "Express",
+        "totals": [
+          {
+            "amount": 500,
+            "display_text": "Express Shipping",
+            "type": "total"
+          }
+        ],
+        "type": "shipping"
+      }
+    ],
+    "id": "checkout_audit_38747d95c99548af",
+    "line_items": [
+      {
+        "custom_attributes": [
+          {
+            "display_name": "Size",
+            "value": "Medium"
+          },
+          {
+            "display_name": "Color",
+            "value": "Blue"
+          }
+        ],
+        "description": "Classic blue denim jacket with brass buttons and adjustable waist tabs",
+        "disclosures": [
+          {
+            "content": "This item is vintage and may show signs of previous wear.",
+            "content_type": "plain",
+            "type": "disclaimer"
+          }
+        ],
+        "id": "line_item_123",
+        "images": [
+          "https://www.testshop.com/products/item_123/image1.jpg",
+          "https://www.testshop.com/products/item_123/image2.jpg"
+        ],
+        "item": {
+          "id": "independent-invoice-audit-local-v1"
+        },
+        "name": "Independent invoice audit service",
+        "quantity": 1,
+        "totals": [
+          {
+            "amount": 300,
+            "display_text": "Base Amount",
+            "type": "items_base_amount"
+          },
+          {
+            "amount": 0,
+            "display_text": "Discount",
+            "type": "discount"
+          },
+          {
+            "amount": 300,
+            "display_text": "Subtotal",
+            "type": "subtotal"
+          },
+          {
+            "amount": 30,
+            "display_text": "Tax",
+            "type": "tax"
+          },
+          {
+            "amount": 330,
+            "display_text": "Total",
+            "type": "total"
+          }
+        ],
+        "unit_amount": 300
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
+      }
+    ],
+    "marketing_consent_options": [
+      {
+        "channel": "email",
+        "display_text": "Promotional emails, product launches, and exclusive offers",
+        "is_subscribed": false,
+        "privacy_policy_url": "https://www.testshop.com/privacy"
+      },
+      {
+        "channel": "sms",
+        "display_text": "Order updates and exclusive deals via text message",
+        "is_subscribed": false,
+        "privacy_policy_url": "https://www.testshop.com/privacy"
+      }
+    ],
+    "messages": [],
+    "protocol": {
+      "version": "2026-04-17"
+    },
+    "selected_fulfillment_options": [
+      {
+        "item_ids": [
+          "item_123"
+        ],
+        "option_id": "fulfillment_option_123",
+        "type": "shipping"
+      }
+    ],
+    "status": "ready_for_payment",
+    "totals": [
+      {
+        "amount": 300,
+        "display_text": "Item(s) total",
+        "type": "items_base_amount"
+      },
+      {
+        "amount": 300,
+        "display_text": "Subtotal",
+        "type": "subtotal"
+      },
+      {
+        "amount": 30,
+        "display_text": "Tax",
+        "type": "tax"
+      },
+      {
+        "amount": 100,
+        "display_text": "Fulfillment",
+        "type": "fulfillment"
+      },
+      {
+        "amount": 50,
+        "description": "Processing and handling fee",
+        "display_text": "Service Fee",
+        "type": "fee"
+      },
+      {
+        "amount": 480,
+        "display_text": "Total",
+        "type": "total"
+      }
+    ]
+  },
+  "execution_tier": "SCRIPTED_SIMULATION",
+  "intent": {
+    "artifact_digest": "6598dc6e18937d86d140ec19466137ae6592e1f24c2128bfc05db2bc04715ae4",
+    "client_reference_id": "audit-intent-sha256:e8f0edff8ddbce26d2f9b377e48302610cada7d4e317b7bba6e7d5bd9ce807b0",
+    "obligation_id": "invoice-obligation-a52f7195a8220f57"
+  },
+  "psp_capture": "NONE; synthetic merchant counter only",
+  "replay_flag": true,
+  "replay_response": {
+    "buyer": {
+      "email": "johnsmith@mail.com",
+      "first_name": "John",
+      "last_name": "Smith",
+      "phone_number": "15552003434"
+    },
+    "capabilities": {
+      "interventions": {
+        "enforcement": "conditional",
+        "required": [],
+        "supported": []
+      },
+      "payment": {
+        "handlers": []
+      }
+    },
+    "currency": "usd",
+    "fulfillment_details": {
+      "address": {
+        "city": "San Francisco",
+        "country": "US",
+        "line_one": "1234 Chat Road,",
+        "line_two": "",
+        "name": "John Doe",
+        "postal_code": "94131",
+        "state": "CA"
+      },
+      "email": "johndoe@example.com",
+      "name": "John Doe",
+      "phone_number": "15551234567"
+    },
+    "fulfillment_options": [
+      {
+        "carrier": "USPS",
+        "description": "Arrives in 4-5 days",
+        "earliest_delivery_time": "2025-10-12T07:20:50.52Z",
+        "id": "fulfillment_option_123",
+        "latest_delivery_time": "2025-10-13T07:20:50.52Z",
+        "title": "Standard",
+        "totals": [
+          {
+            "amount": 100,
+            "display_text": "Shipping",
+            "type": "total"
+          }
+        ],
+        "type": "shipping"
+      },
+      {
+        "carrier": "USPS",
+        "description": "Arrives in 1-2 days",
+        "earliest_delivery_time": "2025-10-09T07:20:50.52Z",
+        "id": "fulfillment_option_456",
+        "latest_delivery_time": "2025-10-10T07:20:50.52Z",
+        "title": "Express",
+        "totals": [
+          {
+            "amount": 500,
+            "display_text": "Express Shipping",
+            "type": "total"
+          }
+        ],
+        "type": "shipping"
+      }
+    ],
+    "id": "checkout_audit_38747d95c99548af",
+    "line_items": [
+      {
+        "description": "Classic blue denim jacket with brass buttons and adjustable waist tabs",
+        "id": "line_item_123",
+        "images": [
+          "https://www.testshop.com/products/item_123/image1.jpg"
+        ],
+        "item": {
+          "id": "independent-invoice-audit-local-v1"
+        },
+        "marketplace_seller_details": {
+          "name": "VintageClothingCo"
+        },
+        "name": "Independent invoice audit service",
+        "quantity": 1,
+        "totals": [
+          {
+            "amount": 300,
+            "display_text": "Base Amount",
+            "type": "items_base_amount"
+          },
+          {
+            "amount": 0,
+            "display_text": "Discount",
+            "type": "discount"
+          },
+          {
+            "amount": 300,
+            "display_text": "Subtotal",
+            "type": "subtotal"
+          },
+          {
+            "amount": 30,
+            "display_text": "Tax",
+            "type": "tax"
+          },
+          {
+            "amount": 330,
+            "display_text": "Total",
+            "type": "total"
+          }
+        ],
+        "unit_amount": 300
+      }
+    ],
+    "links": [
+      {
+        "type": "terms_of_use",
+        "url": "https://www.testshop.com/legal/terms-of-use"
+      },
+      {
+        "type": "return_policy",
+        "url": "https://www.testshop.com/legal/return-policy"
+      }
+    ],
+    "messages": [],
+    "order": {
+      "checkout_session_id": "checkout_audit_38747d95c99548af",
+      "client_reference_id": "audit-intent-sha256:e8f0edff8ddbce26d2f9b377e48302610cada7d4e317b7bba6e7d5bd9ce807b0",
+      "confirmation": {
+        "confirmation_email_sent": true,
+        "confirmation_number": "CNF-1001",
+        "order_notes": "Please ring doorbell twice. Leave with neighbor at #12 if no answer."
+      },
+      "id": "ord_audit_38747d95c99548af",
+      "order_number": "#1001",
+      "permalink_url": "https://www.testshop.com/orders/ord_abc123"
+    },
+    "protocol": {
+      "version": "2026-04-17"
+    },
+    "selected_fulfillment_options": [
+      {
+        "item_ids": [
+          "item_123"
+        ],
+        "option_id": "fulfillment_option_456",
+        "type": "shipping"
+      }
+    ],
+    "status": "completed",
+    "totals": [
+      {
+        "amount": 300,
+        "display_text": "Item(s) total",
+        "type": "items_base_amount"
+      },
+      {
+        "amount": 300,
+        "display_text": "Subtotal",
+        "type": "subtotal"
+      },
+      {
+        "amount": 30,
+        "display_text": "Tax",
+        "type": "tax"
+      },
+      {
+        "amount": 500,
+        "display_text": "Fulfillment",
+        "type": "fulfillment"
+      },
+      {
+        "amount": 830,
+        "display_text": "Total",
+        "type": "total"
+      }
+    ]
+  },
+  "schema": "acp-retail-mock-audit-order-v1",
+  "synthetic_capture_attempts": 1
+}
