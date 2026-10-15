@@ -24,7 +24,8 @@ from typing import Any, Mapping
 
 
 _ZERO_HASH = "0" * 64
-MAX_AUTHORIZED_USD = Decimal("20")
+_INITIAL_AUTHORIZED_USD = Decimal("20")
+MAX_AUTHORIZED_USD = Decimal("50")
 _SENSITIVE_KEY = re.compile(
     r"secret|password|passphrase|credential|token|api[_-]?key|private[_-]?key|"
     r"authorization|cookie|mnemonic|seed[_-]?phrase",
@@ -51,7 +52,7 @@ class BudgetIntegrityError(BudgetError):
 
 
 class BudgetExceeded(BudgetError):
-    """A reservation would exceed the immutable project cap."""
+    """A reservation would exceed the currently authorized project cap."""
 
 
 class BudgetStateError(BudgetError):
@@ -212,8 +213,8 @@ def create_ledger(
     """Explicitly create a ledger once; existing files are never reset or overwritten."""
     ledger_path = Path(path)
     cap = _usd(cap_usd, "cap_usd", positive=True)
-    if cap > MAX_AUTHORIZED_USD:
-        raise BudgetExceeded("ledger cap exceeds the owner's USD 20 authorization")
+    if cap > _INITIAL_AUTHORIZED_USD:
+        raise BudgetExceeded("new ledger cap exceeds the original USD 20 authorization")
     opening = _usd(opening_spent_usd, "opening_spent_usd")
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     if _anchor_path(ledger_path).exists():
@@ -298,8 +299,8 @@ class BudgetLedger:
                     if kind != "create" or set(payload) != {"cap_usd", "opening_spent_usd"}:
                         raise ValueError("invalid genesis")
                     cap = self._stored_usd(payload["cap_usd"], "cap_usd", positive=True)
-                    if cap > MAX_AUTHORIZED_USD:
-                        raise ValueError("stored cap exceeds owner's authorization")
+                    if cap > _INITIAL_AUTHORIZED_USD:
+                        raise ValueError("genesis cap exceeds original authorization")
                     opening = self._stored_usd(payload["opening_spent_usd"], "opening_spent_usd")
                     settled = opening
                 elif kind == "reserve":
@@ -318,6 +319,15 @@ class BudgetLedger:
                     reserved += amount
                     if settled + reserved > cap:
                         raise ValueError("reservation exceeds project cap")
+                elif kind == "cap_raise":
+                    if set(payload) != {"prior_cap_usd", "new_cap_usd", "authorization_ref"}:
+                        raise ValueError("invalid cap raise")
+                    prior = self._stored_usd(payload["prior_cap_usd"], "prior_cap_usd", positive=True)
+                    raised = self._stored_usd(payload["new_cap_usd"], "new_cap_usd", positive=True)
+                    _safe_text(payload["authorization_ref"], "authorization_ref")
+                    if prior != cap or raised <= cap or raised > MAX_AUTHORIZED_USD:
+                        raise ValueError("cap raise exceeds or lacks owner authorization")
+                    cap = raised
                 elif kind == "settle":
                     if set(payload) != {"run_id", "actual_usd", "evidence_ref"}:
                         raise ValueError("invalid settlement")
@@ -391,15 +401,23 @@ class BudgetLedger:
         try:
             fcntl.flock(fd, fcntl.LOCK_EX)
             snapshot, seq, prev, size = self._load_locked(fd)
-            run_id = payload["run_id"]
-            current = snapshot["runs"].get(run_id)
+            if kind == "cap_raise":
+                prior = Decimal(snapshot["cap_usd"])
+                raised = Decimal(payload["new_cap_usd"])
+                if payload["prior_cap_usd"] != snapshot["cap_usd"]:
+                    raise BudgetStateError("cap raise does not match current ledger cap")
+                if raised <= prior or raised > MAX_AUTHORIZED_USD:
+                    raise BudgetExceeded("cap raise exceeds owner's USD 50 authorization")
+            else:
+                run_id = payload["run_id"]
+                current = snapshot["runs"].get(run_id)
             if kind == "reserve":
                 if current is not None:
                     raise BudgetStateError("run_id already has a reservation")
                 if snapshot["unknown_run_ids"]:
                     raise BudgetStateError("unsettled unknown charge blocks new reservations")
                 if payload["cap_usd"] != snapshot["cap_usd"]:
-                    raise BudgetStateError("reserve cap does not match immutable ledger cap")
+                    raise BudgetStateError("reserve cap does not match current ledger cap")
                 if Decimal(snapshot["committed_usd"]) + Decimal(payload["amount_usd"]) > Decimal(snapshot["cap_usd"]):
                     raise BudgetExceeded("reservation exceeds project-wide USD cap")
             elif kind == "settle":
@@ -439,6 +457,15 @@ class BudgetLedger:
             "amount_usd": _format_usd(_usd(amount_usd, "amount_usd", positive=True)),
             "cap_usd": _format_usd(_usd(cap_usd, "cap_usd", positive=True)),
             "metadata": _safe_metadata(metadata),
+        })
+
+    def raise_cap(self, new_cap_usd: str | int | Decimal, authorization_ref: str) -> dict[str, Any]:
+        """Append an owner-authorized prospective cap increase to this ledger."""
+        current = self.snapshot()["cap_usd"]
+        return self._mutate("cap_raise", {
+            "prior_cap_usd": current,
+            "new_cap_usd": _format_usd(_usd(new_cap_usd, "new_cap_usd", positive=True)),
+            "authorization_ref": _safe_text(authorization_ref, "authorization_ref"),
         })
 
     def settle(

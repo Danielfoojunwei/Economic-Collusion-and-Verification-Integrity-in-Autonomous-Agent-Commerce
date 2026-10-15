@@ -33,6 +33,8 @@ class RemoteBudgetTests(unittest.TestCase):
             read_ledger(self.path)
         with self.assertRaises(BudgetExceeded):
             create_ledger(self.path, "20.000000000001", "0")
+        with self.assertRaises(BudgetExceeded):
+            create_ledger(self.path, "50", "0")
         ledger = create_ledger(self.path, "20.00", "2.25")
         self.assertEqual(ledger.snapshot()["cap_usd"], "20")
         self.assertEqual(ledger.read()["settled_spent_usd"], "2.25")
@@ -40,6 +42,38 @@ class RemoteBudgetTests(unittest.TestCase):
         with self.assertRaises(FileExistsError):
             create_ledger(self.path, "20", "0")
         self.assertEqual(read_ledger(self.path)["cap_usd"], "20")
+
+    def test_authorized_cap_raise_preserves_old_entries_and_applies_prospectively(self) -> None:
+        ledger = create_ledger(self.path, "20", "2.25")
+        ledger.reserve("old-run", "10", "20", {})
+        ledger.settle("old-run", "3", "provider-usage/old-run")
+        original = self.path.read_bytes()
+        raised = ledger.raise_cap("50", "docs/BUDGET_AUTHORIZATION_2026-10-15.md")
+        self.assertTrue(self.path.read_bytes().startswith(original))
+        self.assertEqual(raised["cap_usd"], "50")
+        self.assertEqual(raised["settled_spent_usd"], "5.25")
+        self.assertEqual(raised["available_usd"], "44.75")
+        self.assertEqual(raised["seq"], 3)
+        with self.assertRaises(BudgetStateError):
+            ledger.reserve("new-run", "1", "20", {})
+        with self.assertRaises(BudgetExceeded):
+            ledger.raise_cap("50.01", "docs/BUDGET_AUTHORIZATION_2026-10-15.md")
+        with self.assertRaises(BudgetExceeded):
+            ledger.reserve("new-run", "44.751", "50", {})
+        self.assertEqual(ledger.reserve("new-run", "44.75", "50", {})["available_usd"], "0")
+        self.assertEqual(read_ledger(self.path)["cap_usd"], "50")
+
+    def test_cap_raise_requires_reference_and_preserves_unknown_charge_block(self) -> None:
+        ledger = create_ledger(self.path, "20", "0")
+        ledger.reserve("uncertain", "2", "20", {})
+        ledger.mark_unknown("uncertain", "provider-timeout")
+        with self.assertRaises(ValueError):
+            ledger.raise_cap("50", "")
+        raised = ledger.raise_cap("50", "owner-message-2026-10-15")
+        self.assertTrue(raised["blocked"])
+        self.assertEqual(raised["unknown_run_ids"], ["uncertain"])
+        with self.assertRaises(BudgetStateError):
+            ledger.reserve("later", "1", "50", {})
 
     def test_reservation_is_atomic_and_counts_against_cap(self) -> None:
         ledger = create_ledger(self.path, "20", "2")
