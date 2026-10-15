@@ -30,6 +30,16 @@ records. Every other tool error, model error, unknown native debit, or
 unreconciled shared-ledger state stops the row. Failed attempts and paid
 checks appear as separate counts in the saved boundary and collection.
 
+The native verifier checks each deployment input against pinned compiled
+bytecode and constructor arguments. It also checks saved runtime hashes
+against pinned deployed bytecode, including ERC8183's implementation-address
+immutable slots. Its source inventory seals the transitive Python imports
+that supply the task prompt, oracle, contract runner, and predecessor gates.
+The Anvil process is ephemeral: archived transaction and receipt fields cannot
+cryptographically authenticate a destroyed chain against a later coherent
+rewrite of all block hashes. Native findings are therefore replay-verified
+local transcripts, not independently sourced public-chain attestations.
+
 This exception concerns the **local check charge**. The model request that
 attempted the check can still incur OpenRouter cost, estimated and settled
 through the shared ledger; account aggregates are not per-call invoices.

@@ -1,9 +1,11 @@
 """Prospective partial-claim row and worst-case budget bounds."""
 
+import ast
 from dataclasses import replace
 from decimal import Decimal
 import unittest
 
+from scripts.partial014_freeze import ROOT, source_names
 from agent_economic_trust.partial014_plan import (
     CLIENT_PREPAID, NATIVE_CONTINGENT, SOL, SONNET, ROWS,
     full_block_headroom, make_schedule, per_row_reserve, terms, validate_rows)
@@ -20,6 +22,42 @@ def sample_catalog():
 
 
 class PartialClaimPlanTests(unittest.TestCase):
+    def test_source_seal_covers_local_transitive_python_imports(self):
+        """A local imported module can change the prompt or receipt verifier."""
+        sealed = set(source_names())
+
+        def local_path(module: str):
+            if module.startswith("agent_economic_trust."):
+                return ROOT / "src/agent_economic_trust" / (
+                    module.removeprefix("agent_economic_trust.").replace(".", "/") + ".py")
+            if module.startswith(("scripts.", "tests.")):
+                return ROOT / (module.replace(".", "/") + ".py")
+            return None
+
+        missing = set()
+        for relative in sealed:
+            if not relative.endswith(".py"):
+                continue
+            path = ROOT / relative
+            package = path.parent.name
+            for node in ast.walk(ast.parse(path.read_text())):
+                if isinstance(node, ast.Import):
+                    candidates = [alias.name for alias in node.names]
+                elif isinstance(node, ast.ImportFrom):
+                    base = ((package + "." + (node.module or "")) if node.level
+                            else (node.module or ""))
+                    candidates = [base, *(base + "." + alias.name
+                                          for alias in node.names)]
+                else:
+                    continue
+                for module in candidates:
+                    target = local_path(module)
+                    if target is not None and target.is_file():
+                        name = str(target.relative_to(ROOT))
+                        if name not in sealed:
+                            missing.add(name)
+        self.assertEqual(missing, set())
+
     def test_five_row_bad_factorial_and_one_native_good_anchor(self):
         rows = make_schedule("a7" * 32)
         self.assertEqual(len(rows), ROWS)

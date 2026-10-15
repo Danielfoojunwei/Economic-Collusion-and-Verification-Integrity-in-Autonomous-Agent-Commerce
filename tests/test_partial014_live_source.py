@@ -122,7 +122,7 @@ class PartialClaimLiveSourceTests(unittest.TestCase):
         with patch.object(partial014_native_verifier, "UPSTREAM", current):
             result = verify_offline(ARCHIVE)
             self.assertEqual(result["scripted_native_cases_reverified"], 11)
-            self.assertEqual(result["tamper_negatives_reverified"], 11)
+            self.assertEqual(result["tamper_negatives_reverified"], 19)
             sample = ARCHIVE / "scripted-bad-paid-then-interrupted/native-partial.json"
             record = json.loads(sample.read_bytes())
             row = PartialClaimRow(**record["episode"])

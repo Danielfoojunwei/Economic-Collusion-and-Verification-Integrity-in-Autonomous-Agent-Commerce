@@ -190,7 +190,10 @@ def _tamper_negatives(path: Path, expected: tuple) -> int:
     prefix = json.loads((path / prefix_case[0] / "native-partial.json").read_text())
     mutated = []
     for label in ("fee", "claim_amount", "claim_binding", "raw_transaction",
-                  "event", "final_refund", "buyer_oracle", "source", "row"):
+                  "event", "final_refund", "buyer_oracle", "source", "row",
+                  "deploy_token", "deploy_implementation", "deploy_proxy",
+                  "runtime_token", "runtime_implementation", "runtime_proxy",
+                  "genesis_timestamp", "chain_port"):
         value = copy.deepcopy(complete)
         if label == "fee":
             value["terms"]["evaluator_fee_bp"] = 0
@@ -210,6 +213,21 @@ def _tamper_negatives(path: Path, expected: tuple) -> int:
             value["invoice"]["oracle_status"] = "PASS"
         elif label == "source":
             value["source"]["commit"] = "0" * 40
+        elif label.startswith("deploy_"):
+            step = {"deploy_token": "deploy.mock_usdc",
+                    "deploy_implementation": "deploy.implementation",
+                    "deploy_proxy": "deploy.proxy"}[label]
+            next(t for t in value["transactions"] if t["step"] == step)[
+                "raw_transaction"]["input"] = "0xdeadbeef"
+        elif label.startswith("runtime_"):
+            name = {"runtime_token": "MockUSDC",
+                    "runtime_implementation": "ERC8183",
+                    "runtime_proxy": "ERC1967Proxy"}[label]
+            value["contracts"][name]["runtime_code_sha256"] = "0" * 64
+        elif label == "genesis_timestamp":
+            value["chain"]["genesis_timestamp"] += 1
+        elif label == "chain_port":
+            value["chain"]["port"] = 0
         else:
             value["episode"]["truth"] = "good"
         mutated.append((label, value, row))

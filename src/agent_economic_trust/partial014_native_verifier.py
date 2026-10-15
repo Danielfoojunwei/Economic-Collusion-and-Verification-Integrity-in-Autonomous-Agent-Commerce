@@ -18,7 +18,7 @@ import re
 import subprocess
 from typing import Any
 
-from scripts.run_erc8183_local import CAST, PIN, UPSTREAM, ZERO
+from scripts.run_erc8183_local import CAST, GENESIS_TIMESTAMP, PIN, UPSTREAM, ZERO
 
 from .ap2_live_fixture import invoice_case, protected_buyer_records
 from .partial014_plan import (CLIENT_PREPAID, MILESTONE, NATIVE_CONTINGENT,
@@ -209,7 +209,10 @@ def _verify_record(e: dict, row: PartialClaimRow | None) -> dict:
                  "client_prepay_minor", "auditor_endowment_minor",
                  "check_price_minor", "claim_cumulative_minor")}
              and e["chain"]["host"] == "127.0.0.1"
-             and e["chain"]["chain_id"] == 31337,
+             and e["chain"]["chain_id"] == 31337
+             and e["chain"]["genesis_timestamp"] == GENESIS_TIMESTAMP
+             and type(e["chain"]["port"]) is int
+             and 1 <= e["chain"]["port"] <= 65535,
              "assigned economics or local chain differs")
     source = e["source"]
     _require(source["repository"] == "https://github.com/erc-8183/base-contracts"
@@ -236,6 +239,26 @@ def _verify_record(e: dict, row: PartialClaimRow | None) -> dict:
                                      separators=(",", ":")).encode()).hexdigest()
         _require(saved["abi_sha256"] == abi_hash, f"{name}: ABI differs")
         artifacts[name] = artifact
+    for name in ("MockUSDC", "ERC8183", "ERC1967Proxy"):
+        saved = e["contracts"][name]
+        deployed = artifacts[name]["deployedBytecode"]
+        runtime = bytearray(_hex(deployed["object"]))
+        refs = deployed.get("immutableReferences", {})
+        if name == "ERC8183":
+            # Pinned UUPSUpgradeable embeds address(this) in three immutable
+            # runtime slots. Derive each slot from the implementation address.
+            _require(len(refs) == 1, "ERC8183 immutable layout differs")
+            slots = next(iter(refs.values()))
+            _require(len(slots) == 3 and all(
+                type(slot.get("start")) is int and slot.get("length") == 32
+                and 0 <= slot["start"] <= len(runtime) - 32
+                for slot in slots), "ERC8183 immutable references differ")
+            for slot in slots:
+                runtime[slot["start"]:slot["start"] + 32] = _word(saved["address"])
+        else:
+            _require(refs == {}, f"{name}: unexpected immutable references")
+        _require(saved.get("runtime_code_sha256") == sha256(runtime).hexdigest(),
+                 f"{name}: deployed runtime hash differs")
     token = e["contracts"]["MockUSDC"]["address"].lower()
     core = e["contracts"]["ERC1967Proxy"]["address"].lower()
     _require(token != core and all(re.fullmatch(r"0x[0-9a-f]{40}", a) for a in (token, core)),
@@ -276,6 +299,20 @@ def _verify_record(e: dict, row: PartialClaimRow | None) -> dict:
              and len({tx["transaction_hash"].lower() for tx in txs}) == len(txs),
              "native transaction sequence differs")
     by_step = {tx["step"]: tx for tx in txs}
+    implementation = e["contracts"]["ERC8183"]["address"]
+    init = (bytes.fromhex(_selector("initialize(address,address)")[2:])
+            + _word(roles["treasury"]) + _word(roles["admin"]))
+    constructor = (_word(implementation) + _word(64) + _word(len(init)) + init
+                   + b"\0" * ((-len(init)) % 32))
+    deployment_code = {
+        "deploy.mock_usdc": _hex(artifacts["MockUSDC"]["bytecode"]["object"]),
+        "deploy.implementation": _hex(artifacts["ERC8183"]["bytecode"]["object"]),
+        "deploy.proxy": _hex(artifacts["ERC1967Proxy"]["bytecode"]["object"])
+                        + constructor,
+    }
+    for step, expected_code in deployment_code.items():
+        _require(_hex(by_step[step]["raw_transaction"]["input"]) == expected_code,
+                 f"{step}: pinned deployment calldata differs")
     event_by_step: dict[str, dict[str, list[dict]]] = {}
     ledger: defaultdict[str, int] = defaultdict(int)
     checkpoints: dict[str, dict[str, int]] = {}
