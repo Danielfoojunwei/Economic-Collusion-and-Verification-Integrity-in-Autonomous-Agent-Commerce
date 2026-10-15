@@ -1,0 +1,1 @@
+{"status":"PASS","transaction":"0x2d6986c2dc137f10ca88bdce69eeceb7e8bec4469afe3a0d15343df74a486d88","buyerAfter":"999000","sellerAfter":"1000","assertionCount":12,"output":"/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/gates/OPEN005/offline-invoice/native/BAD_REJECT/x402/raw-native-x402.json"}
