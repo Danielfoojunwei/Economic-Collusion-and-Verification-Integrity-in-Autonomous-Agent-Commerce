@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any, Mapping
 from urllib.parse import urlsplit
 
-from .core import Artifact, FIXTURES, oracle_score
+from .core import Artifact, Fixture, oracle_score
 TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 ROOT = Path(__file__).resolve().parents[2]
 X402_RUNNER = ROOT / "scripts" / "run_x402_local.mjs"
@@ -22,7 +22,7 @@ X402_RUNNER_SHA256 = "f7a4c21b625e916def700e7e6741ea02163bd71a45a07a8f81bbd0fc43
 X402_COMMIT = "e95b06661e1a2a8a9a21fce34cc28b9934834650"
 NATIVE_AMOUNT_MINOR = 1000
 NATIVE_SELLER = "0x90f79bf6eb2c4f870365e785982e1f101e93b906"
-PUBLIC_TASK_ID = "invoice-reconciliation-public/v1"
+PUBLIC_TASK_ID = "invoice-report-open004"
 
 
 class EvidenceError(AssertionError):
@@ -120,15 +120,27 @@ def _loopback_http(url: object) -> bool:
     return parsed.scheme == "http" and parsed.hostname == "127.0.0.1"
 
 
-def _fixture_for_task(task_id: object):
-    matches = [pair for key, pair in FIXTURES.items() if key in ("good", "bad")
-               and pair[0].task_id == task_id]
-    if len(matches) != 1:
-        raise EvidenceError("intent task does not select exactly one core invoice fixture")
-    return matches[0]
+def _private_oracle_inputs(binding: Mapping[str, Any]) -> tuple[Fixture, Artifact]:
+    fixture_value = binding.get("oracle_fixture")
+    artifact_value = binding.get("oracle_artifact")
+    if not isinstance(fixture_value, Mapping) or not isinstance(artifact_value, Mapping):
+        raise EvidenceError("private controller binding lacks frozen oracle inputs")
+    try:
+        fixture = Fixture(**fixture_value)
+        artifact = Artifact(**artifact_value)
+    except (TypeError, ValueError) as exc:
+        raise EvidenceError(f"invalid frozen oracle inputs: {exc}") from exc
+    if fixture.task_id != artifact.task_id:
+        raise EvidenceError("frozen fixture and artifact task IDs differ")
+    return fixture, artifact
 
 
-def verify_purchase(directory: Path) -> IndependentPurchaseVerification:
+def verify_purchase(
+    directory: Path,
+    *,
+    frozen_fixture: Fixture | None = None,
+    frozen_artifact: Artifact | None = None,
+) -> IndependentPurchaseVerification:
     directory = Path(directory)
     intent = _load_object(directory / "purchase-intent.json")
     served = _load_object(directory / "resource-body.json")
@@ -272,36 +284,46 @@ def verify_purchase(directory: Path) -> IndependentPurchaseVerification:
     body = http.get("resourceBody")
     _require(isinstance(body, Mapping) and body == served, "stored response body differs from served body")
     _require(http.get("paidStatus") == 200, "paid HTTP response was not successful")
-    fixture, expected_artifact = _fixture_for_task(controller_binding.get("task_id"))
-    _require(controller_binding.get("expected_report_digest") == expected_artifact.digest(),
-             "private expected report digest differs from core fixture")
+    fixture, expected_artifact = _private_oracle_inputs(controller_binding)
+    if frozen_fixture is not None or frozen_artifact is not None:
+        _require(frozen_fixture == fixture and frozen_artifact == expected_artifact,
+                 "caller-frozen oracle inputs differ from stored controller binding")
     _require(isinstance(controller_binding.get("obligation_id"), str)
              and bool(controller_binding.get("obligation_id")),
              "private obligation binding is missing")
+    expected_public_report = {
+        "task_id": PUBLIC_TASK_ID,
+        "submitted_amount_cents": expected_artifact.submitted_amount_cents,
+    }
+    _require(controller_binding.get("task_id") == PUBLIC_TASK_ID,
+             "private binding uses a non-public resource task ID")
+    _require(controller_binding.get("expected_report_digest")
+             == _canonical_sha256(expected_public_report),
+             "private expected report digest differs from frozen artifact")
     expected = {
-        "task_id": fixture.task_id,
+        "task_id": PUBLIC_TASK_ID,
         "obligation_id": controller_binding.get("obligation_id"),
-        "expected_report_digest": expected_artifact.digest(),
+        "expected_report_digest": controller_binding.get("expected_report_digest"),
     }
     strict_accepted, _ = _assess_application_binding(body, expected)
     permissive_accepted = _permissive_positive_control(body)
     report = body.get("report")
     _require(isinstance(report, Mapping), "response lacks report")
     observed = Artifact(
-        task_id=report.get("task_id"),
+        task_id=fixture.task_id,
         submitted_amount_cents=report.get("submitted_amount_cents"),
     )
-    # Correctness is scored against the assignment fixture, not a fixture chosen
-    # by the served body.  Task substitution therefore scores FAIL.
+    # Correctness uses the protected frozen fixture.  The paid body carries only
+    # the shared public task alias and never chooses the oracle fixture.
     oracle = oracle_score(fixture, observed)
     protocol_charge_valid = True
     paid_defective = protocol_charge_valid and oracle.status.value == "FAIL"
     wrongful_protocol_charge = not protocol_charge_valid and seller_delta > 0
     return IndependentPurchaseVerification(
         status="PASS",
-        task_id=fixture.task_id,
+        task_id=PUBLIC_TASK_ID,
         obligation_id=str(controller_binding.get("obligation_id")),
-        report_digest=observed.digest(),
+        report_digest=_canonical_sha256(report),
         oracle_status=oracle.status.value,
         oracle_reason_code=oracle.reason_code,
         protocol_charge_valid=protocol_charge_valid,

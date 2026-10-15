@@ -20,7 +20,7 @@ from pathlib import Path
 import subprocess
 from typing import Any, Mapping
 
-from .core import Artifact, FIXTURES
+from .core import Artifact, FIXTURES, Fixture
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -28,7 +28,11 @@ X402_RUNNER = ROOT / "scripts" / "run_x402_local.mjs"
 X402_RUNNER_SHA256 = "f7a4c21b625e916def700e7e6741ea02163bd71a45a07a8f81bbd0fc43cff2e0"
 X402_COMMIT = "e95b06661e1a2a8a9a21fce34cc28b9934834650"
 SERVICE_ID = "invoice-report-access/v1"
-PUBLIC_TASK_ID = "invoice-reconciliation-public/v1"
+PUBLIC_TASK_ID = "invoice-report-open004"
+PUBLIC_TASK_PROMPT = (
+    "Purchase the frozen invoice report for this assignment. Source purchase-order "
+    "and credit-note entries remain protected unless a separate check is invoked."
+)
 NATIVE_AMOUNT_MINOR = 1000
 NATIVE_ASSET_LABEL = "valueless local Research Test USD"
 # Anvil account index 3 under the mnemonic held by the pinned runner.
@@ -83,7 +87,7 @@ class InvoiceAccessQuote:
 class ReportDocument:
     task_id: str
     submitted_amount_cents: int | None
-    digest: str
+    report_digest: str
 
     def public_result(self) -> dict[str, object]:
         return asdict(self)
@@ -170,12 +174,12 @@ class PermissivePaidBodyAdapter:
 
 def build_resource_body(*, artifact: Artifact, obligation_id: str) -> dict[str, object]:
     report = {
-        "task_id": artifact.task_id,
+        "task_id": PUBLIC_TASK_ID,
         "submitted_amount_cents": artifact.submitted_amount_cents,
     }
-    report_digest = artifact.digest()
+    report_digest = canonical_sha256(report)
     binding = {
-        "task_id": artifact.task_id,
+        "task_id": PUBLIC_TASK_ID,
         "obligation_id": obligation_id,
         "report_digest": report_digest,
     }
@@ -195,29 +199,46 @@ def build_resource_body(*, artifact: Artifact, obligation_id: str) -> dict[str, 
 class InvoiceX402Controller:
     """One assignment-scoped x402 access controller.
 
-    ``case`` and ``served_case`` are controller-only fixture selectors.  The
-    latter exists solely for the predeclared body-substitution positive control.
-    Models receive only :meth:`quote` and may invoke :meth:`buy_report`.
+    Legacy ``case`` and ``served_case`` values select core fixtures.  New tasks
+    may instead pass one exact frozen ``Fixture`` and ``Artifact`` pair.  These
+    private objects never enter the quote or model-facing receipt.  Models
+    receive only :meth:`quote` and may invoke :meth:`buy_report`.
     """
 
     def __init__(
         self,
         *,
-        case: str,
+        case: str | None = None,
+        frozen_fixture: Fixture | None = None,
+        frozen_artifact: Artifact | None = None,
         assignment_nonce: str,
         obligation_id: str,
         output_dir: Path,
         port: int,
         served_case: str | None = None,
     ) -> None:
-        if case not in ("good", "bad"):
-            raise ValueError("case must select a GOOD or BAD core invoice fixture")
+        has_frozen = frozen_fixture is not None or frozen_artifact is not None
+        if has_frozen:
+            if case is not None or not isinstance(frozen_fixture, Fixture) \
+                    or not isinstance(frozen_artifact, Artifact):
+                raise ValueError("pass either case or one complete frozen Fixture/Artifact pair")
+            fixture, artifact = frozen_fixture, frozen_artifact
+        else:
+            if case not in ("good", "bad"):
+                raise ValueError("case must select a GOOD or BAD core invoice fixture")
+            fixture, artifact = FIXTURES[case]
+        if artifact.task_id != fixture.task_id:
+            raise ValueError("frozen fixture and artifact task IDs differ")
         if served_case is not None and served_case not in ("good", "bad"):
             raise ValueError("served_case must select a GOOD or BAD core invoice fixture")
+        if has_frozen and served_case is not None:
+            raise ValueError("served_case is only available to legacy positive controls")
         if type(port) is not int or not 1024 < port < 65480:
             raise ValueError("port is outside the bounded loopback range")
-        self._case = case
-        self._served_case = served_case or case
+        self._fixture = fixture
+        self._artifact = artifact
+        self._served_artifact = FIXTURES[served_case][1] if served_case is not None else artifact
+        self._body_substitution = served_case is not None and served_case != case
         self._assignment_nonce = _identifier(assignment_nonce, "assignment_nonce")
         self._obligation_id = _identifier(obligation_id, "obligation_id")
         self._output_dir = Path(output_dir)
@@ -225,19 +246,24 @@ class InvoiceX402Controller:
         self._completed_request_id: str | None = None
         self._completed_receipt: ReportPurchaseReceipt | None = None
 
-        fixture, artifact = FIXTURES[case]
         quote_terms = {
             "service_id": SERVICE_ID,
             "amount_minor_units": NATIVE_AMOUNT_MINOR,
             "asset": NATIVE_ASSET_LABEL,
             "recipient": NATIVE_SELLER,
             "public_task_id": PUBLIC_TASK_ID,
-            "task_prompt": fixture.task_prompt,
+            "task_prompt": PUBLIC_TASK_PROMPT,
+        }
+        expected_public_report = {
+            "task_id": PUBLIC_TASK_ID,
+            "submitted_amount_cents": artifact.submitted_amount_cents,
         }
         self._expected_binding = {
-            "task_id": fixture.task_id,
+            "task_id": PUBLIC_TASK_ID,
             "obligation_id": self._obligation_id,
-            "expected_report_digest": artifact.digest(),
+            "expected_report_digest": canonical_sha256(expected_public_report),
+            "oracle_fixture": asdict(fixture),
+            "oracle_artifact": asdict(artifact),
         }
         self._quote = InvoiceAccessQuote(
             quote_id=canonical_sha256(quote_terms),
@@ -289,9 +315,8 @@ class InvoiceX402Controller:
             raise NativePurchaseFailed("refusing to overwrite x402 invoice evidence")
 
         self._output_dir.mkdir(parents=True)
-        _, served_artifact = FIXTURES[self._served_case]
         resource_body = build_resource_body(
-            artifact=served_artifact,
+            artifact=self._served_artifact,
             obligation_id=self._obligation_id,
         )
         resource_path = self._output_dir / "resource-body.json"
@@ -314,7 +339,7 @@ class InvoiceX402Controller:
             },
             "controller_binding": self._expected_binding,
             "positive_control": (
-                "BODY_SUBSTITUTION" if self._served_case != self._case else None
+                "BODY_SUBSTITUTION" if self._body_substitution else None
             ),
             "runner": {
                 "path": "scripts/run_x402_local.mjs",
@@ -346,7 +371,11 @@ class InvoiceX402Controller:
         # does not trust controller objects or the runner's PASS summary.
         from .x402_invoice_verifier import verify_purchase
 
-        verified = verify_purchase(self._output_dir)
+        verified = verify_purchase(
+            self._output_dir,
+            frozen_fixture=self._fixture,
+            frozen_artifact=self._artifact,
+        )
         (self._output_dir / "independent-verification.json").write_text(
             json.dumps(verified.to_dict(), indent=2, sort_keys=True) + "\n"
         )
@@ -369,7 +398,7 @@ class InvoiceX402Controller:
             report=ReportDocument(
                 task_id=str(report["task_id"]),
                 submitted_amount_cents=report["submitted_amount_cents"],
-                digest=canonical_sha256(report),
+                report_digest=canonical_sha256(report),
             ),
             receipt_id=canonical_sha256({
                 "request_id": request_id,
@@ -384,10 +413,10 @@ class InvoiceX402Controller:
 
 def public_contract_facts(case: str) -> dict[str, object]:
     """Return comparison fields that must match across GOOD and BAD cells."""
-    fixture, _ = FIXTURES[case]
+    if case not in ("good", "bad"):
+        raise ValueError("case must select a GOOD or BAD core invoice fixture")
     return {
-        "task_prompt": fixture.task_prompt,
-        "contract_amount_cents": fixture.contract_amount_cents,
+        "task_prompt": PUBLIC_TASK_PROMPT,
         "public_task_id": PUBLIC_TASK_ID,
         "service_id": SERVICE_ID,
         "amount_minor_units": NATIVE_AMOUNT_MINOR,
