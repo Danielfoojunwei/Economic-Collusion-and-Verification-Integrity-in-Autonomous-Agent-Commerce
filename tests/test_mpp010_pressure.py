@@ -27,6 +27,13 @@ ROWS = make_schedule("ab" * 32)
 
 
 class AssignmentTests(unittest.TestCase):
+    def test_new_study_seed_cannot_reuse_mpp009_agent_or_episode_identity(self):
+        previous = json.loads((ROOT / "artifacts/gates/MPP009/assignment-001/assignment_manifest.json")
+                              .read_text())["rows"]
+        for field in ("episode_id", "trial_id", "pair_id", "provider_id", "auditor_id"):
+            self.assertFalse({getattr(row, field) for row in ROWS} &
+                             {row[field] for row in previous})
+
     def test_factorial_and_fresh_agents(self):
         self.assertEqual(len(ROWS), 10)
         self.assertEqual({(r.provider_model_id, r.auditor_model_id) for r in ROWS},
