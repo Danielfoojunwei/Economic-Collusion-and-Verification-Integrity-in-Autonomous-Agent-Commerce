@@ -22,6 +22,15 @@ FEE014_METADATA = {
     "provider_model_id": "anthropic/claude-sonnet-5.5",
     "auditor_model_id": "openai/gpt-5.6-sol",
 }
+FEE015_ASSIGNMENT_SHA = "18f457fc4df4311412824d29520b3a88cac29e6ea50e9b9c85c42ce0fc0575de"
+FEE015_RESERVED_USD = "4.022272"
+FEE015_SETTLED = (
+    ("fee015-43a6638d8a029c8af0932207", "0.053706", "4c86d910f1dc4cb2772d4732d3304771e02fcd9f6a88186f00be261678fa08cc"),
+    ("fee015-73b9d2e6f24699baebeef807", "0.069884", "1273c9ea90ffb77fb7d0c801c86a1345d294d41ca1aa87389a9d16fe7f739c18"),
+    ("fee015-213cf289c354b0d811a7daca", "0.055702", "4080cb3b7f0b6e5209491f6dade8c5681d1115e42203c327d23f42304df74c33"),
+    ("fee015-af89ad4c0bc3d4e48f6359bb", "0.076762", "174cd18d4612c47610a93c03acf47c686cc9316eceb05b04b08b98ea1921b904"),
+    ("fee015-1077be9dc3cab942c3cb2e36", "0.053260", "18eadd6cb3da7a5a5ad5ada32c43fd12dfe0ad4d80e6495ab8812e66366e6f6b"),
+)
 
 
 def same_usd_amount(ledger_amount: object, saved_amount: object) -> bool:
@@ -67,6 +76,21 @@ def exact_prior_holds(snapshot: Mapping[str, Any], *,
             or fee014.get("contingent_evidence_ref") != evidence
             or "actual_usd" in fee014):
         raise ValueError("FEE014 contingent hold evidence differs")
+    settled_ids = []
+    for episode_id, actual, inspect_sha in FEE015_SETTLED:
+        ident = "fee015-" + FEE015_ASSIGNMENT_SHA[:12] + "-" + episode_id
+        row = runs.get(ident)
+        if (not isinstance(row, Mapping) or row.get("status") != "SETTLED"
+                or row.get("reserved_usd") != FEE015_RESERVED_USD
+                or row.get("metadata") != {
+                    "assignment_sha": FEE015_ASSIGNMENT_SHA,
+                    "episode_id": episode_id,
+                    "provider_model_id": "anthropic/claude-sonnet-5.5",
+                    "auditor_model_id": "openai/gpt-5.6-sol"}
+                or not same_usd_amount(row.get("actual_usd"), actual)
+                or row.get("evidence_ref") != "sha256:" + inspect_sha):
+            raise ValueError("FEE015 exact settled model run differs")
+        settled_ids.append(ident)
     open_ids = {ident for ident, row in runs.items()
                 if row.get("status") in {"RESERVED", "CONTINGENT", "UNKNOWN"}}
     if active_reservation_usd:
@@ -94,7 +118,8 @@ def exact_prior_holds(snapshot: Mapping[str, Any], *,
         raise ValueError("PARTIAL014 open ledger hold set differs from reviewed predecessors")
     projection = dict(snapshot)
     projection["runs"] = {key: value for key, value in runs.items()
-                          if key not in {active_run_id, FEE014_STOPPED_RUN_ID}}
+                          if key not in {active_run_id, FEE014_STOPPED_RUN_ID,
+                                         *settled_ids}}
     projection["reserved_usd"] = str(BASE_HOLDS_USD)
     projection["contingent_run_ids"] = sorted({MPP006_STOPPED_RUN_ID, X402011_RUN_ID})
     old = prior_billing_holds(projection)
@@ -107,4 +132,7 @@ def exact_prior_holds(snapshot: Mapping[str, Any], *,
             "fee014_full_reserved_usd": str(FEE014_FULL_HOLD_USD),
             "fee014_active_hold_usd": str(FEE014_FULL_HOLD_USD),
             "fee014_billing_evidence_ref": evidence,
+            "fee015_settled_run_ids": settled_ids,
+            "fee015_settled_usage_estimate_usd": str(sum(
+                (Decimal(actual) for _, actual, _ in FEE015_SETTLED), Decimal(0))),
             "active_reservation_usd": str(active_reservation_usd)}

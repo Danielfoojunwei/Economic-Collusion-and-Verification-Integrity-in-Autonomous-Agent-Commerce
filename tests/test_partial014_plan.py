@@ -12,6 +12,7 @@ from unittest.mock import patch
 from scripts import partial014_freeze
 from scripts.partial014_freeze import ROOT, source_names
 from agent_economic_trust.partial014_budget import (
+    FEE015_ASSIGNMENT_SHA, FEE015_SETTLED,
     FEE014_FULL_HOLD_USD, FEE014_PROVISIONAL_EVIDENCE_REF,
     FEE014_STOPPED_RUN_ID, exact_prior_holds)
 from agent_economic_trust.remote_budget import BudgetLedger
@@ -32,6 +33,35 @@ def sample_catalog():
 
 
 class PartialClaimPlanTests(unittest.TestCase):
+    def test_fee015_final_replay_and_independent_review_binding(self):
+        from scripts import verify_erc8183_fee_control as controls
+        from agent_economic_trust import erc8183_fee_native_verifier as native
+        from agent_economic_trust.mpp005_plan import canonical_project_root
+        state = BudgetLedger(CANONICAL_LEDGER).snapshot()
+        canonical = canonical_project_root()
+        with (patch.object(controls, "UPSTREAM", canonical.parent / "upstreams/erc8183"),
+              patch.object(native, "ROOT", canonical)):
+            result = partial014_freeze._fee015_predecessor(state)
+            self.assertEqual(result["row_statuses"], ["COMPLETE"] * 5)
+            self.assertEqual(result["settled_usage_estimate_usd"], "0.309314")
+            with patch.object(partial014_freeze, "FEE015_REVIEW",
+                              partial014_freeze.FEE015_FINAL):
+                with self.assertRaises(ValueError):
+                    partial014_freeze._fee015_predecessor(state)
+
+    def test_fee015_all_five_settlements_are_required(self):
+        state = BudgetLedger(CANONICAL_LEDGER).snapshot()
+        self.assertEqual(exact_prior_holds(state)["fee015_settled_usage_estimate_usd"],
+                         "0.309314")
+        run_id = "fee015-" + FEE015_ASSIGNMENT_SHA[:12] + "-" + FEE015_SETTLED[2][0]
+        altered = deepcopy(state)
+        altered["runs"][run_id]["evidence_ref"] = "sha256:" + "0" * 64
+        with self.assertRaises(ValueError):
+            exact_prior_holds(altered)
+        del altered["runs"][run_id]
+        with self.assertRaises(ValueError):
+            exact_prior_holds(altered)
+
     def test_post_freeze_source_inventory_is_fixed_and_detects_original_change(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
