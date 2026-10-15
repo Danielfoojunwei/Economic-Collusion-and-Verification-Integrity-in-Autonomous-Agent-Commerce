@@ -457,12 +457,23 @@ class Xhigh018SourceTests(unittest.TestCase):
                     gate._xhigh017_closure()
         self.assertEqual(closure["denominator"], {"planned": 2, "complete": 0,
                                                  "stopped": 1, "pending": 1})
-        with patch.object(gate, "XHIGH017_TRANSITION_HASH", "0" * 64):
-            with self.assertRaises(ValueError):
+        # Use only the read-only six-hold projection to reach the historical
+        # hash checks. The real seq226 snapshot is still blocked above.
+        with patch.object(gate, "BudgetLedger") as ledger_stub, \
+            patch.object(gate, "UNLEDGERED_CALL_INCIDENT", canonical /
+                "artifacts/incidents/MPP012_UNGUARDED_TEST_001/incident.json"):
+            ledger_stub.return_value.snapshot.return_value = deepcopy(state)
+            with self.assertRaisesRegex(ValueError,
+                                        "unledgered-call incident is not reconciled"):
                 gate._ledger()
-        with patch.object(gate, "PRESSURE016_TRANSITION_HASH", "0" * 64):
-            with self.assertRaises(ValueError):
-                gate._ledger()
+            with patch.object(gate, "XHIGH017_TRANSITION_HASH", "0" * 64):
+                with self.assertRaisesRegex(ValueError,
+                                            "reviewed XHIGH017 ledger transition differs"):
+                    gate._ledger()
+            with patch.object(gate, "PRESSURE016_TRANSITION_HASH", "0" * 64):
+                with self.assertRaisesRegex(ValueError,
+                                            "reviewed PRESSURE016 ledger transition differs"):
+                    gate._ledger()
 
     def test_pressure016_sixth_hold_cannot_be_released_or_relabelled(self):
         state = self._historical_six_hold_projection()
