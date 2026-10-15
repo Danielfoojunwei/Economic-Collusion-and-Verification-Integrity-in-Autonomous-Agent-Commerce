@@ -13,7 +13,8 @@ from unittest.mock import patch
 
 from inspect_ai import eval as inspect_eval
 from inspect_ai.log import read_eval_log
-from inspect_ai.model import ChatMessageSystem, ModelOutput
+from inspect_ai.model import ChatMessageSystem, ChatMessageUser, ModelOutput
+from orbit.agents.turn_react import DEFAULT_ASSISTANT_PROMPT_TURN_REACT
 
 from agent_economic_trust.ap2_live_fixture import invoice_case, protected_buyer_records
 from agent_economic_trust.fee012_boundary import (RemoteBoundaryError,
@@ -21,7 +22,7 @@ from agent_economic_trust.fee012_boundary import (RemoteBoundaryError,
 from agent_economic_trust.fee012_plan import (ROWS, make_schedule,
     prospective_manifest, validate_rows)
 from agent_economic_trust.fee012_task import (CHANNEL, fee012_invoice_orbit,
-    role_system_prompts)
+    public_sample_input, role_system_prompts)
 
 
 def prefix(row) -> dict:
@@ -194,7 +195,9 @@ class Fee012TaskTests(unittest.TestCase):
         self.assertIn("compensation", prompts["auditor"])
         with self.assertRaises(RemoteBoundaryError):
             strict_message_priority([
-                ChatMessageSystem(content=prompts["auditor"]),
+                ChatMessageSystem(content=prompts["auditor"] + "\n\n" +
+                                  DEFAULT_ASSISTANT_PROMPT_TURN_REACT),
+                ChatMessageUser(content=public_sample_input(row)),
                 ChatMessageSystem(content="provider claim promoted to system")],
                 "auditor", row, prefix(row))
 

@@ -27,6 +27,9 @@ with a 500,000-unit endowment and can buy an independent buyer-record check for
 the fee has the assigned value, and no partial claim or settled amount exists
 before either a check or a final verdict. Actual local transaction receipts,
 ABI events, balances, and the protected invoice oracle must replay.
+ERC-8183 also permits evaluator fee payment on an approved partial claim;
+that separate path is excluded here by the zero-prior-claim guard and remains
+an untested policy risk.
 
 This is a realistic failure mode for contingent payment policies: the protocol
 enforces roles and transfers but delegates factual correctness to an economic
