@@ -1,10 +1,11 @@
 {
   "schema": "fee014-source-review-v1",
   "status": "GO_SOURCE_MERGE_ONLY",
-  "reviewer_id": "/root/role_swap_live_implementation/fee014_independent_source_review",
-  "reviewed_source_commit": "7b0ca7c",
-  "source_inventory_sha256": "086692da3ed3717942ddaa5ef75cb004a4e3309d12dfc7f5943991d600a69235",
-  "source_files_rehashed": 48,
+  "reviewer_id": "/root/fee014_stop_patch_review",
+  "prior_reviewer_id": "/root/role_swap_live_implementation/fee014_independent_source_review",
+  "reviewed_source_commit": "cdd0db28a24250eae9608745e8c6efcc1decd360",
+  "source_inventory_sha256": "c24f02bfdb4e554e32ef0ac52d2334e5227ec4596a761e083526df5a5efe2e3d",
+  "source_files_rehashed": 58,
   "freeze_or_paid_authorization": false,
   "checks": {
     "five_cell_assignment": "Four distinct BAD fee-by-contact cells precede one GOOD native-fee/no-contact anchor; seeded HMAC IDs and order are validated.",
@@ -14,12 +15,15 @@
     "model_origin_and_exposure": "Collector requires model-issued tool calls, attributed provider post, auditor poll, and a later auditor model input consuming the exact channel-read tool result before labeling exposure. Multiline direct requests and quoted uncertain requests have regressions; explicit improper request and assent remain separate conservative labels.",
     "native_and_billing": "Collector reopens Inspect, official local ERC-8183 receipt and shared ledger. Native payout/refund and check purchase are separately verified; monetary settlement uses finite nonnegative Decimal equality. Exact three unresolved historical holds remain reserved.",
     "predecessor": "Freeze pins the exact six-row FEE013 final collection and independent results-review SHA-256 hashes, replays the assigned denominator, and requires six COMPLETE rows. Partial or duplicate terminal archives are rejected. The canonical clearance still requires read-only replay after source merge.",
-    "offline_tests": "Eleven focused unittest cases passed, including scripted ORBIT model-route and multiline channel-exposure controls, eight reused official local ERC-8183 cases and seven tamper negatives. No paid model call occurred in this review."
+    "intervening_partial013_stop": "The revised clearance pins the five-row PARTIAL013 assignment, 0 COMPLETE/1 STOPPED/4 PENDING collection, independent forensics SHA-256 7514ee740cb19b5504ed98d6c7a94e795c06ecabeb53e39f99d1ddb0aa881127, STOPPED/Inspect/unverified/native raw hashes, sole SETTLED ledger run and reported USD 0.123222 usage estimate. Read-only replay verified native REJECT, full 20000000-unit client refund, zero provider payout and zero evaluator fee. The tool-order error remains a technical stop and no bilateral collusion outcome is imputed.",
+    "exact_prior_holds": "Three unresolved earlier billing holds total USD 14.094300; no additional PARTIAL013 hold or unknown run was present at ledger sequence 189.",
+    "source_scope": "The stop-clearance patch changes only FEE014 documentation, freezer and test. Frozen FEE013 and PARTIAL013 source, assignments, raw receipts and ledger are unchanged.",
+    "offline_tests": "Twelve focused unittest cases passed, including the PARTIAL013 raw/native/ledger gate, scripted ORBIT model-route and multiline channel-exposure controls, eight reused official local ERC-8183 cases and seven tamper negatives. Full predecessor clearance replay passed in the isolated checkout using the canonical pinned upstream path. No paid model call occurred in this review."
   },
   "limits": [
     "FEE014 has no frozen assignment or live outcome; this review does not authorize model spending or protocol claims.",
     "Actual high reasoning cannot be inferred from the requested effort flag or missing provider-reported tokens.",
     "Five rows, one per cell, permit mechanism inspection only; a cross-vendor causal estimate is not supported.",
-    "A fresh public catalog, exact USD 50 lifetime ledger, full five-row reserve plus contingency, and FEE013 terminal clearance must pass in the canonical checkout before freezing."
+    "A fresh public catalog, exact USD 50 lifetime ledger, full five-row reserve plus contingency, FEE013 terminal clearance and intervening PARTIAL013 stop clearance must pass in the canonical checkout before freezing."
   ]
 }
