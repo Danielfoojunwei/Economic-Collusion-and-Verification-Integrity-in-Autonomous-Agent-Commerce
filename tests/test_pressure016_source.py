@@ -7,6 +7,7 @@ They are not live provider behavior or evidence of agent collusion.
 from __future__ import annotations
 
 import asyncio
+from contextlib import contextmanager, ExitStack
 from dataclasses import replace
 import json
 import os
@@ -290,6 +291,129 @@ class Pressure016SourceTests(unittest.TestCase):
             with self.assertRaises((ValueError, FileExistsError)):
                 pressure016_freeze.freeze(seed_hex="ab" * 32)
         self.assertEqual(pressure016_freeze.ASSIGNMENT.exists(), was_frozen)
+
+
+class Pressure016ClearanceTests(unittest.TestCase):
+    """Source approval, predecessor closure, and freeze authority stay distinct."""
+
+    @contextmanager
+    def gate_fixture(self):
+        gate = pressure016_freeze
+        with TemporaryDirectory() as directory, ExitStack() as patches:
+            root = Path(directory)
+            prices = json.loads(Path(
+                "artifacts/gates/ERC8183_FEE013/assignment-001/assignment_manifest.json"
+            ).read_bytes())["public_pricing_snapshot"]
+            sources = {"source.py": "0" * 64}
+            review_path = root / "source-review.json"
+            review_path.write_bytes(gate._json({
+                "schema": "pressure016-live-source-review-v1",
+                "status": "GO_SOURCE_MERGE_ONLY",
+                "source_inventory_sha256": gate.digest(sources),
+                "reviewer_id": "/root/independent_pressure016_reviewer",
+                "freeze_or_paid_authorization": False}))
+            state = {"seq": 1, "last_hash": "a" * 64, "cap_usd": "50",
+                     "available_usd": "30", "reserved_usd": "5",
+                     "runs": {"prior": {"status": "SETTLED"}},
+                     "blocked": False, "unknown_run_ids": []}
+            ledger = root / "ledger.jsonl"
+            ledger.write_text('{"hash":"' + '0' * 64 + '"}\n'
+                              '{"hash":"' + 'a' * 64 + '"}\n')
+            class FakeBudget:
+                def __init__(self, _):
+                    pass
+
+                def snapshot(self):
+                    return state
+
+            for name, value in (
+                ("ROOT", root), ("CLEARANCE", root / "clearance.json"),
+                ("REVIEW", review_path), ("CANONICAL_LEDGER", ledger),
+                ("ASSIGNMENT", root / "assignment"), ("LOCK", root / "lock.json"),
+                ("BudgetLedger", FakeBudget)):
+                patches.enter_context(patch.object(gate, name, value))
+            for name, value in (
+                ("_canonical_root", None), ("clean_versioned_sources", True),
+                ("source_inventory", sources), ("_runtime", {"pinned": True}),
+                ("_offline", {"status": "PASS"}), ("_ledger", state),
+                ("pricing_snapshots", prices),
+                ("_partial014_closed", {"collection_sha256": "1" * 64,
+                                         "independent_review_sha256": "2" * 64})):
+                patches.enter_context(patch.object(gate, name,
+                    return_value=value))
+            yield gate, state, prices, review_path
+
+    def test_source_only_review_and_absent_clearance_block_freeze(self):
+        with self.gate_fixture() as (gate, state, prices, review_path):
+            self.assertEqual(gate.source_review(gate.source_inventory())[
+                "reviewer_id"], "/root/independent_pressure016_reviewer")
+            result = gate.readiness()
+            self.assertEqual(result["checks"]["independent_source_review"], "PASS")
+            self.assertEqual(result["checks"]["partial014_final_closure"], "PASS")
+            self.assertTrue(result["checks"]["cross_study_clearance"].startswith(
+                "FileNotFoundError:"))
+            self.assertEqual(result["status"], "BLOCKED")
+            with patch.dict(os.environ, {"PRESSURE016_FREEZE_ALLOWED": "true"}):
+                with self.assertRaisesRegex(ValueError, "uncleared gates"):
+                    gate.freeze(seed_hex="ab" * 32)
+            self.assertFalse(gate.ASSIGNMENT.exists())
+
+    def test_clearance_needs_explicit_switch_then_binds_four_cells_and_head(self):
+        with self.gate_fixture() as (gate, state, prices, review_path):
+            with patch.dict(os.environ, {"PRESSURE016_CLEARANCE_ALLOWED": "false"}):
+                with self.assertRaisesRegex(ValueError, "clearance switch"):
+                    gate.write_clearance()
+            self.assertFalse(gate.CLEARANCE.exists())
+            with patch.dict(os.environ, {"PRESSURE016_CLEARANCE_ALLOWED": "true"}):
+                result = gate.write_clearance()
+            self.assertEqual(result["status"], "CLEARANCE_SAVED_NO_PAID_CALL")
+            saved = json.loads(gate.CLEARANCE.read_bytes())
+            self.assertEqual(saved["four_cell_design"]["rows"], 4)
+            self.assertEqual(len(saved["four_cell_design"]["cells"]), 4)
+            self.assertEqual(saved["partial014_final_closure"][
+                "independent_review_sha256"], "2" * 64)
+            self.assertEqual(saved["budget_at_clearance"][
+                "full_block_plus_contingency_residual_usd"], "17.9252822")
+            self.assertEqual(gate.clearance(state, prices=prices)["sha256"],
+                             gate.sha(gate.CLEARANCE))
+            self.assertEqual(gate.readiness()["status"], "READY")
+            progressed = {**state, "seq": 2, "last_hash": "b" * 64,
+                          "available_usd": "29",
+                          "runs": {**state["runs"],
+                                   "pressure016-row": {"status": "SETTLED"}}}
+            self.assertEqual(gate.clearance(
+                progressed, require_current_head=False)["sha256"],
+                gate.sha(gate.CLEARANCE))
+            with patch.dict(os.environ, {"PRESSURE016_CLEARANCE_ALLOWED": "true"}):
+                with self.assertRaises(FileExistsError):
+                    gate.write_clearance()
+
+    def test_tampered_clearance_review_price_design_or_head_fails_closed(self):
+        with self.gate_fixture() as (gate, state, prices, review_path):
+            saved = gate.clearance_preview(state, prices)
+            for key, altered in (
+                ("status", "GO_SOURCE_MERGE_ONLY"),
+                ("partial014_final_closure", {"collection_sha256": "bad"}),
+                ("four_cell_design", {"rows": 4, "cells": []}),
+                ("source_inventory_sha256", "f" * 64),
+                ("budget_at_clearance", {"ledger_available_usd": "999"}),
+                ("prior_ledger_runs_sha256", "e" * 64)):
+                gate.CLEARANCE.write_bytes(gate._json({**saved, key: altered}))
+                with self.subTest(key=key), self.assertRaises(ValueError):
+                    gate.clearance(state, prices=prices)
+            gate.CLEARANCE.write_bytes(gate._json(saved))
+            changed_prices = {key: dict(value) for key, value in prices.items()}
+            first = next(iter(changed_prices))
+            changed_prices[first]["input_usd_per_token"] = "2"
+            with self.assertRaisesRegex(ValueError, "prices changed"):
+                gate.clearance(state, prices=changed_prices)
+            with self.assertRaisesRegex(ValueError, "current ledger head"):
+                gate.clearance({**state, "seq": 2}, prices=prices)
+            review = json.loads(review_path.read_bytes())
+            review["freeze_or_paid_authorization"] = True
+            review_path.write_bytes(gate._json(review))
+            with self.assertRaisesRegex(ValueError, "source review differs"):
+                gate.clearance(state, prices=prices)
 
 
 if __name__ == "__main__":

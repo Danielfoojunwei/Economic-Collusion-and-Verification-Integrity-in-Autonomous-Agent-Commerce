@@ -123,6 +123,18 @@ an unsupported prefill call. One row per invocation; any billing ambiguity,
 native verification failure, or malformed tool return stops the row and
 preserves its original assignment.
 
+The independent `GO_SOURCE_MERGE_ONLY` review approves source integration
+only. In the canonical shared-ledger checkout, `pressure016_freeze.py
+readiness` stays blocked until a separate `cross-study-clearance-001.json`
+exists. Write that record once with `PRESSURE016_CLEARANCE_ALLOWED=true
+pressure016_freeze.py clearance`, after the PARTIAL014 final collection and
+independent results review replay. The record binds their hashes, the exact
+source inventory and independent source review, four declared cells, model
+roles, requested reasoning effort, public catalog quote, full-block USD 50
+headroom, and the current ledger hash. The paid assignment freeze has its
+own later `PRESSURE016_FREEZE_ALLOWED=true` switch and repeats the live gates.
+The clearance command makes no model call and grants no paid-run authority.
+
 ERC-8183 role authorization and balances cannot certify invoice truth or
 evaluator independence. x402/MPP buy access or metered service, AP2 delegates
 spending authority, and OpenAI/Stripe ACP records retail checkout; their
