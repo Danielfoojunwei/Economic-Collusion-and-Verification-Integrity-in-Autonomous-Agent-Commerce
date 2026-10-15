@@ -1,0 +1,343 @@
+{
+  "schemaVersion": 1,
+  "workOrder": "W08",
+  "status": "PASS",
+  "modelExecutionTier": "SCRIPTED_SIMULATION",
+  "transactionExecutionTier": "NATIVE_LOCAL_PROTOCOL",
+  "upstream": {
+    "repository": "https://github.com/x402-foundation/x402",
+    "commit": "e95b06661e1a2a8a9a21fce34cc28b9934834650",
+    "protocol": "x402 v2",
+    "scheme": "exact",
+    "assetTransferMethod": "eip3009",
+    "sdkVersion": "2.28.0"
+  },
+  "toolchain": {
+    "anvil": "/workspace/.tools/foundry/v1.8.5/anvil",
+    "solc": "/workspace/.tools/solc/v0.8.28/solc",
+    "node": "v24.19.0"
+  },
+  "chain": {
+    "rpcUrl": "http://127.0.0.1:60925",
+    "chainId": 31337,
+    "network": "eip155:31337",
+    "tokenAddress": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+    "sourceSha256": "4decd30c239f09aa0b3ee4df76ce1078020fdc30c9925d7d24f9cf3dfae55640",
+    "deploymentHash": "0x7ba0d3c3a86fe60fc4673ae14ccdc03ef72028ec12f380c81e49bb79c5868cfc",
+    "mintHash": "0xc56f9d46df57cce1f31dd4e7304ce7e813a8a59e0e739b7be01fa6d8377280bb"
+  },
+  "actors": {
+    "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "facilitator": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "buyer": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+    "seller": "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+  },
+  "http": {
+    "resourceUrl": "http://127.0.0.1:60936/research",
+    "facilitatorUrl": "http://127.0.0.1:60935",
+    "challenge": {
+      "x402Version": 2,
+      "error": "Payment required",
+      "resource": {
+        "url": "http://127.0.0.1:60936/research",
+        "description": "Valueless research HTTP resource",
+        "mimeType": "application/json"
+      },
+      "accepts": [
+        {
+          "scheme": "exact",
+          "network": "eip155:31337",
+          "amount": "1000",
+          "asset": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+          "payTo": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+          "maxTimeoutSeconds": 120,
+          "extra": {
+            "name": "Research Test USD",
+            "version": "1",
+            "assetTransferMethod": "eip3009"
+          }
+        }
+      ]
+    },
+    "paymentSignatureHeaderSha256": "376a791d40a0e561113ab779374c48b3751313c8019323572337256440501b12",
+    "paidStatus": 200,
+    "resourceBody": {
+      "application_binding": {
+        "binding_sha256": "751ee2fb3eb7ae1ea4b5198a4851e401ee24a6d5354c7a49b840dbc8eb6a9752",
+        "obligation_id": "invoice-2aa87f83e9f25c667b462623",
+        "report_digest": "340d40e099a7d5d8d707b1805a29623ede60a19840ae3e481fcd18fa161ba61b",
+        "task_id": "invoice-report-open004"
+      },
+      "report": {
+        "submitted_amount_cents": 350,
+        "task_id": "invoice-report-open004"
+      },
+      "report_digest": "340d40e099a7d5d8d707b1805a29623ede60a19840ae3e481fcd18fa161ba61b",
+      "resource_type": "invoice_audit_report",
+      "schema_version": 1,
+      "service_id": "invoice-report-access/v1"
+    },
+    "paymentResponse": {
+      "success": true,
+      "payer": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "transaction": "0x4758f93864da39f5f473b8bb6abad6c7aa6b960e78084781d529a2fd1154fa2c",
+      "network": "eip155:31337"
+    },
+    "replayStatus": 402
+  },
+  "authorization": {
+    "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+    "to": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+    "value": "1000",
+    "validAfter": "0",
+    "validBefore": "1792067491",
+    "nonce": "0xd3078c2b318b904599f2824d7b306da5aa7ffd884ca1b7362cac2c2a34e09ae8",
+    "signature": "0x60823ea59c52b3f6cd8049549dcfea750d6a89b0ec80a89d9e81f1fa44e273945dd49e185c69ff8b5cf917f06395ccfe3b9f5429abc52800d3bad783b44b60481c",
+    "domain": {
+      "name": "Research Test USD",
+      "version": "1",
+      "chainId": 31337,
+      "verifyingContract": "0x5fbdb2315678afecb367f032d93f642f64180aa3"
+    }
+  },
+  "verify": {
+    "result": {
+      "isValid": true,
+      "payer": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+    },
+    "before": {
+      "nonceUsed": false,
+      "buyerBalance": "1000000",
+      "sellerBalance": "0",
+      "block": "2"
+    },
+    "after": {
+      "nonceUsed": false,
+      "buyerBalance": "1000000",
+      "sellerBalance": "0",
+      "block": "2"
+    }
+  },
+  "settle": {
+    "result": {
+      "success": true,
+      "transaction": "0x4758f93864da39f5f473b8bb6abad6c7aa6b960e78084781d529a2fd1154fa2c",
+      "network": "eip155:31337",
+      "payer": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+    },
+    "before": {
+      "nonceUsed": false,
+      "buyerBalance": "1000000",
+      "sellerBalance": "0",
+      "block": "2"
+    },
+    "after": {
+      "nonceUsed": true,
+      "buyerBalance": "999000",
+      "sellerBalance": "1000",
+      "block": "3"
+    }
+  },
+  "transaction": {
+    "hash": "0x4758f93864da39f5f473b8bb6abad6c7aa6b960e78084781d529a2fd1154fa2c",
+    "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+    "to": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+    "input": "0xe3ee160e0000000000000000000000003c44cdddb6a900fa2b585dd299e03d12fa4293bc00000000000000000000000090f79bf6eb2c4f870365e785982e1f101e93b90600000000000000000000000000000000000000000000000000000000000003e80000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006ad0c7a3d3078c2b318b904599f2824d7b306da5aa7ffd884ca1b7362cac2c2a34e09ae8000000000000000000000000000000000000000000000000000000000000001c60823ea59c52b3f6cd8049549dcfea750d6a89b0ec80a89d9e81f1fa44e273945dd49e185c69ff8b5cf917f06395ccfe3b9f5429abc52800d3bad783b44b6048",
+    "blockNumber": "3",
+    "blockHash": "0x9028a2cc730db717637e2c51b7ec4f6ccbf60bdcb33f28a8873f3ee738e908e3",
+    "blockTimestampSeconds": "1792067371",
+    "observedHead": "3",
+    "status": "success",
+    "gasUsed": "82271",
+    "logs": [
+      {
+        "address": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+        "topics": [
+          "0x98de503528ee59b575ef0c0a2576a82497bfc029a5685b209e9ec333479b10a5",
+          "0x0000000000000000000000003c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "0xd3078c2b318b904599f2824d7b306da5aa7ffd884ca1b7362cac2c2a34e09ae8"
+        ],
+        "data": "0x",
+        "logIndex": 0
+      },
+      {
+        "address": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x0000000000000000000000003c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "0x00000000000000000000000090f79bf6eb2c4f870365e785982e1f101e93b906"
+        ],
+        "data": "0x00000000000000000000000000000000000000000000000000000000000003e8",
+        "logIndex": 1
+      }
+    ]
+  },
+  "balances": {
+    "initialBuyer": "1000000",
+    "initialSeller": "0",
+    "finalBuyer": "999000",
+    "finalSeller": "1000",
+    "nonceUsedAfterSettle": true
+  },
+  "negatives": {
+    "wrongAmount": {
+      "result": {
+        "isValid": false,
+        "invalidReason": "invalid_exact_evm_payload_authorization_value_mismatch",
+        "payer": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+      },
+      "before": {
+        "nonceUsed": false,
+        "buyerBalance": "999000",
+        "sellerBalance": "1000",
+        "block": "3"
+      },
+      "after": {
+        "nonceUsed": false,
+        "buyerBalance": "999000",
+        "sellerBalance": "1000",
+        "block": "3"
+      }
+    },
+    "wrongPayee": {
+      "result": {
+        "isValid": false,
+        "invalidReason": "invalid_exact_evm_recipient_mismatch",
+        "payer": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+      },
+      "before": {
+        "nonceUsed": false,
+        "buyerBalance": "999000",
+        "sellerBalance": "1000",
+        "block": "3"
+      },
+      "after": {
+        "nonceUsed": false,
+        "buyerBalance": "999000",
+        "sellerBalance": "1000",
+        "block": "3"
+      }
+    },
+    "expired": {
+      "result": {
+        "isValid": false,
+        "invalidReason": "invalid_exact_evm_payload_authorization_valid_before",
+        "payer": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+      },
+      "before": {
+        "nonceUsed": false,
+        "buyerBalance": "999000",
+        "sellerBalance": "1000",
+        "block": "3"
+      },
+      "after": {
+        "nonceUsed": false,
+        "buyerBalance": "999000",
+        "sellerBalance": "1000",
+        "block": "3"
+      }
+    },
+    "replayVerify": {
+      "isValid": false,
+      "invalidReason": "invalid_exact_evm_transaction_simulation_failed",
+      "payer": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "invalidMessage": "The contract function \"transferWithAuthorization\" reverted with the following reason:\nAuthorizationAlreadyUsed\n\nContract Call:\n  address:   0x5FbDB2315678afecb367f032d93F642f64180aa3\n  function:  transferWithAuthorization(address from, address to, uint256 value, uint256 validAfter, uint256 validBefore, bytes32 nonce, uint8 v, bytes32 r, bytes32 s)\n  args:                               (0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, 0x90F79bf6EB2c4f870365E785982E1f101E93b906, 1000, 0, 1792067491, 0xd3078c2b318b904599f2824d7b306da5aa7ffd884ca1b7362cac2c2a34e09ae8, 28, 0x60823ea59c52b3f6cd8049549dcfea750d6a89b0ec80a89d9e81f1fa44e27394, 0x5dd49e185c69ff8b5cf917f06395ccfe3b9f5429abc52800d3bad783b44b6048)\n\nDocs: https://viem.sh/docs/contract/readContract\nDetails: execution reverted: AuthorizationAlreadyUsed\nVersion: viem@2.48.11"
+    },
+    "replayHttpStatus": 402,
+    "replayContractRejected": true,
+    "invalidContractSignatureRejected": true
+  },
+  "handlerFailure": {
+    "url": "http://127.0.0.1:60936/research-fail",
+    "status": 503,
+    "body": {
+      "error": "injected_resource_failure"
+    },
+    "verifyCallsBefore": 6,
+    "verifyCallsAfter": 7,
+    "handlerCount": 1,
+    "verificationResults": [
+      {
+        "isValid": true,
+        "payer": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+      }
+    ],
+    "settleCallsBefore": 1,
+    "settleCallsAfter": 1,
+    "before": {
+      "nonceUsed": false,
+      "buyerBalance": "999000",
+      "sellerBalance": "1000",
+      "block": "3"
+    },
+    "after": {
+      "nonceUsed": false,
+      "buyerBalance": "999000",
+      "sellerBalance": "1000",
+      "block": "3"
+    },
+    "paymentResponseHeader": null
+  },
+  "schemeLimit": {
+    "alteredResourceUrlVerified": true,
+    "explanation": "EIP-3009 signs token, chain, payer, payee, amount, validity and nonce; it does not sign the HTTP resource URL."
+  },
+  "trace": [
+    {
+      "sequence": 0,
+      "phase": "CHALLENGE",
+      "timestampUtc": "2026-10-15T12:29:31.291Z",
+      "elapsedMs": 821.417595,
+      "status": 402,
+      "headerSha256": "6cf3c50d70840d2cdf714662d2433f4a210cc03856c3741b0a136f2e70f383d3"
+    },
+    {
+      "sequence": 1,
+      "phase": "SIGNED_AUTHORIZATION",
+      "timestampUtc": "2026-10-15T12:29:31.297Z",
+      "elapsedMs": 827.242698,
+      "signatureSha256": "4487ded6a4446298512b5f2b5c8d2478ded9bac105ee92126bfa2d8729144ed6"
+    },
+    {
+      "sequence": 2,
+      "phase": "VERIFY",
+      "timestampUtc": "2026-10-15T12:29:31.309Z",
+      "elapsedMs": 839.758599,
+      "nonce": "0xd3078c2b318b904599f2824d7b306da5aa7ffd884ca1b7362cac2c2a34e09ae8"
+    },
+    {
+      "sequence": 3,
+      "phase": "RESOURCE_EXECUTE",
+      "timestampUtc": "2026-10-15T12:29:31.350Z",
+      "elapsedMs": 880.834377
+    },
+    {
+      "sequence": 4,
+      "phase": "SETTLE",
+      "timestampUtc": "2026-10-15T12:29:31.356Z",
+      "elapsedMs": 886.860601,
+      "nonce": "0xd3078c2b318b904599f2824d7b306da5aa7ffd884ca1b7362cac2c2a34e09ae8"
+    },
+    {
+      "sequence": 5,
+      "phase": "RESPONSE",
+      "timestampUtc": "2026-10-15T12:29:31.384Z",
+      "elapsedMs": 914.873328,
+      "status": 200
+    }
+  ],
+  "assertions": {
+    "challenge": "PASS",
+    "signedAuthorization": "PASS",
+    "readOnlyVerify": "PASS",
+    "onchainSettlement": "PASS",
+    "eventAndBalances": "PASS",
+    "replay": "PASS",
+    "expiry": "PASS",
+    "wrongAmount": "PASS",
+    "wrongPayee": "PASS",
+    "contractSignature": "PASS",
+    "handlerFailureNoSettlement": "PASS",
+    "timing": "PASS"
+  }
+}

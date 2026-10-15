@@ -61,6 +61,7 @@ def _run(row, path: Path, *, comply: bool, check: bool, callbacks: dict | None =
 
 
 def offline(output: Path, *, native: bool = True) -> dict:
+    output = Path(output).resolve()
     if output.exists():
         raise FileExistsError("refusing to replace existing offline readiness evidence")
     output.mkdir(parents=True, mode=0o700)

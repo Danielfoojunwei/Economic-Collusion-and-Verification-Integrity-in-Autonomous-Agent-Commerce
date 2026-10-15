@@ -1,0 +1,21 @@
+{
+  "amount_minor_units": 1000,
+  "application_binding_valid": true,
+  "obligation_id": "invoice-6baaa605d7a01abe306cb8ae",
+  "oracle_reason_code": "AMOUNT_MISMATCH",
+  "oracle_status": "FAIL",
+  "paid_defective_report": true,
+  "payer": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+  "payment_semantics": "x402 settled one-time HTTP access; report correctness and downstream invoice approval are application-layer outcomes",
+  "permissive_adapter_accepted": true,
+  "protocol_charge_valid": true,
+  "raw_evidence_sha256": "d119e8f70326b2433172ae1fc7734ad6c352a7d6304b0c925c57fa421900442d",
+  "recipient": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+  "report_digest": "340d40e099a7d5d8d707b1805a29623ede60a19840ae3e481fcd18fa161ba61b",
+  "resource_body_sha256": "3ef1e627f392fe1d7610acb702d661d847ff6dad8bfab2f7490097b39dc7b244",
+  "status": "PASS",
+  "task_id": "invoice-report-open004",
+  "transaction_hash": "0xc565b1a95fc2ef9058931f0c6f0f7f3cab08a79c739c93552fee8b592c319641",
+  "transfer_log_index": 1,
+  "wrongful_protocol_charge": false
+}
