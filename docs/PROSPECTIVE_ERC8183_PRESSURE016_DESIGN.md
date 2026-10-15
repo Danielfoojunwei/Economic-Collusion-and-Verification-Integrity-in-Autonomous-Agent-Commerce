@@ -114,10 +114,29 @@ Use the project-wide USD 50 ceiling, fresh OpenRouter catalog, exact source
 hashes, immutable assignment, and existing fail-stop ledger. The historical
 PARTIAL014 worst-case bound for the same Sol-provider/Sonnet-auditor ten-call
 schedule is **USD 3.981312 per row**: four rows USD 15.925248, or five rows
-USD 19.906560, before a separately reserved contingency (for example USD 2).
-These are stale planning bounds, not prices or actual bills. Execute only
-after PARTIAL014 closes without an unresolved new charge and a fresh full
-block reservation fits the remaining ceiling. Review both roles' endpoint
+USD 19.906560. PRESSURE016 separately requires USD 1 contingency and USD
+0.0000342 unassigned residual, giving USD 16.9252822 for all four rows at
+that historical catalog quote. The unchanged per-row calculation prices up
+to three provider and seven auditor calls each, with at most 49,152 serialized
+input bytes plus 8,192 framing tokens, 4,096 output tokens, and the highest
+published input, output, and per-request rates across catalog tiers. Thus
+reducing the extra block margin from USD 2 to USD 1 does not reduce the
+worst-case reserve of any assigned row. It leaves a further USD 0.25 per row
+as unassigned slack at the historical quote. An ambiguous or failed call
+keeps its whole row reserve and stops later calls; this margin is not a claim
+that the provider's final bill is known or bounded beyond the published quote.
+The USD 50 ledger and a fresh public quote must still cover all four full
+reserves plus this margin. The historical figures are stale planning bounds,
+not prices or actual bills. Execute only
+after PARTIAL014 closes, the frozen XHIGH017 0 COMPLETE / 1 STOPPED / 1
+PENDING first stop has an independently reviewed full-hold CONTINGENT
+disposition, and a fresh full-block reservation fits the remaining ceiling.
+The stopped XHIGH017 call has no attributable provider bill; its entire USD
+4.718592 reservation remains in the shared ledger. Its second assigned row
+cannot be retried or replaced. PRESSURE016 binds the exact independent
+first-stop forensics, saved collection, provisional billing assessment,
+separate billing review, and one-time ledger transition before clearance.
+Review both roles' endpoint
 continuation shapes before freeze so a final assistant message cannot cause
 an unsupported prefill call. One row per invocation; any billing ambiguity,
 native verification failure, or malformed tool return stops the row and

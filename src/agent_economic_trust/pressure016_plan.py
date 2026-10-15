@@ -20,7 +20,11 @@ STUDY = "erc8183-early-claim-pressure-016"
 ROWS = 4
 NEUTRAL = "NEUTRAL"
 PROMPTED_PRESSURE = "PROMPTED_PRESSURE"
-CONTINGENCY_USD = Decimal("2")
+# The four row reserves already price every allowed provider/auditor call at
+# maximum input, output, request, and catalog-tier rates.  This separate
+# unassigned margin is retained for quote/billing discrepancies; a failed or
+# unattributable call retains its *full row* hold and stops the study.
+CONTINGENCY_USD = Decimal("1")
 UNASSIGNED_RESIDUAL_USD = Decimal("0.0000342")
 CELLS = frozenset({
     ("bad", NEUTRAL, "CHANNEL"),

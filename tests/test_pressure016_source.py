@@ -35,7 +35,9 @@ from agent_economic_trust.pressure016_task import (
     CHANNEL, PressureInboxStore, decide_first_milestone,
     pressure016_orbit, role_system_prompts)
 from agent_economic_trust.mpp005_boundary import RemoteBoundaryError
-from agent_economic_trust.partial014_plan import terms
+from agent_economic_trust.partial014_plan import (AUDITOR_CALLS,
+    INPUT_FRAMING_TOKENS, MAX_INPUT_BYTES, MAX_OUTPUT_TOKENS,
+    PROVIDER_CALLS, per_row_reserve, terms)
 from agent_economic_trust.remote_budget import BudgetLedger
 from agent_economic_trust import partial014_native_verifier
 from scripts.pressure016_collect import (
@@ -327,8 +329,20 @@ class Pressure016SourceTests(unittest.TestCase):
         prices = json.loads(Path(
             "artifacts/gates/ERC8183_FEE013/assignment-001/assignment_manifest.json"
         ).read_bytes())["public_pricing_snapshot"]
-        self.assertEqual(str(required_headroom(prices, 4)), "17.9252822")
-        self.assertEqual(str(required_headroom(prices, 0)), "2.0000342")
+        self.assertEqual(str(required_headroom(prices, 4)), "16.9252822")
+        self.assertEqual(str(required_headroom(prices, 0)), "1.0000342")
+        self.assertEqual(str(per_row_reserve(prices)), "3.981312")
+        self.assertEqual((PROVIDER_CALLS, AUDITOR_CALLS), (3, 7))
+        self.assertEqual((MAX_INPUT_BYTES, INPUT_FRAMING_TOKENS,
+                          MAX_OUTPUT_TOKENS), (49_152, 8_192, 4_096))
+        affordable = pressure016_freeze._budget(
+            {"available_usd": "16.9252822"}, prices)
+        self.assertEqual(affordable["per_row_worst_case_usd"], "3.981312")
+        self.assertEqual(affordable["full_block_plus_contingency_residual_usd"],
+                         "16.9252822")
+        with self.assertRaisesRegex(ValueError, "full four-row"):
+            pressure016_freeze._budget({"available_usd": "16.9252821"},
+                                       prices)
         sources = pressure016_freeze.source_inventory()
         self.assertGreaterEqual(len(sources), 130)
         self.assertEqual(pressure016_freeze.frozen_source_inventory(sources), sources)
@@ -350,8 +364,12 @@ class Pressure016ClearanceTests(unittest.TestCase):
         self.assertEqual(state["cap_usd"], "50")
         self.assertFalse(state["blocked"])
         self.assertEqual(state["unknown_run_ids"], [])
-        self.assertEqual(state["reserved_usd"], "18.386908")
-        self.assertEqual(len(state["contingent_run_ids"]), 3)
+        self.assertEqual(state["reserved_usd"], "23.1055")
+        self.assertEqual(len(state["contingent_run_ids"]), 4)
+        self.assertEqual(state["runs"][gate.XHIGH017_RUN_ID]["status"],
+                         "CONTINGENT")
+        self.assertEqual(state["runs"][gate.XHIGH017_RUN_ID]["reserved_usd"],
+                         "4.718592")
         self.assertEqual(len([row for row in state["runs"].values()
                               if row["status"] == "RESERVED"]), 1)
 
@@ -381,6 +399,16 @@ class Pressure016ClearanceTests(unittest.TestCase):
                                                          "0" * 64)),
             ("unknown charge", lambda snapshot: snapshot.update(
                 unknown_run_ids=["unknown-charge"])),
+            ("xhigh hold released", lambda snapshot: snapshot["runs"][
+                gate.XHIGH017_RUN_ID].update(status="SETTLED")),
+            ("xhigh evidence", lambda snapshot: snapshot["runs"][
+                gate.XHIGH017_RUN_ID].update(evidence_ref="sha256:" +
+                                             "0" * 64)),
+            ("xhigh metadata", lambda snapshot: snapshot["runs"][
+                gate.XHIGH017_RUN_ID]["metadata"].update(
+                    auditor_model_id="unreviewed-model")),
+            ("xhigh zero bill", lambda snapshot: snapshot["runs"][
+                gate.XHIGH017_RUN_ID].update(actual_usd="0")),
         ):
             altered = deepcopy(state)
             change(altered)
@@ -388,6 +416,28 @@ class Pressure016ClearanceTests(unittest.TestCase):
                                                        FakeBudget):
                 with self.assertRaises(ValueError):
                     gate._ledger()
+
+    def test_xhigh_first_stop_and_billing_artifact_tamper_fail_closed(self):
+        gate = pressure016_freeze
+        state = BudgetLedger(gate.CANONICAL_LEDGER).snapshot()
+        with TemporaryDirectory() as directory:
+            replacement = Path(directory) / "tampered.json"
+            replacement.write_bytes(gate.XHIGH017_FIRST_STOP.read_bytes() + b" ")
+            with patch.object(gate, "XHIGH017_FIRST_STOP", replacement):
+                with self.assertRaisesRegex(ValueError, "first-stop review"):
+                    gate._reviewed_prior_holds(state)
+            replacement.write_bytes(
+                gate.XHIGH017_BILLING_EVIDENCE.read_bytes() + b" ")
+            with patch.object(gate, "XHIGH017_BILLING_EVIDENCE", replacement):
+                with self.assertRaisesRegex(ValueError, "contingent assessment"):
+                    gate._reviewed_prior_holds(state)
+        prestate = BudgetLedger(gate.XHIGH017_BILLING /
+                                "openrouter-ledger.prestate.jsonl").snapshot()
+        self.assertEqual(prestate["runs"][gate.XHIGH017_RUN_ID]["status"],
+                         "UNKNOWN")
+        with self.assertRaisesRegex(ValueError,
+                                    "contingent transition|full contingent hold"):
+            gate._reviewed_prior_holds(prestate)
 
     def test_actual_partial014_review_schema_closes_and_tampering_fails(self):
         gate = pressure016_freeze
@@ -466,6 +516,10 @@ class Pressure016ClearanceTests(unittest.TestCase):
                 ("_canonical_root", None), ("clean_versioned_sources", True),
                 ("source_inventory", sources), ("_runtime", {"pinned": True}),
                 ("_offline", {"status": "PASS"}), ("_ledger", state),
+                ("_reviewed_prior_holds", {
+                    "forensics_sha256": "3" * 64,
+                    "collection_sha256": "4" * 64,
+                    "full_contingent_hold_usd": "4.718592"}),
                 ("pricing_snapshots", prices),
                 ("_partial014_closed", {"collection_sha256": "1" * 64,
                                          "independent_review_sha256": "2" * 64})):
@@ -502,8 +556,10 @@ class Pressure016ClearanceTests(unittest.TestCase):
             self.assertEqual(len(saved["four_cell_design"]["cells"]), 4)
             self.assertEqual(saved["partial014_final_closure"][
                 "independent_review_sha256"], "2" * 64)
+            self.assertEqual(saved["xhigh017_first_stop_and_full_hold"][
+                "full_contingent_hold_usd"], "4.718592")
             self.assertEqual(saved["budget_at_clearance"][
-                "full_block_plus_contingency_residual_usd"], "17.9252822")
+                "full_block_plus_contingency_residual_usd"], "16.9252822")
             self.assertEqual(gate.clearance(state, prices=prices)["sha256"],
                              gate.sha(gate.CLEARANCE))
             self.assertEqual(gate.readiness()["status"], "READY")
@@ -524,6 +580,8 @@ class Pressure016ClearanceTests(unittest.TestCase):
             for key, altered in (
                 ("status", "GO_SOURCE_MERGE_ONLY"),
                 ("partial014_final_closure", {"collection_sha256": "bad"}),
+                ("xhigh017_first_stop_and_full_hold", {
+                    "full_contingent_hold_usd": "0"}),
                 ("four_cell_design", {"rows": 4, "cells": []}),
                 ("source_inventory_sha256", "f" * 64),
                 ("budget_at_clearance", {"ledger_available_usd": "999"}),

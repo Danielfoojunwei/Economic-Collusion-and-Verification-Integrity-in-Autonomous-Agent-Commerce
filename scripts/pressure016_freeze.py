@@ -47,6 +47,18 @@ PARTIAL014_REVIEW_STATUS = (
     "REVIEW_COMPLETE_TWO_UNSUCCESSFUL_UNILATERAL_SOLICITATIONS_NO_BILATERAL_COLLUSION")
 OFFLINE = ROOT / "artifacts/prospective/ERC8183_PRESSURE016/offline-native-001"
 PARTIAL014_OFFLINE = ROOT / "artifacts/prospective/ERC8183_PARTIAL_CLAIM014/offline-native-001"
+XHIGH017_GATE = ROOT / "artifacts/gates/ERC8183_XHIGH017"
+XHIGH017_FIRST_STOP = XHIGH017_GATE / "independent-first-stop-forensics-001.json"
+XHIGH017_FIRST_STOP_SHA = "66b0c983ebc587380fcaaad8ce8f16a4f9b169684981385b3df0512751780e17"
+XHIGH017_ASSIGNMENT_SHA = "a0f79e6ba7de1c1b0bee28e39e9d70165405f325d9a52a9c0b2f432708b2237b"
+XHIGH017_COLLECTION_SHA = "eefd7c61b9b8667a3923a8979c78226e8433488f9a032e537b11f418633e95ec"
+XHIGH017_RUN_ID = "xhigh017-a0f79e6ba7de-xhigh017-0a63961c0d306890326609f6"
+XHIGH017_FULL_HOLD_USD = Decimal("4.718592")
+XHIGH017_BILLING = ROOT / "artifacts/budget/xhigh017-first-stop-contingent-001"
+XHIGH017_BILLING_EVIDENCE = XHIGH017_BILLING / "evidence.json"
+XHIGH017_BILLING_EVIDENCE_SHA = "53bdf0afe52a99f0ee18ab48772fac41b1a7054cb3b8f34386d392205c9ca009"
+XHIGH017_BILLING_REVIEW = XHIGH017_BILLING / "independent-review.json"
+XHIGH017_BILLING_REVIEW_SHA = "d68a3672042052c7c28eb000538d831a7f1e6fb757b2b0800c44bcc66ee09bd2"
 OWN_SOURCE = (
     "src/agent_economic_trust/pressure016_plan.py",
     "src/agent_economic_trust/pressure016_task.py",
@@ -158,10 +170,11 @@ def _ledger() -> dict:
     if (state.get("cap_usd") != "50" or state.get("blocked")
             or state.get("unknown_run_ids")):
         raise ValueError("PRESSURE016 USD50 ledger blocked or unknown")
-    # FEE011's separately reviewed failed-request buffer remains RESERVED.
-    # Recheck its exact forensic evidence and the three contingent holds;
-    # the predecessor gate rejects any new reservation or changed amount.
-    exact_prior_holds(state)
+    # This bridge projects away only the independently reviewed XHIGH017 full
+    # hold, then replays the unchanged four-predecessor gate.  Unknown charges,
+    # new reservations, modified prior holds, and final settlement of the
+    # unattributed XHIGH017 request all fail closed.
+    _reviewed_prior_holds(state)
     return state
 
 
@@ -236,6 +249,176 @@ def _partial014_closed(state: dict) -> dict:
             "pending_episodes": saved["pending_episodes"]}
 
 
+def _xhigh017_first_stop() -> dict:
+    """Bind the immutable failed effort study without recoding its denominator.
+
+    Its frozen collector expects UNKNOWN at the historical stop and cannot
+    replay against the later reviewed CONTINGENT ledger state.  The saved
+    collection and independent forensics therefore remain immutable evidence.
+    """
+    if sha(XHIGH017_FIRST_STOP) != XHIGH017_FIRST_STOP_SHA:
+        raise ValueError("XHIGH017 independent first-stop review differs")
+    review = json.loads(XHIGH017_FIRST_STOP.read_bytes())
+    collection_path = XHIGH017_GATE / "collection-001-after-first-stop.json"
+    collection = json.loads(collection_path.read_bytes())
+    if (review.get("schema") != "xhigh017-independent-first-stop-forensics-v1"
+            or review.get("decision") != "TECHNICAL_STOP_NO_XHIGH_COMPARISON"
+            or review.get("reviewer_id") in (None, "", "/root")
+            or review.get("reviewed_sha256", {}).get(
+                str(collection_path.relative_to(ROOT))) != XHIGH017_COLLECTION_SHA
+            or sha(collection_path) != XHIGH017_COLLECTION_SHA
+            or review.get("billing", {}).get("run_id") != XHIGH017_RUN_ID
+            or review["billing"].get("current_status") != "UNKNOWN"
+            or review["billing"].get("full_reserved_usd") !=
+               str(XHIGH017_FULL_HOLD_USD)
+            or review.get("observations", {}).get("planned_episodes") != 2
+            or review["observations"].get("completed_episodes") != 0
+            or review["observations"].get("stopped_episodes") != 1
+            or review["observations"].get("pending_episodes") != 1
+            or collection.get("assignment_manifest_sha256") !=
+               XHIGH017_ASSIGNMENT_SHA
+            or tuple(collection.get(key) for key in (
+                "planned_episodes", "completed_episodes", "stopped_episodes",
+                "pending_episodes")) != (2, 0, 1, 1)
+            or [row.get("status") for row in collection.get("rows", [])] !=
+               ["STOPPED", "PENDING"]):
+        raise ValueError("XHIGH017 first-stop facts or saved denominator differ")
+    for relative, expected_sha in review["reviewed_sha256"].items():
+        # The canonical ledger advances for reviewed contingent transitions;
+        # its exact pretransition hash is checked against the hash-chain below.
+        if relative.startswith("artifacts/budget/openrouter-ledger.jsonl"):
+            continue
+        path = Path(relative)
+        if (path.is_absolute() or ".." in path.parts
+                or sha(ROOT / path) != expected_sha):
+            raise ValueError("XHIGH017 reviewed source or stop artifact differs")
+    pre = review["billing"]
+    seq = pre.get("ledger_pretransition_seq")
+    lines = CANONICAL_LEDGER.read_bytes().splitlines()
+    if (type(seq) is not int or seq < 0 or len(lines) <= seq
+            or json.loads(lines[seq])["hash"] !=
+               pre.get("ledger_pretransition_last_hash")):
+        raise ValueError("XHIGH017 first-stop ledger prestate is not an ancestor")
+    return {"forensics_sha256": XHIGH017_FIRST_STOP_SHA,
+            "collection_sha256": XHIGH017_COLLECTION_SHA,
+            "assignment_manifest_sha256": XHIGH017_ASSIGNMENT_SHA,
+            "completed_episodes": 0, "stopped_episodes": 1,
+            "pending_episodes": 1}
+
+
+def _reviewed_prior_holds(state: dict) -> dict:
+    first_stop = _xhigh017_first_stop()
+    if (sha(XHIGH017_BILLING_EVIDENCE) != XHIGH017_BILLING_EVIDENCE_SHA
+            or sha(XHIGH017_BILLING_REVIEW) != XHIGH017_BILLING_REVIEW_SHA):
+        raise ValueError("XHIGH017 contingent assessment lacks exact independent review")
+    evidence = json.loads(XHIGH017_BILLING_EVIDENCE.read_bytes())
+    review = json.loads(XHIGH017_BILLING_REVIEW.read_bytes())
+    evidence_path = str(XHIGH017_BILLING_EVIDENCE.relative_to(ROOT))
+    if (evidence.get("schema") != "xhigh017-first-stop-provisional-billing-v1"
+            or evidence.get("result") !=
+               "PROVISIONAL_HOLD_RETAINED_FINAL_CHARGE_UNKNOWN"
+            or evidence.get("intended_transition") !=
+               "UNKNOWN_TO_CONTINGENT_WITH_FULL_HOLD"
+            or evidence.get("attributable_final_provider_bill_usd", "MISSING")
+               is not None
+            or evidence.get("run_id") != XHIGH017_RUN_ID
+            or evidence.get("retained_run_reservation_usd") !=
+               str(XHIGH017_FULL_HOLD_USD)
+            or evidence.get("frozen_artifacts_sha256", {}).get("forensics") !=
+               first_stop["forensics_sha256"]
+            or evidence["frozen_artifacts_sha256"].get("collection") !=
+               first_stop["collection_sha256"]
+            or evidence["frozen_artifacts_sha256"].get("assignment") !=
+               first_stop["assignment_manifest_sha256"]
+            or evidence.get("frozen_row_disposition") !=
+               "ZERO_COMPLETE_ONE_STOPPED_ONE_PENDING_NO_RETRY"
+            or evidence.get("whole_account_delta_is_per_call_bill") is not False
+            or review.get("schema") !=
+               "xhigh017-provisional-billing-independent-review-v1"
+            or review.get("decision") !=
+               "GO_FOR_ONE_CANONICAL_UNKNOWN_TO_CONTINGENT_TRANSITION"
+            or review.get("reviewed_artifacts_sha256", {}).get(evidence_path) !=
+               XHIGH017_BILLING_EVIDENCE_SHA
+            or review.get("retained_reservation_usd") !=
+               str(XHIGH017_FULL_HOLD_USD)
+            or review.get("attributable_final_provider_bill_usd", "MISSING")
+               is not None
+            or review.get("no_paid_calls_or_ledger_mutations") is not True
+            or review.get("reviewer_id") in (
+                None, "", "/root", "/root/xhigh017_billing_assessment")):
+        raise ValueError("XHIGH017 full-hold billing review or evidence differs")
+    for relative, expected_sha in review["reviewed_artifacts_sha256"].items():
+        path = Path(relative)
+        if (path.is_absolute() or ".." in path.parts
+                or sha(ROOT / path) != expected_sha):
+            raise ValueError("XHIGH017 independent billing review source differs")
+    prestate_path = XHIGH017_BILLING / "openrouter-ledger.prestate.jsonl"
+    prestate = BudgetLedger(prestate_path).snapshot()
+    expected_pre = evidence.get("ledger_prestate")
+    if (not isinstance(expected_pre, dict)
+            or review.get("canonical_ledger_prestate", {}).get("seq") !=
+               expected_pre.get("seq")
+            or review["canonical_ledger_prestate"].get("last_hash") !=
+               expected_pre.get("last_hash")
+            or any(prestate.get(key) != expected_pre.get(key) for key in (
+                "seq", "last_hash", "cap_usd", "reserved_usd",
+                "settled_spent_usd", "available_usd", "blocked",
+                "unknown_run_ids"))
+            or prestate["runs"].get(XHIGH017_RUN_ID, {}).get("status") !=
+               "UNKNOWN"
+            or prestate["runs"][XHIGH017_RUN_ID].get("reserved_usd") !=
+               str(XHIGH017_FULL_HOLD_USD)
+            or sha(prestate_path) != evidence["frozen_artifacts_sha256"].get(
+                "ledger")
+            or sha(prestate_path.with_name(
+                prestate_path.name + ".anchor")) !=
+               evidence["frozen_artifacts_sha256"].get("anchor")):
+        raise ValueError("XHIGH017 archived pretransition ledger differs")
+    lines = CANONICAL_LEDGER.read_bytes().splitlines()
+    seq = prestate["seq"]
+    if (state.get("seq", -1) <= seq or len(lines) <= seq + 1
+            or json.loads(lines[seq])["hash"] != prestate["last_hash"]):
+        raise ValueError("XHIGH017 contingent transition lacks exact ledger ancestor")
+    transition = json.loads(lines[seq + 1])
+    ref = "sha256:" + XHIGH017_BILLING_EVIDENCE_SHA
+    if (transition.get("kind") != "contingent"
+            or transition.get("prev_hash") != prestate["last_hash"]
+            or transition.get("payload") != {
+                "run_id": XHIGH017_RUN_ID, "evidence_ref": ref}):
+        raise ValueError("XHIGH017 reviewed full-hold transition differs")
+    run = state.get("runs", {}).get(XHIGH017_RUN_ID, {})
+    if (run.get("status") != "CONTINGENT"
+            or run.get("reserved_usd") != str(XHIGH017_FULL_HOLD_USD)
+            or run.get("metadata") != {
+                "assignment_sha": XHIGH017_ASSIGNMENT_SHA,
+                "episode_id": "xhigh017-0a63961c0d306890326609f6",
+                "provider_model_id": "anthropic/claude-sonnet-5.5",
+                "auditor_model_id": "openai/gpt-5.6-sol"}
+            or run.get("evidence_ref") != ref
+            or run.get("contingent_evidence_ref") != ref
+            or run.get("prior_unknown_reason") != "RemoteBoundaryError"
+            or "actual_usd" in run
+            or state.get("blocked") or state.get("unknown_run_ids")
+            or XHIGH017_RUN_ID not in state.get("contingent_run_ids", [])):
+        raise ValueError("XHIGH017 first stop lacks reviewed full contingent hold")
+    projection = dict(state)
+    projection["runs"] = {key: value for key, value in state["runs"].items()
+                          if key != XHIGH017_RUN_ID}
+    projection["reserved_usd"] = str(
+        Decimal(state["reserved_usd"]) - XHIGH017_FULL_HOLD_USD)
+    projection["available_usd"] = str(
+        Decimal(state["available_usd"]) + XHIGH017_FULL_HOLD_USD)
+    projection["contingent_run_ids"] = sorted(
+        set(state["contingent_run_ids"]) - {XHIGH017_RUN_ID})
+    old = exact_prior_holds(projection)
+    return {**first_stop, "contingent_assessment_sha256":
+            XHIGH017_BILLING_EVIDENCE_SHA,
+            "independent_billing_review_sha256": XHIGH017_BILLING_REVIEW_SHA,
+            "full_contingent_hold_usd": str(XHIGH017_FULL_HOLD_USD),
+            "reviewed_prior_reserved_usd": old["prior_reserved_usd"],
+            "all_prior_reserved_usd": state["reserved_usd"]}
+
+
 def _budget(state: dict, prices: dict) -> dict:
     per = per_row_reserve(prices)
     needed = required_headroom(prices, ROWS)
@@ -268,10 +451,11 @@ def clearance_preview(state: dict, prices: dict) -> dict:
     """Build a source-, predecessor-, design- and budget-bound decision."""
     sources = source_inventory()
     return {"schema": "pressure016-cross-study-clearance-v1",
-            "status": "GO_AFTER_PARTIAL014_FINAL_FOR_ONE_TIME_FREEZE",
+            "status": "GO_AFTER_REVIEWED_XHIGH017_FIRST_STOP_FOR_ONE_TIME_FREEZE",
             "source_inventory_sha256": digest(sources),
             "independent_source_review": source_review(sources),
             "partial014_final_closure": _partial014_closed(state),
+            "xhigh017_first_stop_and_full_hold": _reviewed_prior_holds(state),
             "four_cell_design": _four_cell_design(),
             "public_pricing_snapshot": prices,
             "budget_at_clearance": _budget(state, prices),
@@ -336,10 +520,12 @@ def clearance(state: dict, *, prices: dict | None = None,
         fresh_prices = saved.get("public_pricing_snapshot")
     sources = source_inventory()
     expected = {"schema": "pressure016-cross-study-clearance-v1",
-                "status": "GO_AFTER_PARTIAL014_FINAL_FOR_ONE_TIME_FREEZE",
+                "status": "GO_AFTER_REVIEWED_XHIGH017_FIRST_STOP_FOR_ONE_TIME_FREEZE",
                 "source_inventory_sha256": digest(sources),
                 "independent_source_review": source_review(sources),
                 "partial014_final_closure": _partial014_closed(state),
+                "xhigh017_first_stop_and_full_hold":
+                    _reviewed_prior_holds(state),
                 "four_cell_design": _four_cell_design(),
                 "public_pricing_snapshot": saved.get("public_pricing_snapshot"),
                 "budget_at_clearance": _budget(
@@ -383,6 +569,8 @@ def readiness() -> dict:
             values["source_inventory"])),
         ("partial014_final_closure", lambda: _partial014_closed(
             values["shared_ledger"])),
+        ("xhigh017_first_stop_and_full_hold", lambda:
+            _reviewed_prior_holds(values["shared_ledger"])),
         ("cross_study_clearance", lambda: clearance(
             values["shared_ledger"], prices=values["current_catalog"])),
         ("full_block_budget", lambda: _budget(
@@ -428,6 +616,8 @@ def freeze(*, seed_hex: str | None = None) -> dict:
                "independent_source_review": source_review(sources),
                "cross_study_clearance": prior,
                "partial014_final_closure": _partial014_closed(state),
+               "xhigh017_first_stop_and_full_hold":
+                   _reviewed_prior_holds(state),
                "public_pricing_snapshot": prices,
                "budget_at_freeze": {key: state[key] for key in (
                    "seq", "last_hash", "cap_usd", "available_usd", "reserved_usd")},
@@ -506,7 +696,9 @@ def verify() -> dict:
             or json.loads(lines[earlier["seq"]])["hash"] != earlier["last_hash"]
             or frozen["cross_study_clearance"] != clearance(
                 state, require_current_head=False)
-            or frozen["partial014_final_closure"] != _partial014_closed(state)):
+            or frozen["partial014_final_closure"] != _partial014_closed(state)
+            or frozen["xhigh017_first_stop_and_full_hold"] !=
+               _reviewed_prior_holds(state)):
         raise ValueError("PRESSURE016 predecessor or ledger ancestor differs")
     from agent_economic_trust.pressure016_remote import _ledger as verify_run_set
     verify_run_set(state, frozen, assignment_sha)
