@@ -232,7 +232,7 @@ def run_control(case: Control, directory: Path, rpc_url: str, http_url: str) -> 
         "max_serialized_input_bytes": max(input_bytes),
         "archive_sha256": sha256(Path(log.location).read_bytes()).hexdigest(),
         "decision_sha256": decision["decision_sha256"],
-        "compensation_evidence": str(compensation_path),
+        "compensation_evidence": f"{case.label}/compensation-evidence.json",
         "compensation_sha256": sha256(compensation_path.read_bytes()).hexdigest(),
         "model_execution_tier": "SCRIPTED_SIMULATION",
         "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"}
@@ -249,7 +249,7 @@ def _rejected_verifier(script: Path, evidence: Path, rpc_url: str, http_url: str
 
 
 def run_tamper_negatives(output: Path, first: Control, rpc_url: str, http_url: str) -> list[dict]:
-    """Show price preflight and both native evidence verifiers reject corruption."""
+    """Show signer, challenge and receipt checks reject corrupted evidence."""
     directory = output / first.label
     service = NativeMeetingService(directory.resolve(), first.row, rpc_url, http_url)
     check = json.loads((directory / "check-evidence.json").read_text())
@@ -261,13 +261,31 @@ def run_tamper_negatives(output: Path, first: Control, rpc_url: str, http_url: s
     else:
         raise ValueError("native check signer accepted tampered price")
     negative_dir = output / "negative-controls"
-    negative_dir.mkdir(exist_ok=False)
+    negative_dir.mkdir(exist_ok=True)
     check["amount_atomic"] = first.row.check_price_atomic + 1
     tampered_check = negative_dir / "check-amount-tampered.json"
     tampered_check.write_text(json.dumps(check, sort_keys=True) + "\n")
     if not _rejected_verifier(ROOT / "protocols/mpp/mpp009-verify-meeting-service.mjs",
                               tampered_check, rpc_url, http_url):
         raise ValueError("independent native check verifier accepted tampered amount")
+    check_challenge = json.loads((directory / "check-evidence.json").read_text())
+    first_check_402 = next(event for event in check_challenge["events"]
+                           if event["status"] == 402)
+    first_check_402["challenge"]["request"]["amount"] = str(first.row.check_price_atomic + 1)
+    tampered_check_challenge = negative_dir / "check-challenge-amount-tampered.json"
+    tampered_check_challenge.write_text(json.dumps(check_challenge, sort_keys=True) + "\n")
+    if not _rejected_verifier(ROOT / "protocols/mpp/mpp009-verify-meeting-service.mjs",
+                              tampered_check_challenge, rpc_url, http_url):
+        raise ValueError("independent native check verifier accepted a wrong 402 price")
+    release_challenge = json.loads((directory / "release-evidence.json").read_text())
+    first_release_402 = next(event for event in release_challenge["events"]
+                             if event["status"] == 402)
+    first_release_402["challenge"]["request"]["recipient"] = release_challenge["accounts"]["auditor"]
+    tampered_release_challenge = negative_dir / "release-challenge-recipient-tampered.json"
+    tampered_release_challenge.write_text(json.dumps(release_challenge, sort_keys=True) + "\n")
+    if not _rejected_verifier(ROOT / "protocols/mpp/mpp009-verify-meeting-service.mjs",
+                              tampered_release_challenge, rpc_url, http_url):
+        raise ValueError("independent native release verifier accepted a wrong 402 payee")
     compensation = json.loads((directory / "compensation-evidence.json").read_text())
     compensation["payments"][0]["receipt"]["reference"] = "0x" + "0" * 64
     tampered_compensation = negative_dir / "compensation-reference-tampered.json"
@@ -276,7 +294,8 @@ def run_tamper_negatives(output: Path, first: Control, rpc_url: str, http_url: s
                               tampered_compensation, rpc_url, http_url):
         raise ValueError("independent compensation verifier accepted tampered receipt")
     return [{"name": name, "status": "REJECTED"} for name in
-        ("signer_check_price", "native_check_amount", "compensation_receipt_reference")]
+        ("signer_check_price", "native_check_amount", "native_check_challenge_amount",
+         "native_release_challenge_recipient", "compensation_receipt_reference")]
 
 
 def verify_offline_report(report: Path, *, rpc_url: str = "http://127.0.0.1:19667",
@@ -292,6 +311,9 @@ def verify_offline_report(report: Path, *, rpc_url: str = "http://127.0.0.1:1966
             or summary.get("transaction_execution_tier") != "NATIVE_LOCAL_PROTOCOL"
             or len(summary.get("rows", [])) != len(cases)
             or [row.get("label") for row in summary["rows"]] != [case.label for case in cases]
+            or any(row.get("compensation_evidence") !=
+                   f"{case.label}/compensation-evidence.json"
+                   for case, row in zip(cases, summary["rows"], strict=True))
             or summary.get("max_serialized_input_bytes", MAX_INPUT_BYTES + 1) > MAX_INPUT_BYTES
             or summary.get("source_sha256") != current_sources):
         raise ValueError("MPP009 offline report is incomplete or exceeds input cap")
@@ -317,13 +339,16 @@ def verify_offline_report(report: Path, *, rpc_url: str = "http://127.0.0.1:1966
                 or recorded["false_approval"] != decision["false_approval"]
                 or recorded["unchecked_approval"] != decision["unchecked_approval"]):
             raise ValueError("scripted decision or native service evidence changed")
-        compensation = directory / "compensation-evidence.json"
-        if (str(compensation) != recorded["compensation_evidence"]
-                or sha256(compensation.read_bytes()).hexdigest() != recorded["compensation_sha256"]):
+        compensation = (report.parent / recorded["compensation_evidence"]).resolve()
+        if compensation != directory / "compensation-evidence.json":
+            raise ValueError("native compensation path escaped its control directory")
+        if sha256(compensation.read_bytes()).hexdigest() != recorded["compensation_sha256"]:
             raise ValueError("native compensation evidence changed")
         asyncio.run(service._command(ROOT / "protocols/mpp/mpp009-verify-meeting-evidence.mjs",
                                      compensation))
     expected_negatives = ["signer_check_price", "native_check_amount",
+                          "native_check_challenge_amount",
+                          "native_release_challenge_recipient",
                           "compensation_receipt_reference"]
     if summary.get("tamper_negatives") != [
             {"name": name, "status": "REJECTED"} for name in expected_negatives]:
@@ -342,6 +367,10 @@ def verify_offline_report(report: Path, *, rpc_url: str = "http://127.0.0.1:1966
     negatives = report.parent / "negative-controls"
     if (not _rejected_verifier(ROOT / "protocols/mpp/mpp009-verify-meeting-service.mjs",
             negatives / "check-amount-tampered.json", rpc_url, http_url)
+            or not _rejected_verifier(ROOT / "protocols/mpp/mpp009-verify-meeting-service.mjs",
+            negatives / "check-challenge-amount-tampered.json", rpc_url, http_url)
+            or not _rejected_verifier(ROOT / "protocols/mpp/mpp009-verify-meeting-service.mjs",
+            negatives / "release-challenge-recipient-tampered.json", rpc_url, http_url)
             or not _rejected_verifier(ROOT / "protocols/mpp/mpp009-verify-meeting-evidence.mjs",
             negatives / "compensation-reference-tampered.json", rpc_url, http_url)):
         raise ValueError("saved native evidence tamper negative no longer rejects")
@@ -352,12 +381,56 @@ def verify_offline_report(report: Path, *, rpc_url: str = "http://127.0.0.1:1966
             "remote_model_calls": 0}
 
 
+def reseal_existing_report(report: Path, *, rpc_url: str = "http://127.0.0.1:19667",
+                           http_url: str = "http://127.0.0.1:19668") -> dict:
+    """Recheck saved transactions while preserving all raw and native evidence bytes."""
+    report = report.resolve()
+    previous = report.read_bytes()
+    summary = json.loads(previous)
+    cases = controls()
+    if (summary.get("status") != "PASS" or len(summary.get("rows", [])) != len(cases)
+            or [row.get("label") for row in summary["rows"]] !=
+            [case.label for case in cases]):
+        raise ValueError("MPP009 archived controls are incomplete")
+    protected = {str(path.relative_to(report.parent)): sha256(path.read_bytes()).hexdigest()
+                 for path in report.parent.rglob("*") if path.is_file()
+                 and path != report and "negative-controls" not in path.parts}
+    for case, row in zip(cases, summary["rows"], strict=True):
+        row["compensation_evidence"] = f"{case.label}/compensation-evidence.json"
+    summary["tamper_negatives"] = run_tamper_negatives(
+        report.parent, cases[0], rpc_url, http_url)
+    summary["source_sha256"] = {name: sha256((ROOT / name).read_bytes()).hexdigest()
+                                for name in SOURCE_FILES}
+    summary["read_only_reseal"] = {
+        "prior_summary_sha256": sha256(previous).hexdigest(),
+        "prior_source_sha256": json.loads(previous).get("source_sha256"),
+        "native_transactions_created": 0,
+        "reason": "independent 402 challenge verification and portable compensation paths"}
+    try:
+        report.write_text(json.dumps(summary, indent=2) + "\n")
+        result = verify_offline_report(report, rpc_url=rpc_url, http_url=http_url)
+        if protected != {str(path.relative_to(report.parent)): sha256(path.read_bytes()).hexdigest()
+                         for path in report.parent.rglob("*") if path.is_file()
+                         and path != report and "negative-controls" not in path.parts}:
+            raise ValueError("archived raw or native evidence changed during re-seal")
+    except Exception:
+        report.write_bytes(previous)
+        raise
+    return result
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--rpc-url", default="http://127.0.0.1:19667")
     parser.add_argument("--http-url", default="http://127.0.0.1:19668")
+    parser.add_argument("--reseal-existing", action="store_true",
+                        help="verify and re-seal saved evidence without native transactions")
     args = parser.parse_args()
+    if args.reseal_existing:
+        print(json.dumps(reseal_existing_report(args.output / "summary.json",
+            rpc_url=args.rpc_url, http_url=args.http_url), sort_keys=True))
+        return
     args.output.mkdir(parents=True, exist_ok=False)
     source_hashes = {name: sha256((ROOT / name).read_bytes()).hexdigest()
                      for name in SOURCE_FILES}

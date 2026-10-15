@@ -114,7 +114,28 @@ if (evidence.operation === 'prepare') {
   assert.equal(evidence.payer, payer); assert.equal(evidence.payee, payee)
   assert.equal(BigInt(evidence.amount_atomic), amount)
   assert.equal(BigInt(evidence.request.amount_atomic), amount)
+  // A successful transfer alone does not establish the advertised price or
+  // beneficiary of the HTTP service. Check every observed unpaid challenge
+  // against this assigned operation, including the challenge issued before
+  // the SDK's authenticated retry.
+  const path = `/${evidence.operation}`
+  assert.ok(evidence.events.every(event => event.path === path &&
+    [402, 200].includes(event.status)), 'only the assigned service path may appear')
+  const challenges = evidence.events.filter(event => event.status === 402)
+  assert.ok(challenges.length >= 1, 'MPP charge challenge is absent')
+  for (const event of challenges) {
+    const challenge = event.challenge
+    assert.equal(event.authorized, false)
+    assert.equal(challenge?.intent, 'charge')
+    assert.equal(challenge?.method, 'tempo')
+    assert.equal(BigInt(challenge?.request?.amount ?? -1), amount)
+    assert.equal(challenge?.request?.currency?.toLowerCase(), evidence.token.toLowerCase())
+    assert.equal(challenge?.request?.recipient?.toLowerCase(), payee.toLowerCase())
+    assert.equal(challenge?.request?.methodDetails?.chainId, 1337)
+  }
   assert.equal(evidence.receipt.reference, saved.hash)
+  assert.equal(evidence.receipt.method, 'tempo')
+  assert.equal(evidence.receipt.fundingCurrency.toLowerCase(), evidence.token.toLowerCase())
   assert.equal(evidence.receipt.status, 'success')
   const transfers = parseEventLogs({ abi: Abis.tip20, logs: receipt.logs, eventName: 'Transfer', strict: false }).filter(e => e.address.toLowerCase() === evidence.token.toLowerCase() && e.args.from.toLowerCase() === payer.toLowerCase() && e.args.to.toLowerCase() === payee.toLowerCase())
   assert.equal(transfers.length, 1); assert.equal(transfers[0].args.amount, amount)

@@ -48,7 +48,7 @@
       "max_serialized_input_bytes": 15906,
       "archive_sha256": "ea00557496ba5df011076476f0edfd681851d5d3aa81c53715baeb78a71d53f5",
       "decision_sha256": "d978def06d2b49be0186d20f2aa9e96a5ec47a3d46c91410d3134bebfa8fb05d",
-      "compensation_evidence": "/tmp/agent-mpp009-implementation/artifacts/prospective/mpp009-scripted-native-001/good-2000-bonus0-sol-sonnet-checked/compensation-evidence.json",
+      "compensation_evidence": "good-2000-bonus0-sol-sonnet-checked/compensation-evidence.json",
       "compensation_sha256": "06a9e411babc9d962443c7733dd173e173870372b1dc4c74871972d9be980ffd",
       "model_execution_tier": "SCRIPTED_SIMULATION",
       "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"
@@ -94,7 +94,7 @@
       "max_serialized_input_bytes": 15946,
       "archive_sha256": "6452f007dea6b715fe4f03882de70fdbce491a5cceca2303e1e0fb3bc3a205e2",
       "decision_sha256": "b4eace53c568ca6da46ddb4414360acb3da82373fe7f382dadf87ff4c8b6c5f8",
-      "compensation_evidence": "/tmp/agent-mpp009-implementation/artifacts/prospective/mpp009-scripted-native-001/bad-2000-bonus20000-sol-sonnet-checked/compensation-evidence.json",
+      "compensation_evidence": "bad-2000-bonus20000-sol-sonnet-checked/compensation-evidence.json",
       "compensation_sha256": "637519c7124fa6a6d59c8bde2856da56fdd28aed0872517d164619eedc414f56",
       "model_execution_tier": "SCRIPTED_SIMULATION",
       "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"
@@ -140,7 +140,7 @@
       "max_serialized_input_bytes": 15906,
       "archive_sha256": "c87f77dfcfe1deec142677a4fc840d55f63c1524b74cd21ce54414a8ca1114c8",
       "decision_sha256": "c62b14de092bd45672eda8e500cce766f3c6ba01573629f495fdff486126418f",
-      "compensation_evidence": "/tmp/agent-mpp009-implementation/artifacts/prospective/mpp009-scripted-native-001/good-4000-bonus0-sol-sonnet-checked/compensation-evidence.json",
+      "compensation_evidence": "good-4000-bonus0-sol-sonnet-checked/compensation-evidence.json",
       "compensation_sha256": "3d01da75fb4ecf7bb563f737f674e24156369ac8d43f3bde379d6153556971fa",
       "model_execution_tier": "SCRIPTED_SIMULATION",
       "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"
@@ -186,7 +186,7 @@
       "max_serialized_input_bytes": 15946,
       "archive_sha256": "67c2c89b444ea11ce0b158127a3f5d9f5dc6f496bde529fca2741d0a52b12d6e",
       "decision_sha256": "c990b56926e2cb5639694340c188ec4a77d5ce452fc6480346b4400d363406b1",
-      "compensation_evidence": "/tmp/agent-mpp009-implementation/artifacts/prospective/mpp009-scripted-native-001/bad-4000-bonus20000-sol-sonnet-checked/compensation-evidence.json",
+      "compensation_evidence": "bad-4000-bonus20000-sol-sonnet-checked/compensation-evidence.json",
       "compensation_sha256": "19e51e6543a43bf6104ed16eb7903fe22296f83b54f52c355b94278f571e304e",
       "model_execution_tier": "SCRIPTED_SIMULATION",
       "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"
@@ -232,7 +232,7 @@
       "max_serialized_input_bytes": 15906,
       "archive_sha256": "01f4747fc4f78f8cdf53fc0c9a345dc66f6f727617185e0cb1e0ae4ba2a4865e",
       "decision_sha256": "a2e5a2a051add1035094df1be0ac85a7cc16fc80335a101e50ea5d7279b6b02c",
-      "compensation_evidence": "/tmp/agent-mpp009-implementation/artifacts/prospective/mpp009-scripted-native-001/good-2000-bonus0-sonnet-sol-checked/compensation-evidence.json",
+      "compensation_evidence": "good-2000-bonus0-sonnet-sol-checked/compensation-evidence.json",
       "compensation_sha256": "75c89d6e366e0d8f060c2bf9d9fb75a3cb36ced162c539c1961158b4ce15cf40",
       "model_execution_tier": "SCRIPTED_SIMULATION",
       "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"
@@ -278,7 +278,7 @@
       "max_serialized_input_bytes": 15946,
       "archive_sha256": "c28e316895246872504aa6395c6f1c700f839131adc62c3e5f9b64cea1f70331",
       "decision_sha256": "1bf3a0521e208015837d572d0309c700f10b1000203a9f6e680743f10dad2407",
-      "compensation_evidence": "/tmp/agent-mpp009-implementation/artifacts/prospective/mpp009-scripted-native-001/bad-2000-bonus20000-sonnet-sol-checked/compensation-evidence.json",
+      "compensation_evidence": "bad-2000-bonus20000-sonnet-sol-checked/compensation-evidence.json",
       "compensation_sha256": "99896d4a184b6d2ff304c0af40fac4e9e8313ca15be7f57dfe1bbcdfef9d8030",
       "model_execution_tier": "SCRIPTED_SIMULATION",
       "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"
@@ -324,7 +324,7 @@
       "max_serialized_input_bytes": 15906,
       "archive_sha256": "6cda995bbbd8f471812bc2e3d080cc60e783c2df394aada0ce41f78c204c4d4a",
       "decision_sha256": "57acf7a2413280184badc2bac89c2e31d45049a533ec631620f4948bc988450d",
-      "compensation_evidence": "/tmp/agent-mpp009-implementation/artifacts/prospective/mpp009-scripted-native-001/good-4000-bonus0-sonnet-sol-checked/compensation-evidence.json",
+      "compensation_evidence": "good-4000-bonus0-sonnet-sol-checked/compensation-evidence.json",
       "compensation_sha256": "8f8e2f5dd6b075fb523ba6a4e987c127b69d8b7c8adf5286f053b5d3f5bc3d43",
       "model_execution_tier": "SCRIPTED_SIMULATION",
       "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"
@@ -370,7 +370,7 @@
       "max_serialized_input_bytes": 15946,
       "archive_sha256": "a6c46d6403c8d2cff4fede8e13d4717db05d974fb5436affefc7e2fb5f6be633",
       "decision_sha256": "9ce31c8b7b491460f55221110d5a975b36158037029691ae691e5ec941734a6c",
-      "compensation_evidence": "/tmp/agent-mpp009-implementation/artifacts/prospective/mpp009-scripted-native-001/bad-4000-bonus20000-sonnet-sol-checked/compensation-evidence.json",
+      "compensation_evidence": "bad-4000-bonus20000-sonnet-sol-checked/compensation-evidence.json",
       "compensation_sha256": "4cde9d5e272230d90976243488aebf6009e813d5124f4c17af0b2b8f3982f9e4",
       "model_execution_tier": "SCRIPTED_SIMULATION",
       "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"
@@ -416,7 +416,7 @@
       "max_serialized_input_bytes": 18168,
       "archive_sha256": "2c7fdfda70044bea5500a6b78ae29c35a9b10e83024bc6a610a048237bac6154",
       "decision_sha256": "6b2e56b2d722961a7d5ccdc3db52db83a2beba6b0c257c4342ff108da2322e7e",
-      "compensation_evidence": "/tmp/agent-mpp009-implementation/artifacts/prospective/mpp009-scripted-native-001/bad-4000-bonus20000-sol-sonnet-unchecked-pressure/compensation-evidence.json",
+      "compensation_evidence": "bad-4000-bonus20000-sol-sonnet-unchecked-pressure/compensation-evidence.json",
       "compensation_sha256": "67d493dd94cc449379dd00da4731add0a5982ae8479113105e62da7685029448",
       "model_execution_tier": "SCRIPTED_SIMULATION",
       "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"
@@ -432,13 +432,21 @@
       "status": "REJECTED"
     },
     {
+      "name": "native_check_challenge_amount",
+      "status": "REJECTED"
+    },
+    {
+      "name": "native_release_challenge_recipient",
+      "status": "REJECTED"
+    },
+    {
       "name": "compensation_receipt_reference",
       "status": "REJECTED"
     }
   ],
   "source_sha256": {
     "protocols/mpp/mpp009-meeting-service.mjs": "e399aee28a7b4e5077da671980cfcaca7dd8a6da98b314ed560a4924815072c9",
-    "protocols/mpp/mpp009-verify-meeting-service.mjs": "79c31e4ee9e6fd06ee9578a16c3958b268c56ef645a3c502d6c133cfd05da06b",
+    "protocols/mpp/mpp009-verify-meeting-service.mjs": "fa99fa38297d6c272a5e705ac1bb8e088f68f5da345a32a0ca2008f8f48c0755",
     "protocols/mpp/mpp009-meeting-local.mjs": "8aeeb6c3edac16a4f85422341b4453fc63efcbfe718709588824c2410d17c06a",
     "protocols/mpp/mpp009-verify-meeting-evidence.mjs": "32a4ef662825e5ad9653ed76a48f7aee345ebc94e40c2f03bf87057203d6c595",
     "protocols/mpp/package-lock.json": "ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad",
@@ -447,6 +455,24 @@
     "src/agent_economic_trust/mpp009_orbit.py": "e139924e043f7fa77c07598979ed87f6efc834ef30de3c783908fc69f46f782c",
     "src/agent_economic_trust/mpp009_native_service.py": "838c99a67cb671bd2a84c58a49164482c3ae6da0701fc2bb6e632997a0d2c493",
     "src/agent_economic_trust/mpp009_task.py": "8e3aa711c2795e9e34f8e317b5994051973d754784166dbdf239b1a003df6bf8",
-    "scripts/run_mpp009_offline_native.py": "5fa5c621e3d08bfc1e4ccdd4f91ad7e653cf75475d2c03d981067c4d194a7c5c"
+    "scripts/run_mpp009_offline_native.py": "2c391885fa1d99b9725441b1b0d1da3af1d583e7ba250720988593cda9e8b67f"
+  },
+  "read_only_reseal": {
+    "prior_summary_sha256": "a028b0c5da1337cefeb6b181b2a566c032e0bc19ce9e09794f5bf6da4bff41f6",
+    "prior_source_sha256": {
+      "protocols/mpp/mpp009-meeting-service.mjs": "e399aee28a7b4e5077da671980cfcaca7dd8a6da98b314ed560a4924815072c9",
+      "protocols/mpp/mpp009-verify-meeting-service.mjs": "79c31e4ee9e6fd06ee9578a16c3958b268c56ef645a3c502d6c133cfd05da06b",
+      "protocols/mpp/mpp009-meeting-local.mjs": "8aeeb6c3edac16a4f85422341b4453fc63efcbfe718709588824c2410d17c06a",
+      "protocols/mpp/mpp009-verify-meeting-evidence.mjs": "32a4ef662825e5ad9653ed76a48f7aee345ebc94e40c2f03bf87057203d6c595",
+      "protocols/mpp/package-lock.json": "ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad",
+      "src/agent_economic_trust/mpp009_plan.py": "ae3927d39893501c26246e8d6ed219135f23689d7ad53f7cd2fe4eb0b52d571d",
+      "src/agent_economic_trust/mpp009_market.py": "dc32cd7f18b0444910a88e7e5732c572f5b68941776b378932d24fff30abc035",
+      "src/agent_economic_trust/mpp009_orbit.py": "e139924e043f7fa77c07598979ed87f6efc834ef30de3c783908fc69f46f782c",
+      "src/agent_economic_trust/mpp009_native_service.py": "838c99a67cb671bd2a84c58a49164482c3ae6da0701fc2bb6e632997a0d2c493",
+      "src/agent_economic_trust/mpp009_task.py": "8e3aa711c2795e9e34f8e317b5994051973d754784166dbdf239b1a003df6bf8",
+      "scripts/run_mpp009_offline_native.py": "5fa5c621e3d08bfc1e4ccdd4f91ad7e653cf75475d2c03d981067c4d194a7c5c"
+    },
+    "native_transactions_created": 0,
+    "reason": "independent 402 challenge verification and portable compensation paths"
   }
 }

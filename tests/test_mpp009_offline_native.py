@@ -2,18 +2,68 @@
 from __future__ import annotations
 
 import json
+from hashlib import sha256
 from pathlib import Path
-from types import SimpleNamespace
+import socket
+import subprocess
 import tempfile
 import unittest
+from types import SimpleNamespace
+from urllib.parse import urlsplit
 
 from scripts.run_mpp009_offline_native import (
-    controls, scripted_model, verify_offline_report,
+    ROOT, SOURCE_FILES, controls, scripted_model, verify_offline_report,
 )
 from agent_economic_trust.mpp009_plan import MAX_INPUT_BYTES
 
 
 class ScriptedNativeControlsTests(unittest.TestCase):
+    def test_native_verifier_rejects_tampered_402_terms(self):
+        """Saved 402 terms must match the independently verified native debit."""
+        root = Path(__file__).resolve().parents[1]
+        directory = root / ("artifacts/prospective/mpp009-scripted-native-001/"
+                            "good-2000-bonus0-sol-sonnet-checked")
+        check_path = directory / "check-evidence.json"
+        release_path = directory / "release-evidence.json"
+        if not check_path.is_file() or not release_path.is_file():
+            self.skipTest("saved MPP009 native controls are unavailable")
+        endpoint = urlsplit(json.loads(check_path.read_text())["rpc_url"])
+        try:
+            with socket.create_connection((endpoint.hostname, endpoint.port), timeout=1):
+                pass
+        except OSError:
+            self.skipTest("isolated MPP009 historical local chain is unavailable")
+        verifier = root / "protocols/mpp/mpp009-verify-meeting-service.mjs"
+
+        def run(path):
+            return subprocess.run(["node", str(verifier), str(path)], cwd=root,
+                capture_output=True, text=True, timeout=30, check=False)
+
+        for operation, original in (("check", check_path), ("release", release_path)):
+            self.assertEqual(run(original).returncode, 0, operation)
+            saved = json.loads(original.read_text())
+            mutations = [(("intent",), "session"),
+                         (("method",), "other"),
+                         (("request", "amount"), str(int(saved["amount_atomic"]) + 1)),
+                         (("request", "currency"), "0x" + "0" * 40),
+                         (("request", "recipient"), saved["accounts"]["treasury"]),
+                         (("request", "methodDetails", "chainId"), 1)]
+            with tempfile.TemporaryDirectory(prefix="mpp009-challenge-tamper-") as temporary:
+                for number, (keys, wrong) in enumerate(mutations):
+                    with self.subTest(operation=operation, field=".".join(keys)):
+                        corrupted = json.loads(original.read_text())
+                        target = next(event["challenge"] for event in corrupted["events"]
+                                      if event["status"] == 402)
+                        for key in keys[:-1]:
+                            target = target[key]
+                        self.assertNotEqual(wrong, target[keys[-1]])
+                        target[keys[-1]] = wrong
+                        path = Path(temporary) / f"{operation}-{number}.json"
+                        path.write_text(json.dumps(corrupted))
+                        result = run(path)
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn("AssertionError", result.stderr)
+
     def test_checked_matrix_and_extra_control_identity(self):
         cases = controls()
         self.assertEqual(len(cases), 9)
@@ -75,6 +125,30 @@ class ScriptedNativeControlsTests(unittest.TestCase):
             report.write_text(json.dumps(payload))
             with self.assertRaisesRegex(ValueError, "incomplete or exceeds"):
                 verify_offline_report(report)
+
+    def test_report_binds_portable_compensation_paths(self):
+        """A moved archive may use relative row paths; absolute paths cannot pass."""
+        with tempfile.TemporaryDirectory(prefix="mpp009-portable-report-") as temporary:
+            report = Path(temporary) / "summary.json"
+            rows = [{"label": case.label,
+                     "compensation_evidence": f"{case.label}/compensation-evidence.json"}
+                    for case in controls()]
+            summary = {"status": "PASS", "remote_model_calls": 0,
+                       "model_execution_tier": "SCRIPTED_SIMULATION",
+                       "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL",
+                       "max_serialized_input_bytes": 1, "rows": rows,
+                       "source_sha256": {name: sha256((ROOT / name).read_bytes()).hexdigest()
+                                         for name in SOURCE_FILES}}
+            report.write_text(json.dumps(summary))
+            with self.assertRaisesRegex(ValueError, "archive absent or changed"):
+                verify_offline_report(report)
+            for wrong in (str(report.parent / rows[0]["compensation_evidence"]),
+                          "../other-control/compensation-evidence.json"):
+                with self.subTest(path=wrong):
+                    summary["rows"][0]["compensation_evidence"] = wrong
+                    report.write_text(json.dumps(summary))
+                    with self.assertRaisesRegex(ValueError, "incomplete or exceeds"):
+                        verify_offline_report(report)
 
 
 if __name__ == "__main__":
