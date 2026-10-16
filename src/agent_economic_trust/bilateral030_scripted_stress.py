@@ -32,9 +32,8 @@ from .bilateral030_mock import (
 from .bilateral030_native import Bilateral030NativeBridge
 from .bilateral030_native_verifier import verify_file as verify_native_file
 from .bilateral030_plan import (
-    ADVERSARIAL_AUDITOR_STRESS, CHANNEL, CONDITIONS, GOOD_ABSENT_ANCHOR,
-    GOOD_FUNDED_ANCHOR, HIGH_RISK, NO_ACCEPT_BONUS, NO_CONTACT,
-    NO_PROVIDER_PROMPT, PROMPTED, ROWS, Bilateral030Row, canonical,
+    ADVERSARIAL_AUDITOR_STRESS, CHANNEL, CONDITIONS, NO_ACCEPT_BONUS,
+    PROMPTED, ROWS, SOL, Bilateral030Row, canonical,
     make_schedule, validate_rows,
 )
 from .bilateral030_task import bilateral030_orbit, configured_role_models, funded_prefix
@@ -213,7 +212,8 @@ def run_script(script: Script, output_dir: Path) -> dict[str, Any]:
               "pre-view funding attestation differs from this row")
         _save(output_dir / "pre-view-funding-replay.json", funding_replay)
         task = bilateral030_orbit(row, public_funding=prefix, bridge=bridge,
-                                 transaction_tier="NATIVE_LOCAL_PROTOCOL")
+                                 transaction_tier="NATIVE_LOCAL_PROTOCOL",
+                                 funding_archive_path=funding_path)
         _mock_routes_and_process_safe(task)
         _guard()
         with patch("orbit.agents.topologies.get_model", side_effect=exact_mock_route):
@@ -233,11 +233,25 @@ def run_script(script: Script, output_dir: Path) -> dict[str, Any]:
         _need(sample.metadata["bilateral030"]["scientific_result_row"] is False
               and calls == {"provider": 2, "auditor": len(auditor_actions)},
               "simulation tier or scripted model activation count differs")
+        attestation = json.loads(str(sample.input)).get("funding_attestation")
+        _need(type(attestation) is dict
+              and attestation.get("status") == "FUNDING_LIVE_CONFIRMED"
+              and attestation.get("archive_sha256") == funding_replay["archive_sha256"]
+              and attestation.get("public_prefix_sha256") ==
+              funding_replay["public_prefix_sha256"]
+              and attestation.get("job_funding_receipt_sha256") ==
+              funding_replay["job_funding_receipt_sha256"]
+              and attestation.get("bonus_funding_receipt_sha256") ==
+              funding_replay["bonus_funding_receipt_sha256"],
+              "task public funding attestation differs from independent verifier")
         logged_inputs = [event.input for event in sample.events if event.event == "model"]
         _need(len(logged_inputs) == len(inputs)
               and all(_messages(observed) == _messages(captured)
                       for observed, (_, captured) in zip(logged_inputs, inputs, strict=True)),
               "saved Inspect model inputs differ from captured mock call inputs")
+        _need(all(json.loads(messages[1].text).get("funding_attestation") == attestation
+                  for messages in logged_inputs),
+              "both model roles did not receive exact independent funding attestation")
         score = sample.scores["bilateral030_score"].metadata
         _need(score["model_behavior_tier"] == "SCRIPTED_SIMULATION"
               and score["transaction_tier"] == "NATIVE_LOCAL_PROTOCOL"
@@ -251,7 +265,8 @@ def run_script(script: Script, output_dir: Path) -> dict[str, Any]:
                             "sequence": 1, "content": script.note}]
                           if row.contact == CHANNEL else [])
         _need(inbox["provider_inbox"] == expected_inbox
-              and inbox["funding_claim"] == prefix,
+              and inbox["funding_claim"] == prefix
+              and inbox["funding_attestation"] == attestation,
               "masked note or common public funding proof differs")
         provider_inputs = [messages for role, messages in inputs if role == "provider"]
         auditor_inputs = [messages for role, messages in inputs if role == "auditor"]
@@ -438,7 +453,7 @@ def run_all(root: Path) -> dict[str, Any]:
         "planned_rows": ROWS, "completed_rows": len(completed),
         "condition_counts": dict(Counter(item["group"] for item in completed)),
         "direction_counts": dict(Counter(
-            "sol_provider_sonnet_auditor" if item["assigned_model_ids_unexecuted"][0].endswith("sol")
+            "sol_provider_sonnet_auditor" if item["assigned_model_ids_unexecuted"][0] == SOL
             else "sonnet_provider_sol_auditor" for item in completed)),
         "funding_live_confirmed_rows": sum(
             item["funding_pre_view_live_confirmed_not_model_facing"] for item in completed),
