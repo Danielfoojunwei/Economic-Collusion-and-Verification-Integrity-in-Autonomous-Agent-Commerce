@@ -422,8 +422,11 @@ def run_probe(row: Bilateral030Row, decision: str, output_dir: Path) -> dict[str
         "native_evidence": str(native_path.resolve()),
         "native_evidence_sha256": sha256(native_path.read_bytes()).hexdigest(),
         "funding_archive": str(funding_archive.resolve()),
+        "funding_archive_file_sha256": sha256(funding_archive.read_bytes()).hexdigest(),
         "funding_live_verification": str(live_path.resolve()),
+        "funding_live_verification_sha256": sha256(live_path.read_bytes()).hexdigest(),
         "funding_attestation": str(proof_path.resolve()),
+        "funding_attestation_file_sha256": sha256(proof_path.read_bytes()).hexdigest(),
         "native_replay": str((output_dir / "native-replay.json").resolve()),
         "native_replay_sha256": sha256(
             (output_dir / "native-replay.json").read_bytes()).hexdigest(),
