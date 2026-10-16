@@ -1,5 +1,8 @@
 # BILATERAL030 30-row scripted infrastructure rehearsal
 
+The [independent review](../../../docs/BILATERAL030_STRESS030_INDEPENDENT_REVIEW.md)
+reran read-only funding, native and Inspect verification across all 30 rows.
+
 `stress-index.json` records **30/30 complete scripted simulations** over seven
 predeclared arm slots (12/4/4/4/2/2/2) and 15 assigned slots in each proposed
 Sol/Sonnet model direction. The assigned hosted model IDs were **never called**:
