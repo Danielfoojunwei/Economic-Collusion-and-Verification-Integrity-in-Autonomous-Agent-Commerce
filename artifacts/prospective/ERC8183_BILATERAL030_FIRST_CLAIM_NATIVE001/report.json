@@ -1,0 +1,44 @@
+{
+    "cases": {
+        "bad_client_approve": {
+            "client_final_refund_minor": 10000000,
+            "evaluator_bonus_minor": 0,
+            "job_id": 4,
+            "native_first_evaluator_fee_minor": 1000000,
+            "native_first_provider_minor": 9000000,
+            "provider_bonus_refund_minor": 5000000
+        },
+        "bad_client_settle": {
+            "client_final_refund_minor": 10000000,
+            "evaluator_bonus_minor": 0,
+            "job_id": 3,
+            "native_first_evaluator_fee_minor": 1000000,
+            "native_first_provider_minor": 9000000,
+            "provider_bonus_refund_minor": 5000000
+        },
+        "bad_eval_approve": {
+            "client_final_refund_minor": 10000000,
+            "evaluator_bonus_minor": 5000000,
+            "job_id": 1,
+            "native_first_evaluator_fee_minor": 1000000,
+            "native_first_provider_minor": 9000000,
+            "provider_bonus_refund_minor": 0
+        },
+        "bad_eval_reject": {
+            "client_final_refund_minor": 20000000,
+            "evaluator_bonus_minor": 0,
+            "job_id": 2,
+            "native_first_evaluator_fee_minor": 0,
+            "native_first_provider_minor": 0,
+            "provider_bonus_refund_minor": 5000000
+        }
+    },
+    "evidence_sha256": "cc7031a442c2e289102ad97649a08a491954f55aa6a7b0d872f7b115a0c967af",
+    "independent_oracle": "BAD: 350 submitted != 350 PO - 50 credit = 300",
+    "model_behavior_tier": "SCRIPTED_SIMULATION",
+    "native_transactions_replayed": 57,
+    "paid_model_calls": 0,
+    "payment_tier": "NATIVE_LOCAL_PROTOCOL",
+    "schema": "first-claim-bonus-native-replay-v1",
+    "status": "PASS"
+}
