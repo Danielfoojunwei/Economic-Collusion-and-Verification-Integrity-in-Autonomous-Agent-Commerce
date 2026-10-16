@@ -1,8 +1,10 @@
 # Prospective BILATERAL030 invoice study — source and execution gates
 
-**Status, 2026-10-16:** prospective design, mock transport, and a source-only
-local native bridge. Strictly mock-routed ORBIT/Inspect smokes and scripted
-Anvil controls are plumbing checks, not study rows. There is no frozen seed,
+**Status, 2026-10-16:** prospective design with a guarded
+[30-row scripted ORBIT/Inspect and local ERC-8183 rehearsal](BILATERAL030_STRESS030_INDEPENDENT_REVIEW.md).
+Every row's funding, model-input proof, native receipts and Inspect trace
+replayed independently. The mock agents' choices were authored by the harness,
+so these are plumbing checks, not study rows. There is no frozen live seed,
 assignment, hosted model call, or behavioral result for this study. The existing USD 50
 ledger is blocked with USD 0 available. This
 document does not authorize a paid run. It follows the separately frozen
@@ -131,10 +133,11 @@ after early APPROVE followed by final REJECT and **cannot** implement this
 treatment. The official job's `settledAmount` also rises under client settlement,
 so a side escrow must not release based on that field alone. A separate
 [first-claim application hook and scripted same-job native controls](BILATERAL030_FIRST_CLAIM_BONUS_NATIVE_CONTROL.md)
-now pass independent raw receipt replay. A source-only per-row local native
-bridge and reverse-role wiring have passed their own scripted tests. Independent
-per-row native receipt replay passes scripted controls; the full model-to-payment
-evidence join remains HOLD. These controls are not agent results.
+now pass independent raw receipt replay. A local per-row native bridge and
+reverse-role wiring passed the scripted 30-row rehearsal. Independent funding,
+native receipt and mock Inspect input replay passed every row; the hosted
+model-to-payment evidence join remains HOLD. These controls are not live-agent
+results.
 
 Reuse ORBIT/Inspect with separate provider and auditor contexts. The provider
 must choose its claim and message; never prefill the desired message in
@@ -166,8 +169,9 @@ labeled as such. The earlier first approval remains the agent decision. A
 zero-model ORBIT transport smoke test must rewrite **both** role model routes
 to `mockllm/`, remove external opt-in/key access, and demonstrate the entire
 claim → offer/post → exposure → check → early verdict sequence before any
-hosted request. The compact mock probe and STOPPED evidence collector are
-source-only; the paid runner is hard closed pending the gates below.
+hosted request. The attested mock probe passed these local checks; the
+STOPPED evidence collector remains source-only and the paid runner is hard
+closed pending the gates below.
 
 ## Budget, freeze, and stop rules
 
@@ -191,9 +195,9 @@ technical role validation and a new assignment chosen **before** observing
 collusion outcomes. Do not substitute it inside this Sol/Sonnet block or pool
 their outcomes. Neither quote releases the shared ledger HOLD.
 
-Before a one-time assignment freeze: finish compact ORBIT/native source and
-negative tests; implement and independently review the pre-view funding
-attestation in both contact arms; independently review both role routes and every boundary;
+Before a one-time assignment freeze: carry the completed mock ORBIT/native
+and pre-view attestation controls through an independently reviewed hosted
+runner in both contact arms; independently review both real role routes and every boundary;
 validate 3,072 tokens suffice for the requested reasoning and tools; fetch a
 fresh public catalog; reconcile attributable billing and all prerequisite
 holds; reserve the **entire** 30-row worst case plus margin in the canonical
