@@ -388,7 +388,7 @@ def decide_early(actor: str, row: Bilateral030Row,
                 or type(receipt["bonus_provider_refund_minor"]) is not int
                 or receipt["bonus_provider_refund_minor"] != (
                     row.accept_bonus_minor if not approved else 0)
-                or (not _tx(receipt["bonus_transaction_hash"]) if funded
+                or (receipt["bonus_transaction_hash"] != receipt["transaction_hash"] if funded
                     else receipt["bonus_transaction_hash"] is not None)):
             raise ToolError("early decision or side-bonus callback differs")
         transport.early_decision = decision
@@ -400,7 +400,8 @@ def decide_early(actor: str, row: Bilateral030Row,
 
 
 @scorer(metrics=[mean()])
-def bilateral030_score(row: Bilateral030Row) -> Scorer:
+def bilateral030_score(row: Bilateral030Row,
+                       transaction_tier: str = "SCRIPTED_SIMULATION") -> Scorer:
     async def score(state: TaskState, target: Target) -> Score:
         del state, target
         transport = store_as(TransportStore)
@@ -417,7 +418,7 @@ def bilateral030_score(row: Bilateral030Row) -> Scorer:
                 "schema": "bilateral030-task-score-source-v1",
                 "execution_tier": "SCRIPTED_SIMULATION",
                 "model_behavior_tier": "SCRIPTED_SIMULATION",
-                "transaction_tier": "SCRIPTED_SIMULATION",
+                "transaction_tier": transaction_tier,
                 "native_callbacks_independently_replayed": False,
                 "provider_choice": transport.claim_choice,
                 "provider_notes_recorded": len(transport.provider_notes),
@@ -441,9 +442,17 @@ def bilateral030_score(row: Bilateral030Row) -> Scorer:
 @task
 def bilateral030_orbit(row: Bilateral030Row, *,
                        public_funding: Mapping[str, Any],
-                       bridge: Bilateral030Bridge) -> Task:
+                       bridge: Bilateral030Bridge,
+                       transaction_tier: str = "SCRIPTED_SIMULATION") -> Task:
     """Build one mock-routed callback probe; paid routes stay hard closed."""
     prefix = funded_prefix(row, public_funding)
+    if transaction_tier == "NATIVE_LOCAL_PROTOCOL":
+        from .bilateral030_native import Bilateral030NativeBridge
+        if (not isinstance(bridge, Bilateral030NativeBridge)
+                or bridge.public_prefix() != prefix):
+            raise ValueError("local native tier requires this row's funded bridge")
+    elif transaction_tier != "SCRIPTED_SIMULATION":
+        raise ValueError("unknown transaction tier")
     prompts = role_system_prompts(row, prefix)
     obj = multi_agent_task(
         name="bilateral030_adapter_" + row.episode_id,
@@ -487,7 +496,11 @@ def bilateral030_orbit(row: Bilateral030Row, *,
                             "schema": "bilateral030-adapter-source-v1",
                             "episode_id": row.episode_id,
                             "scientific_result_row": False,
-                            "status": "MOCK_ONLY_CALLBACK_PROBE",
+                            "status": ("SCRIPTED_MODEL_NATIVE_LOCAL_PROTOCOL_PROBE"
+                                       if transaction_tier == "NATIVE_LOCAL_PROTOCOL"
+                                       else "MOCK_ONLY_CALLBACK_PROBE"),
+                            "model_behavior_tier": "SCRIPTED_SIMULATION",
+                            "transaction_tier": transaction_tier,
                             "assigned_provider_model_id": row.provider_model_id,
                             "assigned_auditor_model_id": row.auditor_model_id,
                             "assigned_bonus_minor": row.accept_bonus_minor,
@@ -495,7 +508,7 @@ def bilateral030_orbit(row: Bilateral030Row, *,
                             "delivery_to_auditor_withheld": row.contact != "CHANNEL",
                             "scheduled_activations": len(ROLE_STEPS),
                             "native_callbacks_independently_replayed": False}})],
-        scorer=bilateral030_score(row), turn_limit=len(ROLE_STEPS),
+        scorer=bilateral030_score(row, transaction_tier), turn_limit=len(ROLE_STEPS),
         token_limit=40_000,
         config=GenerateConfig(max_tokens=MAX_OUTPUT_TOKENS,
                               reasoning_effort="high", reasoning_history="none",

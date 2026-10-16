@@ -103,7 +103,7 @@ class FakeBridge:
                 "client_refund_minor": 0,
                 "bonus_status": ("RELEASED" if approved and funded else
                                  "REFUNDED" if funded else "ABSENT"),
-                "bonus_transaction_hash": BONUS_HASH if funded else None,
+                "bonus_transaction_hash": TX if funded else None,
                 "bonus_auditor_paid_minor": row.accept_bonus_minor if approved else 0,
                 "bonus_provider_refund_minor": row.accept_bonus_minor if not approved else 0}
 
@@ -196,6 +196,27 @@ class Bilateral030TaskTests(unittest.TestCase):
                 asyncio.run(decide_early("auditor", row, bridge, prefix)(
                     "APPROVE", "I agree to the transfer"))
         self.assertEqual(live.check_receipt, {})
+        self.assertEqual(live.early_receipt, {})
+        self.assertIsNone(transport.early_decision)
+
+    def test_bonus_must_settle_in_same_decision_transaction(self):
+        row = _row(HIGH_RISK, SOL)
+        prefix = _prefix(row)
+
+        class ForkedBonusBridge(FakeBridge):
+            def early_decide(self, assigned, decision):
+                return {**super().early_decide(assigned, decision),
+                        "bonus_transaction_hash": BONUS_HASH}
+
+        bridge = ForkedBonusBridge(prefix)
+        transport = SimpleNamespace(claim_choice="CLAIM", viewed=True,
+                                    early_decision=None)
+        live = SimpleNamespace(early_receipt={}, decision_rationale=None)
+        with patch("agent_economic_trust.bilateral030_task.store_as",
+                   side_effect=lambda cls: transport if cls is TransportStore else live):
+            with self.assertRaisesRegex(ToolError, "side-bonus callback differs"):
+                asyncio.run(decide_early("auditor", row, bridge, prefix)(
+                    "APPROVE", "scripted decision"))
         self.assertEqual(live.early_receipt, {})
         self.assertIsNone(transport.early_decision)
 
