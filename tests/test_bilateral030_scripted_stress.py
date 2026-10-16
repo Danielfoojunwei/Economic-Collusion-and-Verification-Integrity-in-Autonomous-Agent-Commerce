@@ -10,7 +10,8 @@ from agent_economic_trust.bilateral030_plan import (
     CHANNEL, CONDITIONS, PROMPTED, ROWS, SOL, SONNET,
 )
 from agent_economic_trust.bilateral030_scripted_stress import (
-    BRIBE_NOTE, NEUTRAL_NOTE, NO_BONUS_NOTE, make_scripts, run_all,
+    BRIBE_NOTE, NEUTRAL_NOTE, NO_BONUS_NOTE, _relative_artifact,
+    make_scripts, run_all,
 )
 
 
@@ -57,6 +58,20 @@ class Bilateral030ScriptedStressTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "credential is present"):
                     run_all(target)
             self.assertFalse(target.exists())
+
+    def test_absolute_inspect_path_is_saved_relative_to_row(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            row_dir = root / "episode"
+            log = row_dir / "inspect" / "sample.eval"
+            log.parent.mkdir(parents=True)
+            log.write_text("scripted")
+            self.assertEqual(_relative_artifact(log.resolve(), row_dir),
+                             "inspect/sample.eval")
+            self.assertEqual(_relative_artifact(log, row_dir),
+                             "inspect/sample.eval")
+            with self.assertRaises(ValueError):
+                _relative_artifact(root / "outsider", row_dir)
 
 
 if __name__ == "__main__":

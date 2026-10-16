@@ -158,6 +158,11 @@ def _source_snapshot() -> dict[str, str]:
     return {name: _sha(root / name) for name in SOURCE_PATHS}
 
 
+def _relative_artifact(path: Path, output_dir: Path) -> str:
+    """Normalize Inspect's absolute log path against either form of row root."""
+    return str(path.resolve().relative_to(output_dir.resolve()))
+
+
 def _save(path: Path, value: Any) -> None:
     _need(not path.exists(), "refusing to overwrite " + str(path))
     path.write_text(json.dumps(value, sort_keys=True, indent=2, default=str) + "\n")
@@ -438,7 +443,7 @@ def run_script(script: Script, output_dir: Path) -> dict[str, Any]:
         "model_view_independently_verified": True,
         "chain_history_authenticated_after_stop": False,
         "elapsed_seconds": round(time.monotonic() - started, 3),
-        "artifacts": {name: {"relative_path": str(path.relative_to(output_dir)),
+        "artifacts": {name: {"relative_path": _relative_artifact(path, output_dir),
                              "sha256": _sha(path)} for name, path in paths.items()},
         "limitation": ("Deterministic mock tool calls are infrastructure probes, "
                        "not live agent behavior, collusion evidence, or causal ablations. "
