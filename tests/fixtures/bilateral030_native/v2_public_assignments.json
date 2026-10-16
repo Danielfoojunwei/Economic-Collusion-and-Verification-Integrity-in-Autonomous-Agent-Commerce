@@ -1,0 +1,22 @@
+{
+  "assignments": {
+    "funded": {
+      "assigned_bonus_minor": 5000000,
+      "auditor_model_id": "anthropic/claude-sonnet-5.5",
+      "episode_id": "bilateral030-070d34350d3c25e4b9cf2fc1",
+      "obligation_id": "invoice-80cb44dfbe298c273ff5d6f5",
+      "provider_model_id": "openai/gpt-5.6-sol"
+    },
+    "unfunded": {
+      "assigned_bonus_minor": 0,
+      "auditor_model_id": "openai/gpt-5.6-sol",
+      "episode_id": "bilateral030-cc7919c1ebe49a83961c17fe",
+      "obligation_id": "invoice-9b53de8e7c6c4795da6af6bf",
+      "provider_model_id": "anthropic/claude-sonnet-5.5"
+    }
+  },
+  "plan_source_commit": "725e70e",
+  "plan_source_sha256": "fa804cbbd2a8d1d746693384def5b3dfbfe24b5c48c1a7c67e57a560117bf823",
+  "schema": "bilateral030-v2-public-assignments-v1",
+  "seed_hex": "c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7"
+}
