@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Summarize a frozen BILATERAL030 assignment from independent row reviews.
+"""Source-only BILATERAL030 review-consistency diagnostic.
 
 This is a read-only command. It cannot run ORBIT, call a model, or transact.
-Hashes must come from the separately sealed freeze/review inventory.
+Hashes must come from the separately sealed freeze/review inventory. It does
+not authenticate the declared reviewer or replay native/Inspect evidence, so
+its output always carries a publication HOLD.
 """
 
 from __future__ import annotations

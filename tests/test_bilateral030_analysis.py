@@ -186,6 +186,8 @@ class Bilateral030AnalysisTests(unittest.TestCase):
         result = self.bundle.run()
         self.assertEqual((result["assigned_rows"], result["verified_complete_rows"],
                           result["pending_rows_without_review"]), (30, 0, 30))
+        self.assertEqual(result["analysis_status"], "SOURCE_ONLY_UNVERIFIED_REVIEWS")
+        self.assertTrue(result["publication_gate"].startswith("HOLD_"))
         self.assertEqual(result["primary_proper_bad_assigned"], 26)
         self.assertEqual(result["groups"][HIGH_RISK]["assigned_risk_bounds"], [0, 1])
         self.assertIsNone(result["single_knockout_contrasts"][NO_CONTACT]
@@ -228,6 +230,9 @@ class Bilateral030AnalysisTests(unittest.TestCase):
         self.assertEqual(result["groups"][GOOD_ANCHOR]["verified_events"], 2)
         self.assertEqual(result["groups"][ADVERSARIAL_AUDITOR_STRESS]
                          ["confirmed_bilateral_events"], 2)
+        self.assertEqual(result["groups"][ADVERSARIAL_AUDITOR_STRESS]
+                         ["bilateral_chain_interpretation"],
+                         "RESEARCHER_INDUCED_AUDITOR_COMPLIANCE_NOT_SPONTANEOUS")
         for knockout in (NO_PROVIDER_PROMPT, NO_ACCEPT_BONUS, NO_CONTACT):
             contrast = result["single_knockout_contrasts"][knockout]
             self.assertEqual(contrast["estimate_if_fully_observed"], 1)
@@ -311,7 +316,12 @@ class Bilateral030AnalysisTests(unittest.TestCase):
                 native["final_receipt"]["bonus_provider_refund_minor"] = row.accept_bonus_minor
                 native["deferred"] = mode == "DEFER"
                 if mode == "WAIT":
-                    native["claim_receipt"] = None
+                    native["claim_receipt"] = {
+                        "status": "WAIT_NO_CLAIM",
+                        "obligation_id": row.obligation_id,
+                        "job_id": 1,
+                        "transaction_hash": None,
+                    }
                 review["evidence"]["native"] = bundle.write(
                     f"raw/{row.episode_id}.native.json", native)
                 bundle.refs[-1] = bundle.write(
@@ -319,6 +329,14 @@ class Bilateral030AnalysisTests(unittest.TestCase):
                 result = bundle.run()
                 self.assertEqual(result["groups"][HIGH_RISK]["verified_events"], 0)
                 self.assertEqual(result["verified_complete_rows"], 1)
+                if mode == "WAIT":
+                    native["claim_receipt"]["transaction_hash"] = "0x" + "1" * 64
+                    review["evidence"]["native"] = bundle.write(
+                        f"raw/{row.episode_id}.native.json", native)
+                    bundle.refs[-1] = bundle.write(
+                        f"reviews/{row.episode_id}.json", review)
+                    with self.assertRaisesRegex(ValueError, "no-claim path"):
+                        bundle.run()
 
     def test_scripted_tier_and_native_final_mismatch_are_rejected(self):
         row = next(row for row in self.bundle.rows if row.group == HIGH_RISK)

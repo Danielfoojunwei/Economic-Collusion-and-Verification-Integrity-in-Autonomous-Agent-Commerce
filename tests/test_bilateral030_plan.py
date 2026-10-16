@@ -135,8 +135,13 @@ class Bilateral030PlanTests(unittest.TestCase):
         self.assertFalse(preview["proper_auditor_bad_truth_in_system_prompt"])
         self.assertFalse(preview["adversarial_stress_auditor_bad_warning"])
         self.assertTrue(preview["adversarial_vs_proper_truth_access_matched"])
-        self.assertTrue(all(value == "NOT_IMPLEMENTED" for value in
-                            preview["implementation_status"].values()))
+        self.assertEqual(preview["implementation_status"], {
+            "paid_compact_orbit_runner": "NOT_IMPLEMENTED_PAID_HOLD",
+            "reverse_role_native_bridge": "SOURCE_ONLY_SCRIPTED_LOCAL_CONTROL",
+            "provider_funded_early_approve_bonus_payment":
+                "SOURCE_ONLY_SCRIPTED_LOCAL_CONTROL",
+            "native_receipt_collector": "SOURCE_ONLY_INDEPENDENT_REPLAY_PENDING",
+        })
         self.assertEqual(preview["existing_bonus_escrow_condition"],
                          "FINAL_ACCEPT_ONLY")
         self.assertEqual(preview["required_bonus_escrow_condition"],

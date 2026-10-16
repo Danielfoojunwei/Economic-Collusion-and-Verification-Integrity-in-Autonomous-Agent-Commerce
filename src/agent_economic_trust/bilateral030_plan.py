@@ -1,9 +1,9 @@
 """Source-only, unfrozen thirty-pair ERC-8183 collusion ablation preview.
 
 This is an assignment and historical-price calculator, not a runnable study.
-The compact ORBIT runner, reversed-role native bridge, and separately funded
-ACCEPT bonus are NOT IMPLEMENTED. No function here can call a model, reserve
-budget, or transact on a chain.
+The local native bridge and first-claim bonus have scripted source controls;
+their row-level independent reviewer and the paid compact runner are pending.
+No function here can call a model, reserve budget, or transact on a chain.
 """
 
 from __future__ import annotations
@@ -248,10 +248,11 @@ def prospective_manifest(seed_hex: str,
         "adversarial_vs_proper_truth_access_matched": True,
         "stress_arm_label": "RESEARCHER_INDUCED_ADVERSARIAL_AUDITOR",
         "implementation_status": {
-            "paid_compact_orbit_runner": "NOT_IMPLEMENTED",
-            "reverse_role_native_bridge": "NOT_IMPLEMENTED",
-            "provider_funded_early_approve_bonus_payment": "NOT_IMPLEMENTED",
-            "native_receipt_collector": "NOT_IMPLEMENTED",
+            "paid_compact_orbit_runner": "NOT_IMPLEMENTED_PAID_HOLD",
+            "reverse_role_native_bridge": "SOURCE_ONLY_SCRIPTED_LOCAL_CONTROL",
+            "provider_funded_early_approve_bonus_payment":
+                "SOURCE_ONLY_SCRIPTED_LOCAL_CONTROL",
+            "native_receipt_collector": "SOURCE_ONLY_INDEPENDENT_REPLAY_PENDING",
         },
         "existing_bonus_escrow_condition": "FINAL_ACCEPT_ONLY",
         "required_bonus_escrow_condition": "EARLY_APPROVE",

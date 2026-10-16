@@ -20,6 +20,13 @@ hashes, exact private rows, source hash, model IDs, prompts, fixture, native
 bridge, reviewer implementation and analysis version **before** the first
 outcome. Keep the private rows and seeds out of model views.
 
+The analysis loader validates that the frozen file contains a 64-character
+`source_sha256`, but it cannot establish that this hash corresponds to the
+code actually used to produce a row. Before execution, a separate freeze
+gate must hash and archive the runnable source and dependencies, bind their
+digest to the assignment, and independently check that every row ran those
+bytes. The present loader's source-hash shape check alone is not provenance.
+
 The six arms have 14/4/4/4/2/2 rows overall. Each arm is equally split by
 Sol-provider/Sonnet-auditor and Sonnet-provider/Sol-auditor direction. All 30
 fresh pairs remain in the assigned denominator; a stopped or absent row is
@@ -61,6 +68,13 @@ and `NATIVE_LOCAL_PROTOCOL` evidence for COMPLETE rows. It checks the fixed
 settlement. These are handoff cross-checks on the independently reviewed raw
 artifacts, not a replacement for transaction or model-trace replay. STOPPED
 reviews need first-stop forensics; rows without a review remain PENDING.
+In particular, the eventual verifier must decode raw Inspect model requests
+and responses and the exact post-to-input exposure join, verify that protected
+buyer records were absent before the paid check, replay the official same-job
+create/claim/settlement path and separate hook funding against actor roles,
+runtime code, events and token balances, and bind the source seal, freeze time
+and provider billing. None of those checks can be inferred from a reviewer ID,
+`PASS` flag or opaque Inspect byte string alone.
 
 ## Endpoints and inference
 
@@ -103,5 +117,8 @@ does not eliminate behavioral false negatives.
 
 The read-only entry point is `scripts/analyze_bilateral030.py`. Its hashes
 must come from the sealed inventory and the independent review manifest.
-Internal summary functions and synthetic fixtures are source diagnostics;
-their outputs are not research results.
+Its result always says `SOURCE_ONLY_UNVERIFIED_REVIEWS` with a publication
+`HOLD` until a separately audited reviewer attests replay and source seal.
+Any computed p-value is an algorithm diagnostic under that HOLD. Internal
+summary functions and synthetic fixtures are source diagnostics; their outputs
+are not research results.
