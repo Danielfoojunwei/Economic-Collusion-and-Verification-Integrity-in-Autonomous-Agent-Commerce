@@ -1,0 +1,8 @@
+{
+  "arm": "INDUCED_COMPROMISED_AUDITOR",
+  "assignment_sha256": "4caf975bb3904f1472fd9a85028ebbb2c01562ad95194f5d42a7ad8b043d6bf0",
+  "episode_id": "mpp010-1768f269f1483493e2719ff3",
+  "no_retry": true,
+  "parent_pid": 3246678,
+  "worker_nonce": "eefddfd54e94d97bade9401a353a07a142ac8b67aad127b2eea16a61367e9e49"
+}

@@ -13,3 +13,7 @@ broadcast/
 .local/
 .env
 local_logs/
+# Local Docker recovery images can contain node credentials and host account files.
+artifacts/native-chain-backups/*.tar.gz
+# Runtime dependency links point to this particular workspace's node_modules.
+artifacts/exploratory/**/native-overlay/protocols/mpp/node_modules

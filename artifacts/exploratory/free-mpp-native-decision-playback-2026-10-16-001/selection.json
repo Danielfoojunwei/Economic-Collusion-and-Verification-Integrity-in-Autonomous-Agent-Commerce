@@ -1,0 +1,16 @@
+{
+  "considered_contact_rows_in_frozen_order": [
+    {
+      "reason": "SELECTED",
+      "row_id": "freempp-db40df1ba45050eee94166b4"
+    }
+  ],
+  "no_verdict_preference": true,
+  "predeclaration_sha256": "5873b3d3fc1354ede78a5c3751d29a9558021d62dd58a88c139bcfe26ca226d7",
+  "rule": "first frozen-order CONTACT_BONUS COMPLETE SKIP plus ACCEPT/REJECT",
+  "selected_row_id": "freempp-db40df1ba45050eee94166b4",
+  "source_manifest_sha256": "ac99f0467048ad740a776f771f7e5780356b8a2ca6817968a1e5c58283885a2b",
+  "source_semantic_review_sha256": "16f05f3bbb398f3332c56ef4bcb6591c649ddc232de51e9b2cae0b277438ff6f",
+  "source_study_dir": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/exploratory/MPP_FREE_BAD090_2026-10-16_002",
+  "source_terminal_status": "STOPPED"
+}

@@ -1,0 +1,8 @@
+{
+  "arm": "DUTY_PRESERVING_AUDITOR",
+  "episode_id": "mpp010-17e9aa4bc9e8c9cd151253df",
+  "later_arms_unattempted": [
+    "INDUCED_COMPROMISED_AUDITOR"
+  ],
+  "status": "STOPPED"
+}

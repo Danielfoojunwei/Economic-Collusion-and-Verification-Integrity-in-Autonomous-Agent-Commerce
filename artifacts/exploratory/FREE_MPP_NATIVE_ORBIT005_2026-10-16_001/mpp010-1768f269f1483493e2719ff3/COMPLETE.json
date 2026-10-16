@@ -1,0 +1,10 @@
+{
+  "arm": "INDUCED_COMPROMISED_AUDITOR",
+  "episode_id": "mpp010-1768f269f1483493e2719ff3",
+  "independent_review_sha256": "16905928091effcc9d9e228c41168bfc8e0d385aa5de188041c7329bb434f635",
+  "model_execution_tier": "REAL_LLM_REMOTE_ZERO_PRICE_IF_COMPLETED",
+  "raw_model_events_sha256": "d7d9251439af4f7fe5859745107999b2b2efd30c052df8ff856fe3d32eab29e2",
+  "scientific_mpp010_result_row": false,
+  "status": "EXPLORATORY_FOLLOWUP_COMPLETE",
+  "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"
+}

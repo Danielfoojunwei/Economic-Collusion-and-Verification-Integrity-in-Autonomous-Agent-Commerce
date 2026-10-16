@@ -1,0 +1,170 @@
+// Independent native transfer and historical balance verifier; no signing.
+import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
+import { createClient, http, parseEventLogs } from 'viem'
+import { getTransactionReceipt, readContract } from 'viem/actions'
+import { Abis } from 'viem/tempo'
+import { ACCOUNTS, CHAIN_IDENTITY, FUNDER, RPC_URL, TOKEN,
+  verifyMpp010Chain } from './mpp010-chain-identity.mjs'
+const evidence = JSON.parse(await readFile(process.argv[2], 'utf8'))
+const canonical = value => JSON.stringify(value, (_k, item) => item && typeof item === 'object' && !Array.isArray(item) ? Object.fromEntries(Object.keys(item).sort().map(k => [k, item[k]])) : item)
+const digest = value => createHash('sha256').update(value).digest('hex')
+const endpoint = new URL(evidence.rpc_url)
+assert.equal(endpoint.protocol, 'http:'); assert.ok(['127.0.0.1', 'localhost', '[::1]'].includes(endpoint.hostname))
+assert.equal(evidence.rpc_url, RPC_URL)
+const rpc = createClient({ transport: http(endpoint.href, { retryCount: 0, timeout: 15000 }) })
+assert.deepEqual(await verifyMpp010Chain(rpc, evidence.rpc_url), CHAIN_IDENTITY)
+assert.deepEqual(evidence.chain_identity, CHAIN_IDENTITY)
+assert.equal(evidence.component, 'MPP010_MEETING_SERVICE')
+assert.equal(evidence.sdk, 'mppx@0.13.4')
+assert.equal(evidence.transaction_execution_tier, 'NATIVE_LOCAL_PROTOCOL')
+assert.equal(evidence.source_sha256, digest(await readFile(new URL('mpp010-meeting-service.mjs', import.meta.url))))
+assert.equal(evidence.package_lock_sha256, digest(await readFile(new URL('package-lock.json', import.meta.url))))
+assert.equal(evidence.request_sha256, digest(canonical(evidence.request)))
+const expected = ACCOUNTS
+assert.deepEqual(evidence.accounts, expected)
+assert.equal(evidence.token, TOKEN)
+const saved = evidence.operation === 'prepare' ? evidence.reduction : evidence.transaction
+const receipt = await getTransactionReceipt(rpc, { hash: saved.hash })
+assert.equal(receipt.status, 'success')
+assert.equal(String(receipt.blockNumber), saved.blockNumber)
+assert.deepEqual(receipt.logs.map(({ address, logIndex, topics, data }) => ({ address, logIndex, topics, data })), saved.logs)
+const balanceAt = (address, blockNumber) => readContract(rpc, { abi: Abis.tip20, address: evidence.token, functionName: 'balanceOf', args: [address], blockNumber })
+if (evidence.operation === 'prepare') {
+  const funder = FUNDER
+  assert.equal(evidence.funding_mode, 'ISOLATED_BARE_LOCALNET_GENESIS_TEST_ACCOUNT')
+  assert.equal(evidence.funding_source, funder)
+  assert.equal(evidence.funding_policy, 'PERSISTENT_ISOLATED_CHAIN_FLOOR_TOPUP')
+  assert.deepEqual(evidence.funding_floors_atomic,
+    { provider: '100000', oracle: '20000', client: '200000' })
+  const previous = evidence.balances_before_funding
+  const shortfall = (role, floor) => BigInt(previous[role]) < floor ?
+    floor - BigInt(previous[role]) : 0n
+  const expectedFunding = [['provider', shortfall('provider', 100000n)],
+    ['auditor', BigInt(previous.auditor) < 20000n ? 20000n - BigInt(previous.auditor) : 1000n],
+    ['oracle', shortfall('oracle', 20000n)], ['client', shortfall('client', 200000n)]]
+    .filter(([_role, amount]) => amount > 0n)
+  assert.ok(expectedFunding.some(([role]) => role === 'auditor'))
+  assert.equal(evidence.funding.length, expectedFunding.length)
+  const firstFundingBlock = BigInt(evidence.funding[0].transaction.blockNumber)
+  for (const role of ['provider', 'auditor', 'oracle', 'client'])
+    assert.equal(await balanceAt(expected[role], firstFundingBlock - 1n),
+      BigInt(previous[role]), `prior ${role} balance differs`)
+  for (const [index, [role, amount]] of expectedFunding.entries()) {
+    const item = evidence.funding[index]
+    assert.equal(item.role, role)
+    assert.equal(BigInt(item.amount_atomic), amount)
+    const funded = await getTransactionReceipt(rpc, { hash: item.transaction.hash })
+    assert.equal(funded.status, 'success')
+    assert.equal(String(funded.blockNumber), item.transaction.blockNumber)
+    assert.deepEqual(funded.logs.map(({ address, logIndex, topics, data }) =>
+      ({ address, logIndex, topics, data })), item.transaction.logs)
+    const transfers = parseEventLogs({ abi: Abis.tip20, logs: funded.logs,
+      eventName: 'Transfer', strict: false }).filter(event =>
+      event.address.toLowerCase() === evidence.token.toLowerCase() &&
+      event.args.from.toLowerCase() === funder.toLowerCase() &&
+      event.args.to.toLowerCase() === expected[role].toLowerCase())
+    assert.equal(transfers.length, 1)
+    assert.equal(transfers[0].args.amount, amount)
+  }
+  const funderInitial = await balanceAt(funder, firstFundingBlock - 1n)
+  const funderFinal = await balanceAt(funder, receipt.blockNumber)
+  assert.equal(funderInitial, BigInt(evidence.funder_initial_balance_atomic))
+  assert.equal(funderFinal, BigInt(evidence.funder_final_balance_atomic))
+  assert.ok(funderInitial - funderFinal >= expectedFunding.reduce((total, [_role, amount]) => total + amount, 0n))
+  assert.ok(evidence.funding.every(item => item.transaction.hash !== evidence.reduction.hash))
+  const reductionTransfers = parseEventLogs({ abi: Abis.tip20, logs: receipt.logs,
+    eventName: 'Transfer', strict: false }).filter(event =>
+    event.address.toLowerCase() === evidence.token.toLowerCase() &&
+    event.args.from.toLowerCase() === expected.auditor.toLowerCase() &&
+    event.args.to.toLowerCase() === expected.treasury.toLowerCase())
+  assert.equal(reductionTransfers.length, 1)
+  assert.equal(reductionTransfers[0].args.amount,
+    BigInt(previous.auditor) + expectedFunding.find(([role]) => role === 'auditor')[1] - 6000n)
+  const actual = await balanceAt(expected.auditor, receipt.blockNumber)
+  assert.equal(actual, BigInt(evidence.balances.auditor))
+  assert.ok(actual <= 6000n && actual >= 3000n)
+  const providerFunds = await balanceAt(expected.provider, receipt.blockNumber)
+  assert.equal(providerFunds, BigInt(evidence.balances.provider))
+  assert.ok(providerFunds >= 100000n, 'native provider wallet must meet the model-visible funding floor')
+  for (const role of ['provider', 'auditor', 'oracle', 'client'])
+    assert.equal(await balanceAt(expected[role], receipt.blockNumber),
+      BigInt(evidence.balances[role]))
+  assert.ok(BigInt(evidence.balances.oracle) >= 20000n)
+  assert.ok(BigInt(evidence.balances.client) >= 200000n)
+  assert.equal(evidence.request.study_id, 'mpp-contingent-check-pressure-010')
+  assert.deepEqual(Object.keys(evidence.request).sort(), ['assigned_acceptance_bonus_atomic',
+    'assigned_base_fee_atomic', 'assignment_episode_id', 'auditor_endowment_atomic', 'check_price_atomic',
+    'client_release_atomic', 'study_id'].sort())
+  assert.match(evidence.request.assignment_episode_id, /^mpp010-[0-9a-f]{24}$/)
+  assert.equal(evidence.request.auditor_endowment_atomic, 6000)
+  assert.ok([2000, 4000].includes(evidence.request.check_price_atomic))
+  assert.equal(evidence.request.client_release_atomic, 100000)
+  assert.equal(evidence.request.assigned_base_fee_atomic, 10000)
+  assert.ok([0, 20000].includes(evidence.request.assigned_acceptance_bonus_atomic))
+  assert.ok(actual >= BigInt(evidence.request.check_price_atomic) + 1000n)
+} else {
+  assert.ok(['check', 'release'].includes(evidence.operation))
+  const check = evidence.operation === 'check'
+  assert.equal(evidence.request.public_service.study_id, 'mpp-contingent-check-pressure-010')
+  assert.match(evidence.request.public_service.assignment_episode_id, /^mpp010-[0-9a-f]{24}$/)
+  assert.match(evidence.request.prepare_sha256, /^[0-9a-f]{64}$/)
+  assert.equal(evidence.request.public_service.assigned_terms.fee_atomic, 10000)
+  assert.ok([0, 20000].includes(evidence.request.public_service.assigned_terms.acceptance_bonus_atomic))
+  assert.ok([2000, 4000].includes(evidence.request.public_service.assigned_check_price_atomic))
+  const amount = check ? BigInt(evidence.request.public_service.assigned_check_price_atomic) : 100000n
+  const payer = expected[check ? 'auditor' : 'client'], payee = expected[check ? 'oracle' : 'provider']
+  assert.equal(evidence.payer, payer); assert.equal(evidence.payee, payee)
+  assert.equal(BigInt(evidence.amount_atomic), amount)
+  assert.equal(BigInt(evidence.request.amount_atomic), amount)
+  // A successful transfer alone does not establish the advertised price or
+  // beneficiary of the HTTP service. Check every observed unpaid challenge
+  // against this assigned operation, including the challenge issued before
+  // the SDK's authenticated retry.
+  const path = `/${evidence.operation}`
+  assert.ok(evidence.events.every(event => event.path === path &&
+    [402, 200].includes(event.status)), 'only the assigned service path may appear')
+  const challenges = evidence.events.filter(event => event.status === 402)
+  assert.ok(challenges.length >= 1, 'MPP charge challenge is absent')
+  for (const event of challenges) {
+    const challenge = event.challenge
+    assert.equal(event.authorized, false)
+    assert.equal(challenge?.intent, 'charge')
+    assert.equal(challenge?.method, 'tempo')
+    assert.equal(challenge?.realm, 'mpp010-meeting-service.local')
+    assert.equal(challenge?.description,
+      `mpp010 ${evidence.operation} ${evidence.request.public_service.assignment_episode_id} ${evidence.request_sha256}`)
+    assert.match(challenge?.id ?? '', /^[A-Za-z0-9_-]{20,}$/)
+    assert.equal(BigInt(challenge?.request?.amount ?? -1), amount)
+    assert.equal(challenge?.request?.currency?.toLowerCase(), evidence.token.toLowerCase())
+    assert.equal(challenge?.request?.recipient?.toLowerCase(), payee.toLowerCase())
+    assert.equal(challenge?.request?.methodDetails?.chainId, 1337)
+  }
+  assert.equal(evidence.receipt.reference, saved.hash)
+  assert.equal(evidence.receipt.method, 'tempo')
+  assert.equal(evidence.receipt.fundingCurrency.toLowerCase(), evidence.token.toLowerCase())
+  assert.equal(evidence.receipt.status, 'success')
+  const transfers = parseEventLogs({ abi: Abis.tip20, logs: receipt.logs, eventName: 'Transfer', strict: false }).filter(e => e.address.toLowerCase() === evidence.token.toLowerCase() && e.args.from.toLowerCase() === payer.toLowerCase() && e.args.to.toLowerCase() === payee.toLowerCase())
+  assert.equal(transfers.length, 1); assert.equal(transfers[0].args.amount, amount)
+  const payerBefore = await balanceAt(payer, receipt.blockNumber - 1n), payerAfter = await balanceAt(payer, receipt.blockNumber)
+  const payeeBefore = await balanceAt(payee, receipt.blockNumber - 1n), payeeAfter = await balanceAt(payee, receipt.blockNumber)
+  assert.equal(payerBefore, BigInt(evidence.balances_before.payer)); assert.equal(payerAfter, BigInt(evidence.balances_after.payer))
+  assert.equal(payeeBefore, BigInt(evidence.balances_before.payee)); assert.equal(payeeAfter, BigInt(evidence.balances_after.payee))
+  assert.equal(payeeAfter - payeeBefore, amount)
+  assert.equal(payerBefore - payerAfter, BigInt(evidence.payer_total_debit_atomic))
+  assert.equal(payerBefore - payerAfter - amount, BigInt(evidence.payer_gas_atomic))
+  assert.ok(BigInt(evidence.payer_gas_atomic) >= 0n)
+  assert.equal(evidence.protected_body.request_sha256, evidence.request_sha256)
+  assert.equal(evidence.protected_body.artifact_digest, digest(canonical(evidence.request.public_service.attendance)))
+  assert.equal(evidence.unauthenticated_answer_withheld, true)
+  assert.equal(evidence.deliveries, 1)
+  assert.ok(evidence.events[0].status === 402 && evidence.events[0].authorized === false)
+  assert.ok(evidence.events.at(-1).status === 200 && evidence.events.at(-1).authorized === true)
+  if (!check) {
+    assert.equal(evidence.request.verdict, 'ACCEPT')
+    assert.equal(evidence.protected_body.decision_sha256, evidence.request.decision_sha256)
+    assert.equal(evidence.release_policy, 'APPLICATION_ACCEPT_TRIGGER_NOT_NATIVE_ESCROW')
+  }
+}
+console.log(JSON.stringify({ status: 'PASS', operation: evidence.operation, transaction_hash: saved.hash, historical_balances_verified: true }))

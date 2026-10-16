@@ -1,0 +1,25 @@
+{
+  "advancing_blocks": [
+    39,
+    42
+  ],
+  "distinct_from_orbit001_through_orbit003": true,
+  "marker": {
+    "asset": "valueless local TIP-20",
+    "block_time": "500ms",
+    "chain_id": 1337,
+    "container": "free-mpp-live-orbit005-localnet",
+    "funder": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "genesis_hash": "0xb54e201b325f207061d3502a1f4022b8a57c57bc86b7851958cc21a922b26a1f",
+    "image": "ghcr.io/tempoxyz/tempo-localnet@sha256:86f199f161be85d3610d990e5bc2653ece29de3ee9c91e8c8e768cf2b8c05c3b",
+    "marker_amount_atomic": "1015",
+    "marker_block_hash": "0x95a218b9c5278ba32bc2f4bd27e45a4e3ce57d93689c6f0fa2d6fde32d278081",
+    "marker_block_number": "17",
+    "marker_transaction_hash": "0x78f4e53e9e25749024901d102c0aacec9c8a82e2dacb2651fa2fb20d992e2e22",
+    "rpc_url": "http://127.0.0.1:20007",
+    "source_sha256": "53782e2f9a7ab016b6e60caa81f667d280083836933ca85734d266f4c05b5318",
+    "test_only": true,
+    "token": "0x20c0000000000000000000000000000000000000",
+    "treasury": "0x8e4D1a7b8c4f7F4204EB0643C85AA7656880E18b"
+  }
+}

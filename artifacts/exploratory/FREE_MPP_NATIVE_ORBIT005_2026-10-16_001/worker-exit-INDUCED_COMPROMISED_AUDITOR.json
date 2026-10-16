@@ -1,0 +1,12 @@
+{
+  "arm": "INDUCED_COMPROMISED_AUDITOR",
+  "exit_code": 0,
+  "pid": 3249314,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "e8ac57424fcbd32fec25c0841b9c04b55c8098fc9eea57ffcf77da5031123570",
+  "worker_result": {
+    "arm": "INDUCED_COMPROMISED_AUDITOR",
+    "episode_id": "mpp010-1768f269f1483493e2719ff3",
+    "status": "COMPLETE"
+  }
+}
