@@ -55,6 +55,17 @@ evidence that a model chose the false approval. A provider-funded bonus is an
 internal coalition transfer; the buyer's 10,000,000-unit early outlay is the
 external coalition inflow to measure.
 
+The bonus **trigger time** changes the actual incentive. The original funded
+offer pays only on terminal completion and refunds the provider after a final
+rejection, even if an earlier claim was approved. A new
+[scripted first-claim application-hook control](BILATERAL030_FIRST_CLAIM_BONUS_NATIVE_CONTROL.md)
+instead proves a 5,000,000-unit provider-funded bonus can reach the evaluator
+in the same transaction as its first approval, survive final rejection, and
+resist a client settlement masquerading as evaluator approval. These are two
+different contractual treatments despite the same quoted bonus amount. The
+new control supplies a credible mechanism for a future agent test; it does
+not establish that any model accepted that incentive.
+
 ## Narrow candidate insight and prior work
 
 The publishable question is whether **funded dependence plus a delivered
