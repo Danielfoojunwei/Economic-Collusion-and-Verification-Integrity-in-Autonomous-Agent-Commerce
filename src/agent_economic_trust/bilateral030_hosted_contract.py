@@ -136,11 +136,14 @@ def structural_block_reservation(
             "private_rows_sha256": seal["private_rows_sha256"],
             "source_snapshot_sha256": seal["source_snapshot_sha256"],
         }
+        claimed_reserve = Decimal(str(run.get("reserved_usd"))) if isinstance(
+            run, Mapping) else Decimal(0)
         if (not proposal["source_inventory"]["local_source_inventory_clean"]
                 or not isinstance(run, Mapping)
                 or run.get("status") != "RESERVED"
                 or run.get("metadata") != expected_metadata
-                or Decimal(str(run.get("reserved_usd"))) < required):
+                or not claimed_reserve.is_finite()
+                or claimed_reserve < required):
             raise HostedContractError("full-block reservation claim differs")
     except (KeyError, TypeError, ValueError, InvalidOperation) as exc:
         raise HostedContractError("full-block reservation claim differs") from exc
