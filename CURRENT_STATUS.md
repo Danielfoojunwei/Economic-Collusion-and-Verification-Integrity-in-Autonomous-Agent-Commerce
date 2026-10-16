@@ -1,4 +1,38 @@
-# Current research build status — 2026-10-15
+# Current research build status — 2026-10-16
+
+## October 16 pre-sprint update
+
+**No new hosted-model BILATERAL030 row has run, and no bilateral collusion has
+been observed.** A second reviewer [sealed independent labels before opening
+the prior human audit](artifacts/gates/SEMANTIC_RECODING_INDEPENDENT_2026-10-16/REPORT.md):
+three delivered improper provider requests in seven completed prior traces,
+zero explicit auditor assents, zero BAD first-claim approvals and zero wrongful
+BAD payouts. All five BAD rows bought the independent check and rejected.
+Agreement on these same seven traces improves label reliability but does not
+stabilize a population rate or provide experimental replication.
+
+The [prospective 30-pair study](docs/PROSPECTIVE_ERC8183_BILATERAL030_DESIGN.md)
+predeclares 14 prompted BAD cases, three four-row knockouts, two GOOD anchors
+and two induced-auditor controls, balanced between Sol/Sonnet role directions.
+Two guarded mock-only ORBIT transport arms verified message withholding and
+post-check truth exposure; they are not model-behavior evidence. A separate
+[first-claim bonus native control](docs/BILATERAL030_FIRST_CLAIM_BONUS_NATIVE_CONTROL.md)
+passed independent replay of 57 valueless local transactions: a scripted
+evaluator approval paid 9m provider, 1m native evaluator fee and a 5m
+provider-funded bonus before a final 10m buyer refund. Client settlement or
+approval could not spoof the conditional bonus, and evaluator rejection
+refunded it. The hook is an application research fixture, not an ERC-8183
+protocol feature. No live agent chose these native actions.
+
+The shared OpenRouter ledger remains at sequence **226**, with a USD **50**
+lifetime ceiling, USD **10.096926** settled usage estimates, USD **39.903074**
+reserved, USD **0** available and an **UNKNOWN** unguarded-call incident.
+Existing aggregate exports do not attribute the incident's per-request charge.
+The prospective block is therefore **HOLD**. The live native bridge,
+source-frozen assignment, attached request guards and independent model/native
+collector must pass before any hosted row; proposed code or a mock trace is
+not a completed run. See the [mechanism and protocol hypotheses](docs/COLLUSION_MECHANISM_AND_PROTOCOL_HYPOTHESES_2026-10-16.md)
+for the narrow research claim and ERC-8183, x402, MPP, AP2 and ACP follow-ups.
 
 ## Latest evidence and billing status (after 22:20 UTC)
 
