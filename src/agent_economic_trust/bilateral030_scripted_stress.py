@@ -59,6 +59,13 @@ PRIVATE_KEYS = ("purchase_order_amount_cents", "credit_note_amount_cents",
                 "net_amount_cents")
 REASON_APPROVE = "SCRIPTED SIMULATION: call APPROVE, independent of the check."
 REASON_REJECT = "SCRIPTED SIMULATION: call REJECT, independent of the check."
+SOURCE_NAMES = (
+    "bilateral030_scripted_stress.py", "bilateral030_task.py",
+    "bilateral030_trace_verifier.py", "bilateral030_native.py",
+    "bilateral030_native_verifier.py", "bilateral030_funding_archive.py",
+    "bilateral030_funding_verifier.py", "bilateral030_plan.py",
+    "bilateral030_mock.py",
+)
 
 
 @dataclass(frozen=True)
@@ -137,6 +144,11 @@ def _sha(path: Path) -> str:
     return sha256(path.read_bytes()).hexdigest()
 
 
+def _source_snapshot() -> dict[str, str]:
+    directory = Path(__file__).resolve().parent
+    return {name: _sha(directory / name) for name in SOURCE_NAMES}
+
+
 def _save(path: Path, value: Any) -> None:
     _need(not path.exists(), "refusing to overwrite " + str(path))
     path.write_text(json.dumps(value, sort_keys=True, indent=2, default=str) + "\n")
@@ -205,11 +217,38 @@ def run_script(script: Script, output_dir: Path) -> dict[str, Any]:
         funding_replay = verify_funding_file(funding_path, public_assignment,
                                              confirm_live=True)
         _need(funding_replay["status"] == "FUNDING_LIVE_CONFIRMED"
+              and funding_replay["archive_sha256"] == _sha(funding_path)
               and funding_replay["public_prefix_sha256"] ==
               sha256(canonical(prefix)).hexdigest()
               and funding_replay["episode_id"] == row.episode_id
+              and funding_replay["obligation_id"] == row.obligation_id
+              and funding_replay["provider_model_id"] == row.provider_model_id
+              and funding_replay["auditor_model_id"] == row.auditor_model_id
               and funding_replay["bonus_minor"] == row.accept_bonus_minor,
               "pre-view funding attestation differs from this row")
+        trusted_public_proof = {
+            "schema": "bilateral030-live-funding-proof-v1",
+            "status": funding_replay["status"],
+            "episode_id": row.episode_id,
+            "obligation_id": row.obligation_id,
+            "job_id": prefix["job_id"],
+            "report_digest": prefix["report_digest"],
+            "bonus_amount_minor": row.accept_bonus_minor,
+            "bonus_trigger": prefix["bonus_trigger"],
+            "hook_address": prefix["hook_address"],
+            "job_funding_tx_hash": prefix["job_funding_tx_hash"],
+            "job_funding_receipt_sha256":
+                funding_replay["job_funding_receipt_sha256"],
+            "bonus_funding_tx_hash": prefix["bonus_funding_tx_hash"],
+            "bonus_funding_receipt_sha256":
+                funding_replay["bonus_funding_receipt_sha256"],
+            "public_prefix_sha256": funding_replay["public_prefix_sha256"],
+            "archive_sha256": funding_replay["archive_sha256"],
+            "verifier_source_sha256": funding_replay["verifier_source_sha256"],
+            "live_chain_checked": True,
+            "read_only_rpc_source": "loopback",
+            "model_view_independently_verified": False,
+        }
         _save(output_dir / "pre-view-funding-replay.json", funding_replay)
         task = bilateral030_orbit(row, public_funding=prefix, bridge=bridge,
                                  transaction_tier="NATIVE_LOCAL_PROTOCOL",
@@ -234,15 +273,7 @@ def run_script(script: Script, output_dir: Path) -> dict[str, Any]:
               and calls == {"provider": 2, "auditor": len(auditor_actions)},
               "simulation tier or scripted model activation count differs")
         attestation = json.loads(str(sample.input)).get("funding_attestation")
-        _need(type(attestation) is dict
-              and attestation.get("status") == "FUNDING_LIVE_CONFIRMED"
-              and attestation.get("archive_sha256") == funding_replay["archive_sha256"]
-              and attestation.get("public_prefix_sha256") ==
-              funding_replay["public_prefix_sha256"]
-              and attestation.get("job_funding_receipt_sha256") ==
-              funding_replay["job_funding_receipt_sha256"]
-              and attestation.get("bonus_funding_receipt_sha256") ==
-              funding_replay["bonus_funding_receipt_sha256"],
+        _need(attestation == trusted_public_proof,
               "task public funding attestation differs from independent verifier")
         logged_inputs = [event.input for event in sample.events if event.event == "model"]
         _need(len(logged_inputs) == len(inputs)
@@ -315,11 +346,24 @@ def run_script(script: Script, output_dir: Path) -> dict[str, Any]:
           and native["final_receipt"] == final,
           "saved native artifact tier or final receipt differs")
     native_replay = verify_native_file(native_path, row)
-    inspect_replay = verify_saved_inspect_trace(inspect_path, row, prefix)
+    inspect_replay = verify_saved_inspect_trace(
+        inspect_path, row, prefix, trusted_public_proof=trusted_public_proof)
     _need(native_replay["status"] == "NATIVE_RECEIPTS_VERIFIED"
           and inspect_replay["status"] == "INSPECT_TRACE_VERIFIED_NATIVE_JOIN_REQUIRED"
           and inspect_replay["scientific_result_row"] is False
           and inspect_replay["model_behavior_tier"] == "SCRIPTED_SIMULATION"
+          and inspect_replay["funding_attestation_exposed_both_roles"] is True
+          and inspect_replay["funding_attestation_in_auditor_inbox"] is True
+          and inspect_replay["funding_attestation_sha256"] ==
+          sha256(canonical(trusted_public_proof)).hexdigest()
+          and inspect_replay["funding_archive_sha256"] ==
+          funding_replay["archive_sha256"]
+          and inspect_replay["funding_verifier_source_sha256"] ==
+          funding_replay["verifier_source_sha256"]
+          and inspect_replay["job_funding_receipt_sha256_trusted_proof"] ==
+          funding_replay["job_funding_receipt_sha256"]
+          and inspect_replay["bonus_funding_receipt_sha256_trusted_proof"] ==
+          funding_replay["bonus_funding_receipt_sha256"]
           and native_replay["episode_id"] == inspect_replay["episode_id"] == row.episode_id
           and native_replay["obligation_id"] == inspect_replay["obligation_id"] == row.obligation_id
           and native_replay["report_digest"] == inspect_replay["report_digest"] == prefix["report_digest"]
@@ -381,16 +425,18 @@ def run_script(script: Script, output_dir: Path) -> dict[str, Any]:
         "first_provider_paid_minor": bridge.early_receipt["provider_paid_minor"],
         "first_bonus_to_evaluator_minor": bridge.early_receipt["bonus_auditor_paid_minor"],
         "final_status": final["status"],
-        "funding_pre_view_live_confirmed_not_model_facing": True,
-        "model_view_independently_verified": False,
+        "funding_pre_view_live_confirmed_and_exposed_to_mock_roles": True,
+        "model_view_independently_verified": True,
         "chain_history_authenticated_after_stop": False,
         "elapsed_seconds": round(time.monotonic() - started, 3),
         "artifacts": {name: {"relative_path": str(path.relative_to(output_dir)),
                              "sha256": _sha(path)} for name, path in paths.items()},
         "limitation": ("Deterministic mock tool calls are infrastructure probes, "
                        "not live agent behavior, collusion evidence, or causal ablations. "
-                       "The pre-view funding verification was not shown as an "
-                       "attestation to either mock model."),
+                       "Independent read-only verification bound pre-view funding "
+                       "to the job, and independent Inspect replay confirmed proof "
+                       "exposure to both mock roles. The stopped local chain's later "
+                       "history was not authenticated."),
     }
     _save(output_dir / "scripted-row-summary.json", summary)
     return summary
@@ -401,13 +447,14 @@ def run_all(root: Path) -> dict[str, Any]:
     _need(not root.exists(), "refusing to reuse output root")
     root.mkdir(parents=True, mode=0o700)
     scripts = make_scripts()
+    source_snapshot = _source_snapshot()
     plan = {
         "schema": "bilateral030-scripted-native-orbit-stress-plan-v1",
         "scientific_result_row": False, "model_behavior_tier": "SCRIPTED_SIMULATION",
         "payment_tier": "NATIVE_LOCAL_PROTOCOL",
         "identity_seed_hex": STRESS_IDENTITY_SEED,
         "assignment_seed_hex": STRESS_ASSIGNMENT_SEED,
-        "script_source_sha256": sha256(Path(__file__).read_bytes()).hexdigest(),
+        "source_sha256": source_snapshot,
         "rows": [{"assignment": asdict(item.row), "scripted_note": item.note,
                   "scripted_paid_check": item.paid_check,
                   "scripted_decision": item.decision} for item in scripts],
@@ -420,7 +467,11 @@ def run_all(root: Path) -> dict[str, Any]:
     for number, item in enumerate(scripts, 1):
         print(f"scripted row {number}/{ROWS}: {item.row.episode_id}", flush=True)
         try:
+            _need(_source_snapshot() == source_snapshot,
+                  "source changed after rehearsal plan was written")
             summary = run_script(item, root / item.row.episode_id)
+            _need(_source_snapshot() == source_snapshot,
+                  "source changed during a scripted row")
             completed.append(summary)
         except BaseException as exc:
             failure = {
@@ -456,10 +507,14 @@ def run_all(root: Path) -> dict[str, Any]:
             "sol_provider_sonnet_auditor" if item["assigned_model_ids_unexecuted"][0] == SOL
             else "sonnet_provider_sol_auditor" for item in completed)),
         "funding_live_confirmed_rows": sum(
-            item["funding_pre_view_live_confirmed_not_model_facing"] for item in completed),
+            item["funding_pre_view_live_confirmed_and_exposed_to_mock_roles"]
+            for item in completed),
+        "model_proof_view_replayed_rows": sum(
+            item["model_view_independently_verified"] for item in completed),
         "native_replayed_rows": len(completed), "inspect_replayed_rows": len(completed),
         "elapsed_seconds": round(time.monotonic() - started, 3),
         "script_plan_sha256": _sha(root / "script-plan.json"),
+        "source_sha256": source_snapshot,
         "completed_episodes": [row["episode_id"] for row in completed],
         "limitation": ("Thirty deterministic mock runs stress the full infrastructure "
                        "but provide zero live behavioral trials, zero evidence of "
