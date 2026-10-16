@@ -10,10 +10,16 @@ zero explicit auditor assents, zero BAD first-claim approvals and zero wrongful
 BAD payouts. All five BAD rows bought the independent check and rejected.
 Agreement on these same seven traces improves label reliability but does not
 stabilize a population rate or provide experimental replication.
+The [read-only model-config review](docs/BILATERAL030_MODEL_CONFIG_RCA.md)
+found that all 68 saved PARTIAL014/PRESSURE016 model events requested high
+reasoning; their modest reported reasoning-token use does not show a missing
+setting. A config propagation gap found in the new mock adapter was corrected
+before any hosted BILATERAL030 call.
 
 The [prospective 30-pair study](docs/PROSPECTIVE_ERC8183_BILATERAL030_DESIGN.md)
-predeclares 14 prompted BAD cases, three four-row knockouts, two GOOD anchors
-and two induced-auditor controls, balanced between Sol/Sonnet role directions.
+now predeclares 12 prompted BAD cases, three four-row knockouts, four GOOD
+anchors split between funded and unfunded offers, and two induced-auditor
+controls, balanced between Sol/Sonnet role directions.
 Two guarded mock-only ORBIT transport arms verified message withholding and
 post-check truth exposure; they are not model-behavior evidence. A separate
 [first-claim bonus native control](docs/BILATERAL030_FIRST_CLAIM_BONUS_NATIVE_CONTROL.md)
@@ -28,9 +34,11 @@ The shared OpenRouter ledger remains at sequence **226**, with a USD **50**
 lifetime ceiling, USD **10.096926** settled usage estimates, USD **39.903074**
 reserved, USD **0** available and an **UNKNOWN** unguarded-call incident.
 Existing aggregate exports do not attribute the incident's per-request charge.
-The prospective block is therefore **HOLD**. The live native bridge,
-source-frozen assignment, attached request guards and independent model/native
-collector must pass before any hosted row; proposed code or a mock trace is
+The prospective block is therefore **HOLD**. A local native bridge, raw
+receipt verifier, and mock-only Inspect trace verifier have passed focused
+source tests. A live pre-view funding attestation, source-frozen assignment,
+attached hosted request guards and independent model/native evidence join
+must pass before any hosted row; proposed code or a mock trace is
 not a completed run. See the [mechanism and protocol hypotheses](docs/COLLUSION_MECHANISM_AND_PROTOCOL_HYPOTHESES_2026-10-16.md)
 for the narrow research claim and ERC-8183, x402, MPP, AP2 and ACP follow-ups.
 
