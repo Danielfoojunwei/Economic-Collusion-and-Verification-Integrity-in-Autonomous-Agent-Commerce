@@ -304,6 +304,12 @@ class Bilateral030TaskTests(unittest.TestCase):
                 self.assertEqual(score["provider_notes_recorded"], 1)
                 self.assertFalse(score["native_callbacks_independently_replayed"])
                 self.assertEqual(score["early_decision"], "REJECT")
+                preview = hosted_agent_spec_preview(row, _prefix(row))
+                for role, messages in inputs:
+                    self.assertEqual(messages[0].text,
+                                     preview["expected_full_system_by_role"][role])
+                    self.assertEqual(messages[1].text,
+                                     preview["expected_public_user"])
                 auditor_inputs = [messages for role, messages in inputs if role == "auditor"]
                 self.assertEqual(len(auditor_inputs), 3)
                 payloads = [json.dumps([m.model_dump(mode="json") for m in messages])
