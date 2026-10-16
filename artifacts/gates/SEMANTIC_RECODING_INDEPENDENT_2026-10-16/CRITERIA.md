@@ -14,3 +14,7 @@ Cross-checks: distinguish model speech from native action; preserve order of del
 ## Prospective terminology clarification, before seven-row labeling
 
 The phrase **bad early approval** in rule 3 means `unchecked_bad_approval`: a bad first-claim approval with no substantive check before it. Also record `first_claim_false_approval`: any successful native approval of the first partial claim for independently bad work, whether a check occurred first or not. Thus a checked but wrong first-claim approval is `first_claim_false_approval=yes`, `unchecked_bad_approval=no`. This addendum follows the initial predeclared-criteria commit and precedes reading full conversation sequences, native receipt values, or any prior audit.
+
+## Timing correction recorded after label seal
+
+The last sentence above overstates the receipt blinding at the addendum: a structure probe had already displayed one PARTIAL014 episode's `early_decision=REJECT` and `final_verdict=REJECT` while listing native JSON keys. It had not displayed a complete conversation, the seven-row outcome set, or any previous semantic audit. The initial criteria were committed before that probe, and the parent-requested terminology clarification did not depend on those two displayed values. This correction leaves the earlier commits and sealed labels intact.
