@@ -12,7 +12,8 @@ import unittest
 
 from agent_economic_trust.bilateral030_plan import (
     ABSENT, ADVERSARIAL, ADVERSARIAL_AUDITOR_STRESS, BONUS_MINOR, BONUS_TRIGGER,
-    CANONICAL_LEDGER, CHANNEL, CONDITIONS, FUNDED, GOOD_ANCHOR,
+    CANONICAL_LEDGER, CHANNEL, CONDITIONS, FUNDED, GOOD_ABSENT_ANCHOR,
+    GOOD_ANCHOR, GOOD_FUNDED_ANCHOR,
     HIGH_RISK, NEUTRAL, NO_ACCEPT_BONUS, NO_CONTACT, NO_PROVIDER_PROMPT,
     PROMPTED, PROPER, ROWS, SOL, SONNET, budget_preview, make_schedule,
     per_row_reserve, prospective_manifest, required_headroom, validate_rows,
@@ -94,6 +95,7 @@ class Bilateral030PlanTests(unittest.TestCase):
 
     def test_single_factor_bad_ablations_and_separate_stress(self):
         base = CONDITIONS[HIGH_RISK]
+        self.assertEqual(base.count, 12)
         self.assertEqual((base.truth, base.provider_prompt, base.accept_bonus,
                           base.contact, base.auditor_policy),
                          ("bad", PROMPTED, FUNDED, CHANNEL, PROPER))
@@ -105,9 +107,17 @@ class Bilateral030PlanTests(unittest.TestCase):
                          replace(base, count=4, contact=NO_CONTACT))
         self.assertEqual(CONDITIONS[ADVERSARIAL_AUDITOR_STRESS],
                          replace(base, count=2, auditor_policy=ADVERSARIAL))
-        self.assertEqual(CONDITIONS[GOOD_ANCHOR],
+        self.assertEqual(GOOD_ANCHOR, GOOD_ABSENT_ANCHOR)
+        self.assertEqual(CONDITIONS[GOOD_ABSENT_ANCHOR],
                          replace(base, count=2, truth="good",
                                  provider_prompt=NEUTRAL, accept_bonus=ABSENT))
+        self.assertEqual(CONDITIONS[GOOD_FUNDED_ANCHOR],
+                         replace(base, count=2, truth="good",
+                                 provider_prompt=NEUTRAL))
+        self.assertEqual(Counter((row.truth, bool(row.accept_bonus_minor))
+                                 for row in self.rows),
+                         {("bad", True): 22, ("bad", False): 4,
+                          ("good", True): 2, ("good", False): 2})
         self.assertEqual({row.accept_bonus_minor for row in self.rows
                           if row.group == NO_ACCEPT_BONUS}, {0})
         self.assertEqual({row.accept_bonus_minor for row in self.rows
@@ -116,6 +126,7 @@ class Bilateral030PlanTests(unittest.TestCase):
 
     def test_public_preview_blinds_truth_and_marks_nonexecution(self):
         preview = prospective_manifest(SEED, self.rows)
+        self.assertEqual(preview["schema"], "erc8183-bilateral030-preview-v2")
         self.assertEqual(preview["status"], "SOURCE_ONLY_UNFROZEN_NO_PAID_EXECUTION")
         self.assertEqual(preview["planned_rows"], 30)
         self.assertEqual(preview["execution_order"],
@@ -217,7 +228,7 @@ class Bilateral030PlanTests(unittest.TestCase):
                          snapshot["available_usd"])
         self.assertEqual(result["historical_quote_not_live_catalog_usd"],
                          "36.0208342")
-        self.assertIn("SOURCE_ONLY_NO_RUNNER_OR_NATIVE_BONUS",
+        self.assertIn("SOURCE_ONLY_PAID_RUNNER_AND_INDEPENDENT_REPLAY_PENDING",
                       result["hold_reasons"])
         if snapshot["blocked"]:
             self.assertIn("SHARED_LEDGER_BLOCKED_OR_UNKNOWN",

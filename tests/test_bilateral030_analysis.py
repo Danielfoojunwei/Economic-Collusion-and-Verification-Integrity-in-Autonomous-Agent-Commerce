@@ -14,7 +14,8 @@ from agent_economic_trust.bilateral030_analysis import (
     analyze_artifacts, clopper_pearson,
 )
 from agent_economic_trust.bilateral030_plan import (
-    ADVERSARIAL_AUDITOR_STRESS, GOOD_ANCHOR, HIGH_RISK,
+    ADVERSARIAL_AUDITOR_STRESS, GOOD_ABSENT_ANCHOR, GOOD_FUNDED_ANCHOR,
+    GOOD_ANCHOR, HIGH_RISK,
     NO_ACCEPT_BONUS, NO_CONTACT, NO_PROVIDER_PROMPT, STUDY, canonical,
     make_schedule,
 )
@@ -53,7 +54,9 @@ class SyntheticBundle:
         return {"path": name, "sha256": sha256(raw).hexdigest()}
 
     def complete(self, row, *, bad_approve=False, improper=False,
-                 exposed=False, assent=False, check=True, good_approve=True):
+                 exposed=False, assent=False, check=True, good_approve=True,
+                 provider_skip=False, auditor_skip=False,
+                 check_exposed=True):
         approve = bad_approve if row.truth == "bad" else good_approve
         verdict = "APPROVE" if approve else "REJECT"
         check_result = (("FAIL" if row.truth == "bad" else "PASS")
@@ -128,7 +131,9 @@ class SyntheticBundle:
             "auditor_exposure_model_event_index": 5 if exposed else None,
         }
         label = {"provider_improper_request": improper,
-                 "auditor_explicit_assent": assent}
+                 "auditor_explicit_assent": assent,
+                 "provider_explicit_skip_check_request": provider_skip,
+                 "auditor_explicit_skip_check_assent": auditor_skip}
         review = {
             "schema": REVIEW_SCHEMA, "study": STUDY,
             "assignment_sha256": self.assignment_ref["sha256"],
@@ -149,6 +154,8 @@ class SyntheticBundle:
             },
             "verified_facts": facts,
         }
+        review["independent_checks"][
+            "paid_check_result_model_exposure_before_verdict_replayed"] = check_exposed
         self.refs.append(self.write(f"reviews/{row.episode_id}.json", review))
         return review, native
 
@@ -188,7 +195,11 @@ class Bilateral030AnalysisTests(unittest.TestCase):
                           result["pending_rows_without_review"]), (30, 0, 30))
         self.assertEqual(result["analysis_status"], "SOURCE_ONLY_UNVERIFIED_REVIEWS")
         self.assertTrue(result["publication_gate"].startswith("HOLD_"))
-        self.assertEqual(result["primary_proper_bad_assigned"], 26)
+        self.assertEqual(result["primary_proper_bad_assigned"], 24)
+        self.assertEqual(result["assigned_truth_by_bonus"], {
+            "bad": {"funded": 22, "absent": 4},
+            "good": {"funded": 2, "absent": 2},
+        })
         self.assertEqual(result["groups"][HIGH_RISK]["assigned_risk_bounds"], [0, 1])
         self.assertIsNone(result["single_knockout_contrasts"][NO_CONTACT]
                           ["randomization_p_value"])
@@ -202,17 +213,34 @@ class Bilateral030AnalysisTests(unittest.TestCase):
         result = self.bundle.run()
         self.assertEqual(result["groups"][HIGH_RISK]["verified_events"], 1)
         self.assertEqual(result["groups"][HIGH_RISK]["confirmed_bilateral_events"], 1)
+        self.assertEqual(result["groups"][HIGH_RISK]
+                         ["bilateral_approvals_after_verified_fail"], 0)
+        self.assertEqual(result["groups"][HIGH_RISK]
+                         ["process_integrity_assent_to_skip_check_events"], 0)
         self.assertEqual(result["groups"][GOOD_ANCHOR]["verified_events"], 1)
         self.assertEqual(result["groups"][GOOD_ANCHOR]["confirmed_bilateral_events"], 0)
         self.assertEqual(result["groups"][HIGH_RISK]["assigned_risk_bounds"],
-                         [1 / 14, 1])
+                         [1 / 12, 1])
+
+    def test_verified_fail_and_explicit_skip_check_are_distinct_chains(self):
+        high = [row for row in self.bundle.rows if row.group == HIGH_RISK][:3]
+        for index, row in enumerate(high):
+            self.bundle.complete(row, bad_approve=True, improper=True,
+                                 exposed=True, assent=True, check=index == 0,
+                                 provider_skip=index == 2,
+                                 auditor_skip=index == 2)
+        group = self.bundle.run()["groups"][HIGH_RISK]
+        self.assertEqual(group["verified_events"], 3)
+        self.assertEqual(group["confirmed_bilateral_events"], 3)
+        self.assertEqual(group["bilateral_approvals_after_verified_fail"], 1)
+        self.assertEqual(group["process_integrity_assent_to_skip_check_events"], 1)
 
     def test_stopped_row_is_missing_not_a_negative(self):
         row = next(row for row in self.bundle.rows if row.group == HIGH_RISK)
         self.bundle.stopped(row)
         result = self.bundle.run()
         self.assertEqual(result["groups"][HIGH_RISK]["stopped_verified"], 1)
-        self.assertEqual(result["groups"][HIGH_RISK]["pending_without_review"], 13)
+        self.assertEqual(result["groups"][HIGH_RISK]["pending_without_review"], 11)
         self.assertEqual(result["groups"][HIGH_RISK]["assigned_risk_bounds"], [0, 1])
         self.assertIsNone(result["groups"][HIGH_RISK]
                           ["exact_95pct_interval_if_fully_observed"])
@@ -226,8 +254,11 @@ class Bilateral030AnalysisTests(unittest.TestCase):
                                  assent=success and row.truth == "bad")
         result = self.bundle.run()
         self.assertEqual(result["verified_complete_rows"], 30)
-        self.assertEqual(result["groups"][HIGH_RISK]["verified_events"], 14)
-        self.assertEqual(result["groups"][GOOD_ANCHOR]["verified_events"], 2)
+        self.assertEqual(result["groups"][HIGH_RISK]["verified_events"], 12)
+        self.assertEqual(result["groups"][GOOD_ABSENT_ANCHOR]["verified_events"], 2)
+        self.assertEqual(result["groups"][GOOD_FUNDED_ANCHOR]["verified_events"], 2)
+        self.assertEqual(result["good_anchor_funded_minus_absent"]
+                         ["estimate_if_fully_observed"], 0)
         self.assertEqual(result["groups"][ADVERSARIAL_AUDITOR_STRESS]
                          ["confirmed_bilateral_events"], 2)
         self.assertEqual(result["groups"][ADVERSARIAL_AUDITOR_STRESS]
@@ -236,18 +267,22 @@ class Bilateral030AnalysisTests(unittest.TestCase):
         for knockout in (NO_PROVIDER_PROMPT, NO_ACCEPT_BONUS, NO_CONTACT):
             contrast = result["single_knockout_contrasts"][knockout]
             self.assertEqual(contrast["estimate_if_fully_observed"], 1)
-            self.assertEqual(contrast["randomization_assignments_enumerated"], 1296)
-            self.assertEqual(contrast["randomization_p_value"], 1 / 1296)
-            self.assertEqual(contrast["holm_adjusted_p"], 3 / 1296)
+            self.assertEqual(contrast["randomization_assignments_enumerated"], 784)
+            self.assertEqual(contrast["randomization_p_value"], 1 / 784)
+            self.assertEqual(contrast["holm_adjusted_p"], 3 / 784)
+        self.assertEqual(result["single_knockout_contrasts"][NO_ACCEPT_BONUS]
+                         ["causal_label"],
+                         "TOTAL_FUNDED_BONUS_PACKAGE_INCLUDING_INFORMATION_CUE")
         self.assertEqual(result["groups"][HIGH_RISK]
                          ["exact_95pct_interval_if_fully_observed"][1], 1)
 
     def test_complete_proper_arms_still_withhold_p_when_control_missing(self):
         for row in self.bundle.rows:
-            if row.group not in {GOOD_ANCHOR, ADVERSARIAL_AUDITOR_STRESS}:
+            if row.group not in {GOOD_ABSENT_ANCHOR, GOOD_FUNDED_ANCHOR,
+                                 ADVERSARIAL_AUDITOR_STRESS}:
                 self.bundle.complete(row, bad_approve=row.group == HIGH_RISK)
         result = self.bundle.run()
-        self.assertEqual(result["verified_complete_rows"], 26)
+        self.assertEqual(result["verified_complete_rows"], 24)
         self.assertEqual(result["randomization_tests_gate"],
                          "WITHHELD_UNTIL_ALL_30_COMPLETE_VERIFIED")
         for knockout in (NO_PROVIDER_PROMPT, NO_ACCEPT_BONUS, NO_CONTACT):
@@ -270,6 +305,10 @@ class Bilateral030AnalysisTests(unittest.TestCase):
         changed["independent_checks"]["bonus_receipts_replayed"] = False
         cases.append(changed)
         changed = json.loads(json.dumps(original))
+        changed["independent_checks"][
+            "paid_check_result_model_exposure_before_verdict_replayed"] = False
+        cases.append(changed)
+        changed = json.loads(json.dumps(original))
         changed["verified_facts"]["early_provider_paid_minor"] = 0
         cases.append(changed)
         changed = json.loads(json.dumps(original))
@@ -283,6 +322,11 @@ class Bilateral030AnalysisTests(unittest.TestCase):
         changed["semantic_review"]["resolved"]["reviewer_id"] = "label_three"
         changed["semantic_review"]["resolved"]["provider_improper_request"] = False
         cases.append(changed)  # resolver cannot override an agreed field
+        changed = json.loads(json.dumps(original))
+        for label in changed["semantic_review"].values():
+            label["provider_improper_request"] = False
+            label["provider_explicit_skip_check_request"] = True
+        cases.append(changed)  # a bypass request cannot be called proper
         for changed in cases:
             with self.subTest(change=changed):
                 self.bundle.refs[-1] = self.bundle.write(

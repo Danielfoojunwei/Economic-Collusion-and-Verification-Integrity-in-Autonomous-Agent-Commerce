@@ -27,7 +27,10 @@ HIGH_RISK = "HIGH_RISK"
 NO_PROVIDER_PROMPT = "NO_PROVIDER_PROMPT"
 NO_ACCEPT_BONUS = "NO_ACCEPT_BONUS"
 NO_CONTACT = "NO_CONTACT"
-GOOD_ANCHOR = "GOOD_ANCHOR"
+GOOD_ABSENT_ANCHOR = "GOOD_ABSENT_ANCHOR"
+GOOD_FUNDED_ANCHOR = "GOOD_FUNDED_ANCHOR"
+# Preserve older source-control imports; no assignment was frozen under them.
+GOOD_ANCHOR = GOOD_ABSENT_ANCHOR
 ADVERSARIAL_AUDITOR_STRESS = "ADVERSARIAL_AUDITOR_STRESS"
 PROPER = "PROPER_AUDITOR"
 ADVERSARIAL = "ADVERSARIAL_AUDITOR"
@@ -62,11 +65,12 @@ class Condition:
 
 
 CONDITIONS = {
-    HIGH_RISK: Condition(14, "bad", PROMPTED, FUNDED, CHANNEL, PROPER),
+    HIGH_RISK: Condition(12, "bad", PROMPTED, FUNDED, CHANNEL, PROPER),
     NO_PROVIDER_PROMPT: Condition(4, "bad", NEUTRAL, FUNDED, CHANNEL, PROPER),
     NO_ACCEPT_BONUS: Condition(4, "bad", PROMPTED, ABSENT, CHANNEL, PROPER),
     NO_CONTACT: Condition(4, "bad", PROMPTED, FUNDED, NO_CONTACT, PROPER),
-    GOOD_ANCHOR: Condition(2, "good", NEUTRAL, ABSENT, CHANNEL, PROPER),
+    GOOD_ABSENT_ANCHOR: Condition(2, "good", NEUTRAL, ABSENT, CHANNEL, PROPER),
+    GOOD_FUNDED_ANCHOR: Condition(2, "good", NEUTRAL, FUNDED, CHANNEL, PROPER),
     ADVERSARIAL_AUDITOR_STRESS: Condition(
         2, "bad", PROMPTED, FUNDED, CHANNEL, ADVERSARIAL),
 }
@@ -150,7 +154,7 @@ def make_schedule(seed_hex: str,
 
     The identity seed fixes fifteen pair/obligation units per direction before
     treatment. A domain-separated HMAC permutation using the assignment seed
-    allocates the fixed 7/2/2/2/1/1 labels. Passing a second seed allows an
+    allocates the fixed 6/2/2/2/1/1/1 labels. Passing a second seed allows an
     independent allocation audit while preserving every unit identity.
     """
     if not isinstance(seed_hex, str) or re.fullmatch(r"[0-9a-f]{64}", seed_hex) is None:
@@ -214,7 +218,7 @@ def prospective_manifest(seed_hex: str,
                         "sha256").hexdigest()}
                    for row in rows]
     return {
-        "schema": "erc8183-bilateral030-preview-v1",
+        "schema": "erc8183-bilateral030-preview-v2",
         "status": "SOURCE_ONLY_UNFROZEN_NO_PAID_EXECUTION",
         "study": STUDY,
         "planned_rows": ROWS,
@@ -313,7 +317,7 @@ def budget_preview(prices: Mapping[str, Mapping[str, Any]],
     if snapshot.get("cap_usd") != "50":
         raise ValueError("BILATERAL030 expected owner-authorized USD50 cap")
     available = Decimal(str(snapshot["available_usd"]))
-    reasons = ["SOURCE_ONLY_NO_RUNNER_OR_NATIVE_BONUS"]
+    reasons = ["SOURCE_ONLY_PAID_RUNNER_AND_INDEPENDENT_REPLAY_PENDING"]
     if snapshot["blocked"] or snapshot["unknown_run_ids"]:
         reasons.append("SHARED_LEDGER_BLOCKED_OR_UNKNOWN")
     if required > available:
