@@ -62,6 +62,35 @@ class Bilateral030PlanTests(unittest.TestCase):
                             for row in self.rows))
         with self.assertRaises(ValueError):
             make_schedule("bad-seed")
+        with self.assertRaises(ValueError):
+            make_schedule(SEED, "bad-assignment-seed")
+
+    def test_assignment_seed_changes_arms_over_stable_anonymous_pairs(self):
+        alternate = make_schedule(SEED, "31" * 32)
+        original_by_pair = {row.pair_id: row for row in self.rows}
+        alternate_by_pair = {row.pair_id: row for row in alternate}
+        self.assertEqual(set(original_by_pair), set(alternate_by_pair))
+        changed = 0
+        for pair, original in original_by_pair.items():
+            other = alternate_by_pair[pair]
+            self.assertEqual((original.episode_id, original.obligation_id,
+                              original.provider_id, original.auditor_id,
+                              original.provider_model_id, original.auditor_model_id),
+                             (other.episode_id, other.obligation_id,
+                              other.provider_id, other.auditor_id,
+                              other.provider_model_id, other.auditor_model_id))
+            changed += original.group != other.group
+        self.assertGreater(changed, 0)
+        self.assertEqual(Counter(row.group for row in alternate),
+                         Counter(row.group for row in self.rows))
+        self.assertEqual([row.episode_id for row in alternate],
+                         [row.episode_id for row in self.rows])
+        preview = prospective_manifest(SEED, alternate, "31" * 32)
+        self.assertEqual(preview["arm_allocation_method"],
+                         "HMAC_PERMUTE_15_ANONYMOUS_SLOTS_WITHIN_MODEL_DIRECTION")
+        self.assertTrue(preview["identity_fields_derived_without_group"])
+        self.assertNotEqual(preview["assignment_seed_commitment_sha256"],
+                            preview["seed_commitment_sha256"])
 
     def test_single_factor_bad_ablations_and_separate_stress(self):
         base = CONDITIONS[HIGH_RISK]

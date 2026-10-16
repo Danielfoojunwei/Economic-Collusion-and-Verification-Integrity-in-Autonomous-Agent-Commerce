@@ -144,40 +144,63 @@ def validate_rows(rows: tuple[Bilateral030Row, ...]) -> None:
             raise ValueError("BILATERAL030 role directions differ within group")
 
 
-def make_schedule(seed_hex: str) -> tuple[Bilateral030Row, ...]:
+def make_schedule(seed_hex: str,
+                  assignment_seed_hex: str | None = None) -> tuple[Bilateral030Row, ...]:
+    """Randomize fixed arm labels over anonymous pair slots within each route.
+
+    The identity seed fixes fifteen pair/obligation units per direction before
+    treatment. A domain-separated HMAC permutation using the assignment seed
+    allocates the fixed 7/2/2/2/1/1 labels. Passing a second seed allows an
+    independent allocation audit while preserving every unit identity.
+    """
     if not isinstance(seed_hex, str) or re.fullmatch(r"[0-9a-f]{64}", seed_hex) is None:
         raise ValueError("BILATERAL030 seed must be 32 lowercase hex bytes")
-    seed = bytes.fromhex(seed_hex)
+    if assignment_seed_hex is None:
+        assignment_seed_hex = seed_hex
+    if (not isinstance(assignment_seed_hex, str)
+            or re.fullmatch(r"[0-9a-f]{64}", assignment_seed_hex) is None):
+        raise ValueError("BILATERAL030 assignment seed must be 32 lowercase hex bytes")
+    identity_seed = bytes.fromhex(seed_hex)
+    assignment_seed = bytes.fromhex(assignment_seed_hex)
     rows = []
-    for group, condition in CONDITIONS.items():
-        for provider_model, auditor_model in ((SOL, SONNET), (SONNET, SOL)):
-            for replicate in range(condition.count // 2):
-                key = (group, provider_model, auditor_model, replicate)
-                pair = "pair-" + _id(seed, "pair", *key)
-                rows.append(Bilateral030Row(
-                    episode_id="bilateral030-" + _id(seed, "episode", *key),
-                    pair_id=pair,
-                    obligation_id="invoice-" + _id(seed, "obligation", *key),
-                    provider_id="provider-" + _id(seed, "provider", *key),
-                    auditor_id="auditor-" + _id(seed, "auditor", *key),
-                    group=group, truth=condition.truth,
-                    provider_prompt=condition.provider_prompt,
-                    accept_bonus=condition.accept_bonus,
-                    contact=condition.contact,
-                    auditor_policy=condition.auditor_policy,
-                    provider_model_id=provider_model,
-                    auditor_model_id=auditor_model))
+    labels = [group for group, condition in CONDITIONS.items()
+              for _ in range(condition.count // 2)]
+    if len(labels) != ROWS // 2:
+        raise AssertionError("BILATERAL030 per-direction arm labels differ")
+    for provider_model, auditor_model in ((SOL, SONNET), (SONNET, SOL)):
+        direction = (provider_model, auditor_model)
+        anonymous_slots = sorted(range(ROWS // 2), key=lambda slot: _id(
+            assignment_seed, "blocked-arm-permutation", *direction, slot))
+        for slot, group in zip(anonymous_slots, labels):
+            condition = CONDITIONS[group]
+            key = (*direction, slot)
+            pair = "pair-" + _id(identity_seed, "pair", *key)
+            rows.append(Bilateral030Row(
+                episode_id="bilateral030-" + _id(identity_seed, "episode", *key),
+                pair_id=pair,
+                obligation_id="invoice-" + _id(identity_seed, "obligation", *key),
+                provider_id="provider-" + _id(identity_seed, "provider", *key),
+                auditor_id="auditor-" + _id(identity_seed, "auditor", *key),
+                group=group, truth=condition.truth,
+                provider_prompt=condition.provider_prompt,
+                accept_bonus=condition.accept_bonus,
+                contact=condition.contact,
+                auditor_policy=condition.auditor_policy,
+                provider_model_id=provider_model,
+                auditor_model_id=auditor_model))
     ordered = tuple(sorted(rows, key=lambda row: _id(
-        seed, "execution-order", row.episode_id)))
+        identity_seed, "execution-order", row.episode_id)))
     validate_rows(ordered)
     return ordered
 
 
 def prospective_manifest(seed_hex: str,
-                         rows: tuple[Bilateral030Row, ...]) -> dict[str, Any]:
-    if rows != make_schedule(seed_hex):
+                         rows: tuple[Bilateral030Row, ...],
+                         assignment_seed_hex: str | None = None) -> dict[str, Any]:
+    if rows != make_schedule(seed_hex, assignment_seed_hex):
         raise ValueError("BILATERAL030 rows differ from seed-derived assignment")
     seed = bytes.fromhex(seed_hex)
+    assignment_seed = bytes.fromhex(assignment_seed_hex or seed_hex)
     # Per-row treatment and truth remain private until outcomes are collected.
     # The public condition commitment does not reveal the seed or the arm.
     public_rows = [{"episode_id": row.episode_id, "pair_id": row.pair_id,
@@ -196,6 +219,9 @@ def prospective_manifest(seed_hex: str,
         "study": STUDY,
         "planned_rows": ROWS,
         "seed_commitment_sha256": sha256(seed).hexdigest(),
+        "assignment_seed_commitment_sha256": sha256(assignment_seed).hexdigest(),
+        "arm_allocation_method": "HMAC_PERMUTE_15_ANONYMOUS_SLOTS_WITHIN_MODEL_DIRECTION",
+        "identity_fields_derived_without_group": True,
         "private_rows_hmac_sha256": hmac.new(
             seed, canonical([asdict(row) for row in rows]), "sha256").hexdigest(),
         "public_rows": public_rows,
