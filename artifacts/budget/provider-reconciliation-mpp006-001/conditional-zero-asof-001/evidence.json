@@ -1,0 +1,83 @@
+{
+  "actual_final_total_failed_request_usd": null,
+  "conditional_model_inference_charge_usd": "0",
+  "conditions": [
+    "The owner exports cover this API key and the 13:00 UTC hour without omitted billable sessions.",
+    "OpenRouter's published zero-completion insurance applies to this HTTP 400 schema failure.",
+    "No delayed or auxiliary charge for this failed request is later posted."
+  ],
+  "contingent_budget_exposure_usd": "6.30784",
+  "frozen_collection_sha256": "e6a323ac4c49382c96860693e43c954a6ddd251d4421db75496eeca561670f52",
+  "frozen_collection_status_counts": {
+    "COMPLETE": 1,
+    "PENDING": 6,
+    "STOPPED": 1
+  },
+  "key_aggregate_observed_after_utc": "2026-10-15T14:32:56.246644+00:00",
+  "key_aggregate_usd": "2.1870442",
+  "ledger_mutations": 0,
+  "ledger_prestate": {
+    "anchor_sha256": "c77675a2510594e4c9eac42becd5abc6c01e135cfad2f313e39969f0aa1067b7",
+    "blocked": true,
+    "cap_usd": "50",
+    "ledger_sha256": "e5067415a2abfd589cfa9c3073e8dedcc0cbc25ce2af4635978fea7c3486b440",
+    "reserved_usd": "6.30784",
+    "seq": 132,
+    "settled_spent_usd": "5.31322",
+    "unknown_run_ids": [
+      "mpp006-0e11d0595056-mpp006-bc092a2baae1584874c4f308"
+    ]
+  },
+  "official_docs": {
+    "activity-export": {
+      "http_status": 200,
+      "page_sha256": "2a39f416b8b69ee018b34032df17258567e0a22bcf784d6653a8a82e1b5af9a5",
+      "retrieved_at_utc": "2026-10-15T14:45:38.071619+00:00",
+      "url": "https://openrouter.ai/docs/cookbook/administration/activity-export"
+    },
+    "errors-and-debugging": {
+      "http_status": 200,
+      "page_sha256": "0fba9ed243296de460a5800d8717d394cd854577068be5588cb3055dd264f1e0",
+      "retrieved_at_utc": "2026-10-15T14:45:30.800341+00:00",
+      "url": "https://openrouter.ai/docs/api_reference/errors-and-debugging"
+    },
+    "zero-completion-insurance": {
+      "http_status": 200,
+      "page_sha256": "9e8a4e965717deb6de80899d030b82943ef91381184f7cf9cbf270626d67c137",
+      "retrieved_at_utc": "2026-10-15T14:45:35.561719+00:00",
+      "url": "https://openrouter.ai/docs/guides/features/zero-completion-insurance"
+    }
+  },
+  "owner_csv_sha256": {
+    "model_count": "f1e30259ab4c3a22576ee79906fc7d61ffff4708f689d6b6b2a9b3620d576372",
+    "model_usage": "900a5135005e16e5aee31eb2d6f0cd96da714e6ddba47cca898323310377fdc3",
+    "session": "29481fb76fd22888d810ea58d9bc42ce624bc935e842b54ea2030f28c158ff39"
+  },
+  "paid_model_calls": 0,
+  "per_request_invoice_available": false,
+  "public_catalog_model_sha256": "71e95fa7cf157390232d6e13a44bf61ea6b9b6a7961ced6c8f37a684b51b499a",
+  "public_pricing_assignment_manifest_sha256": "0e11d0595056d5d43037a666be1767c3ddc394b2a7914d4ab9cb7e3a97362d9f",
+  "public_pricing_fetched_utc": "2026-10-15T13:51:12.182720Z",
+  "public_pricing_request_usd": "0",
+  "recorded_13h_requests": 46,
+  "recorded_13h_spend_usd": "0.269499",
+  "result": "CONDITIONAL_ZERO_MODEL_INFERENCE_AS_OF_OBSERVATION_NOT_INVOICED",
+  "schema": "mpp006-conditional-zero-asof-export-v1",
+  "serialized_request_has_auxiliary_web_or_file_service": false,
+  "serialized_request_model": "openai/gpt-5.6-sol",
+  "serialized_request_tool_names": [
+    "market_accept",
+    "market_propose",
+    "market_view",
+    "select_mpp_flow"
+  ],
+  "session_csv_total_usd": "2.187010",
+  "settlement_requires_independent_review": true,
+  "stopped_http_status": 400,
+  "stopped_provider_error_code": "invalid_function_parameters",
+  "stopped_sample_has_model_response": false,
+  "stopped_sample_has_model_usage": false,
+  "stopped_sample_uuid": "aqKLUoK75wehRUqhXaE288",
+  "stopped_session_in_provider_export": false,
+  "unattributed_key_above_csv_usd": "0.0000342"
+}

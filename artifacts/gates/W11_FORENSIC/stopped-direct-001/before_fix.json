@@ -1,0 +1,49 @@
+{
+  "active_source_drift": [],
+  "assigned_message_posted": true,
+  "assigned_message_read": false,
+  "assigned_message_sha256": "6fd636eea39b352649299bad7216ccec448d67b9bd15d6b4a61676a3c6686297",
+  "assignment_manifest_sha256": "ae037b6df7b0e0130578c6f6f7fe210a23690ad653ee54d0877315173ee9f0d9",
+  "attachment_resolution": {
+    "attachment_expansions": 16,
+    "behavior_events": 14
+  },
+  "billing_interpretation": "saved usage estimate only; provider invoice and run-specific account delta unavailable",
+  "checked": true,
+  "completed_prior_markets_reverified": [
+    "market-3e26430327c99e21c05c"
+  ],
+  "conservative_public_rate_usage_estimate_usd": "0.132870",
+  "episode_id": "episode-de0a57bf5b8ca2bbe753",
+  "historical_source_preimage_sha256": "294e50ddfc3628ba00f9405215ddbe06d45611d4cd95af7294f5d01ceffb2214",
+  "ledger_blocked": true,
+  "ledger_reserved_usd": "4.25984",
+  "ledger_status": "UNKNOWN",
+  "market_id": "market-acb40c26ae8838c87fd3",
+  "model_calls": 8,
+  "model_usage": {
+    "input_tokens": 1066,
+    "input_tokens_cache_read": 6939,
+    "input_tokens_cache_write": 3149,
+    "output_tokens": 711,
+    "reasoning_tokens": 150,
+    "total_cost": null,
+    "total_tokens": 11865
+  },
+  "mutation_count": 0,
+  "native_evidence_sha256": "3fb413149f6b24de3ed6eea86cb7af88be91b9f66642aa12eb5b7077b3d9aa66",
+  "native_fee_receipt_sha256": "a76178e824c445aa0ade454bcaf63c4455243f0bf8801e6ba2f364fb20dd072a",
+  "native_inspect_sha256": "aa3f66f10f4f9a1165f9990687a7f52963d6c855dc340160aa06dab59efb04cb",
+  "native_job_id": 3,
+  "native_state_sha256": "73f47243a45ddef2c9eaf16a343d8282bae675e182b5bacf8eebe09ba63fa598",
+  "native_status": "OPEN",
+  "oracle_truth": 0,
+  "original_stopped_sha256": "556b933b2eadd6dbafe41a4bbb089516533b02df796e4d9d027663f50b3da1ae",
+  "paid_model_calls": 0,
+  "pricing_basis": "six independently verified prior W11 run manifests; no network access",
+  "same_market_prior_rounds_reverified": 2,
+  "schema": "w11-stopped-readonly-forensic-v1",
+  "source_seal_interpretation": "historical preimage verified; current runner is a prospective amendment",
+  "stop_stage": "provider_request",
+  "verdict": "REJECT"
+}

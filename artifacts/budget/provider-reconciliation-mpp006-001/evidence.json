@@ -1,0 +1,103 @@
+{
+  "account_usage_observation": {
+    "aggregate_above_csv_usd_rounded_7dp": "0.0000342",
+    "observed_after_utc": "2026-10-15T14:32:56.246644+00:00",
+    "observed_before_utc": "2026-10-15T14:32:55.391324+00:00",
+    "raw_response_sha256": "43413a7bd814dad8750f90a33c3bea527fe4fcaf15e90906a8a12899e94eb0fe",
+    "sanitized_file_sha256": "ac28ff2d170fd387243a5457ca57612daf0a1f3b7e0f981e80ea1e9d82b398e7",
+    "usage_usd": "2.1870442"
+  },
+  "all_exported_hourly_usage_totals_match_at_6dp": true,
+  "completed_session_matches": [
+    {
+      "completed_at_utc": "2026-10-15T13:15:27.363502+00:00",
+      "episode_id": "open006-45d3e5f5c000f353052ae159",
+      "inspect_model_events": 12,
+      "inspect_sha256": "edeca854524e8c4f81f4a5bdcaa2bd4d85c0ee188d32da3a8ad4be8b7456fadd",
+      "provider_model_label": "GPT-5.6 Sol",
+      "provider_request_count": 12,
+      "provider_session_spend_usd": "0.064948",
+      "sample_uuid": "3xFrzkfuAHpqtSCvQrqnka",
+      "started_at_utc": "2026-10-15T13:14:45.868379+00:00",
+      "study": "OPEN006"
+    },
+    {
+      "completed_at_utc": "2026-10-15T13:17:50.052573+00:00",
+      "episode_id": "open006-c76de603251a134fba5c6868",
+      "inspect_model_events": 12,
+      "inspect_sha256": "7b526129337169379f77a139e6e1d5ffaf4f91deaf32a32ee6a8b0b2cd24708a",
+      "provider_model_label": "GPT-5.6 Sol",
+      "provider_request_count": 12,
+      "provider_session_spend_usd": "0.067361",
+      "sample_uuid": "MKyq6fZxDrNQpCvzQCnJ9C",
+      "started_at_utc": "2026-10-15T13:17:06.363943+00:00",
+      "study": "OPEN006"
+    },
+    {
+      "completed_at_utc": "2026-10-15T13:20:00.613781+00:00",
+      "episode_id": "open006-d465a82d1e64e0b3f5eccef2",
+      "inspect_model_events": 12,
+      "inspect_sha256": "a52072ad6d521f964740b962892ef04b65dbce71ef86be054075d87dd3cc654a",
+      "provider_model_label": "GPT-5.6 Sol",
+      "provider_request_count": 12,
+      "provider_session_spend_usd": "0.074036",
+      "sample_uuid": "6pLhG9jQ5Xjwg6D6KzSpcU",
+      "started_at_utc": "2026-10-15T13:18:56.655204+00:00",
+      "study": "OPEN006"
+    },
+    {
+      "completed_at_utc": "2026-10-15T13:54:10.840961+00:00",
+      "episode_id": "mpp006-dcf4a781b0982260ecfe3012",
+      "inspect_model_events": 10,
+      "inspect_sha256": "6be8748efb5d1ac4a71076d14b39c9a59720b288e0e02adf65ab7bd7e251f6c0",
+      "provider_model_label": "Claude Sonnet 5.5",
+      "provider_request_count": 10,
+      "provider_session_spend_usd": "0.063154",
+      "sample_uuid": "8Dq8JKJXXk2wPFiQwgKDvu",
+      "started_at_utc": "2026-10-15T13:53:42.453681+00:00",
+      "study": "MPP006"
+    }
+  ],
+  "ledger_mutations": 0,
+  "limitations": [
+    "The user-supplied provider CSVs are unsigned and lack request-level IDs and failed requests.",
+    "Absence of the stopped session from this CSV does not establish a final zero-dollar charge.",
+    "The later key-level usage exceeds the CSV total and is not attributable to the stopped call."
+  ],
+  "paid_model_calls": 0,
+  "provider_13h_request_count": 46,
+  "provider_13h_total_usd": "0.269499",
+  "provider_csv_rows": 16,
+  "provider_csv_sha256": "29481fb76fd22888d810ea58d9bc42ce624bc935e842b54ea2030f28c158ff39",
+  "provider_csv_total_usd_rounded_6dp": "2.187010",
+  "provider_model_count_csv_sha256": "f1e30259ab4c3a22576ee79906fc7d61ffff4708f689d6b6b2a9b3620d576372",
+  "provider_model_hour_matches": [
+    {
+      "inspect_and_provider_request_count": 36,
+      "model": "GPT-5.6 Sol",
+      "provider_session_and_model_hour_spend_usd": "0.206345",
+      "session_count": 3
+    },
+    {
+      "inspect_and_provider_request_count": 10,
+      "model": "Claude Sonnet 5.5",
+      "provider_session_and_model_hour_spend_usd": "0.063154",
+      "session_count": 1
+    }
+  ],
+  "provider_model_usage_csv_sha256": "900a5135005e16e5aee31eb2d6f0cd96da714e6ddba47cca898323310377fdc3",
+  "result": "INCONCLUSIVE_FOR_EXACT_CHARGE",
+  "schema": "mpp006-provider-export-readonly-forensics-v1",
+  "stopped_episode": {
+    "budget_state": "UNKNOWN",
+    "completed_at_utc": "2026-10-15T13:57:25.766623+00:00",
+    "episode_id": "mpp006-bc092a2baae1584874c4f308",
+    "inspect_sha256": "d401ec9e8f4901679949d01a8e68a667072992f3d159cad838720927c8505a86",
+    "model_calls_attempted": 1,
+    "model_usage_empty": true,
+    "sample_uuid": "aqKLUoK75wehRUqhXaE288",
+    "session_absent_from_provider_csv": true,
+    "started_at_utc": "2026-10-15T13:57:23.186456+00:00",
+    "stopped_sha256": "afe3648e287db7cc3f05a87417ea6852969ae222dd043b26493854b983746745"
+  }
+}

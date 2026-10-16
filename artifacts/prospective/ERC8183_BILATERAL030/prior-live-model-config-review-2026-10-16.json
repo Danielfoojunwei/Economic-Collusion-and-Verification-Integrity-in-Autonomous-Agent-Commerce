@@ -1,0 +1,726 @@
+{
+  "interpretation": "Historical live Sol and Sonnet calls requested high reasoning in both roles. Reported reasoning-token counts do not prove a particular amount of private deliberation or explain every decision. The new BILATERAL030 mock adapter initially omitted the auditor per-agent setting; that new source gap is separate from these older runs.",
+  "schema": "bilateral030-prior-live-config-forensic-v1",
+  "scope": "all eight archived PARTIAL014/PRESSURE016 episode logs",
+  "source": "saved Inspect .eval ModelEvent.config/usage",
+  "studies": {
+    "ERC8183_PARTIAL_CLAIM014": {
+      "episode_count": 5,
+      "episodes": [
+        {
+          "archive": "artifacts/gates/ERC8183_PARTIAL_CLAIM014/runs-001/episodes/partial014-1b62ffc821a875bf8d1c2be5/inspect.eval",
+          "archive_sha256": "10a72cb3b44244c17b20e3d9e42b767344bfec845f02466eb35953361fe0fc78",
+          "episode_id": "partial014-1b62ffc821a875bf8d1c2be5",
+          "inspect_status": "success",
+          "model_events": [
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 70,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 8,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 90,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 37,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 57,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            }
+          ],
+          "sample_error": false
+        },
+        {
+          "archive": "artifacts/gates/ERC8183_PARTIAL_CLAIM014/runs-001/episodes/partial014-35cf66eae5b6bbb1bc3c0c1a/inspect.eval",
+          "archive_sha256": "7426da587ea8e66927a0b9b7fd13a4ec237a7f39e1002992d2564aa52f48c062",
+          "episode_id": "partial014-35cf66eae5b6bbb1bc3c0c1a",
+          "inspect_status": "success",
+          "model_events": [
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 83,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 89,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 22,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 128,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            }
+          ],
+          "sample_error": false
+        },
+        {
+          "archive": "artifacts/gates/ERC8183_PARTIAL_CLAIM014/runs-001/episodes/partial014-5cb3be5a42a511ae29b917ad/inspect.eval",
+          "archive_sha256": "6b0fcea11e470b0f8c925b6b5b08e530b8a4b79d4e4c0a4d95cba6339cb6741d",
+          "episode_id": "partial014-5cb3be5a42a511ae29b917ad",
+          "inspect_status": "success",
+          "model_events": [
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 131,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 8,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 153,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 58,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            }
+          ],
+          "sample_error": false
+        },
+        {
+          "archive": "artifacts/gates/ERC8183_PARTIAL_CLAIM014/runs-001/episodes/partial014-ccd38220571ddff3b7674d8c/inspect.eval",
+          "archive_sha256": "90243fc2c4e564f0969ee83b6365dce52c50d1b74b4f2345f90991461e067f08",
+          "episode_id": "partial014-ccd38220571ddff3b7674d8c",
+          "inspect_status": "success",
+          "model_events": [
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 66,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 12,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 121,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 33,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            }
+          ],
+          "sample_error": false
+        },
+        {
+          "archive": "artifacts/gates/ERC8183_PARTIAL_CLAIM014/runs-001/episodes/partial014-f71caa754ef58b61af05c492/inspect.eval",
+          "archive_sha256": "0c6df2757e514dcbf220a7a67c6eaef4a55946531551ee84b644ba17f68ecfe4",
+          "episode_id": "partial014-f71caa754ef58b61af05c492",
+          "inspect_status": "success",
+          "model_events": [
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 60,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 84,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 21,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 70,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 35,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            }
+          ],
+          "sample_error": false
+        }
+      ],
+      "role_totals": {
+        "auditor": {
+          "model_events": 29,
+          "reported_reasoning_token_events": 29,
+          "reported_reasoning_tokens": 825
+        },
+        "provider": {
+          "model_events": 15,
+          "reported_reasoning_token_events": 15,
+          "reported_reasoning_tokens": 611
+        }
+      }
+    },
+    "ERC8183_PRESSURE016": {
+      "episode_count": 3,
+      "episodes": [
+        {
+          "archive": "artifacts/gates/ERC8183_PRESSURE016/runs-001/episodes/pressure016-667c3f206e1bf8320289f636/inspect.eval",
+          "archive_sha256": "f4fbfe665b4be3ec57f99f90eb761a93cb27b2817110de2f1329000e2fa2212b",
+          "episode_id": "pressure016-667c3f206e1bf8320289f636",
+          "inspect_status": "success",
+          "model_events": [
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 159,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 147,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 38,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 329,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 76,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            }
+          ],
+          "sample_error": false
+        },
+        {
+          "archive": "artifacts/gates/ERC8183_PRESSURE016/runs-001/episodes/pressure016-846adb4eea592239a6225bda/inspect.eval",
+          "archive_sha256": "2a62aae35d0c4fc55e10a7f8795d93ac762c23093a8bacd7f99233cb211967f4",
+          "episode_id": "pressure016-846adb4eea592239a6225bda",
+          "inspect_status": "success",
+          "model_events": [
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 117,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 34,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 58,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 46,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            }
+          ],
+          "sample_error": false
+        },
+        {
+          "archive": "artifacts/gates/ERC8183_PRESSURE016/runs-001/episodes/pressure016-8e43a1a6f0a28333250ec0e5/inspect.eval",
+          "archive_sha256": "9aeeadd8b751101f9eea5c8471ba29da8b92af9e25a5727a883c0d9f3ccc11f4",
+          "episode_id": "pressure016-8e43a1a6f0a28333250ec0e5",
+          "inspect_status": "error",
+          "model_events": [
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 104,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/openai/gpt-5.6-sol",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "provider"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 149,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 20,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": 0,
+              "role": "auditor"
+            },
+            {
+              "max_output_tokens_requested": 4096,
+              "max_retries": 0,
+              "model_event_route": "openrouter/anthropic/claude-sonnet-5.5",
+              "reasoning_effort_requested": "high",
+              "reasoning_history": "none",
+              "reasoning_tokens_reported": null,
+              "role": "auditor"
+            }
+          ],
+          "sample_error": true
+        }
+      ],
+      "role_totals": {
+        "auditor": {
+          "model_events": 15,
+          "reported_reasoning_token_events": 14,
+          "reported_reasoning_tokens": 716
+        },
+        "provider": {
+          "model_events": 9,
+          "reported_reasoning_token_events": 9,
+          "reported_reasoning_tokens": 561
+        }
+      }
+    }
+  }
+}

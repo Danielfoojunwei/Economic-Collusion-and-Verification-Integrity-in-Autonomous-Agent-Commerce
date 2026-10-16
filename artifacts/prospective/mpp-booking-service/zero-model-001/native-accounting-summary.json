@@ -1,0 +1,47 @@
+[
+  {
+    "trial": "trial-00",
+    "initial_auditor_atomic": "5981",
+    "check_fee_atomic": 2000,
+    "check_gas_atomic": "29",
+    "auditor_compensation_gross_atomic": "30000",
+    "auditor_compensation_net_atomic": "30000",
+    "auditor_gain_minus_check_debit_atomic": 27971
+  },
+  {
+    "trial": "trial-01",
+    "initial_auditor_atomic": "5981",
+    "check_fee_atomic": 2000,
+    "check_gas_atomic": "29",
+    "auditor_compensation_gross_atomic": "10000",
+    "auditor_compensation_net_atomic": "9948",
+    "auditor_gain_minus_check_debit_atomic": 7919
+  },
+  {
+    "trial": "trial-02",
+    "initial_auditor_atomic": "5981",
+    "check_fee_atomic": 0,
+    "check_gas_atomic": 0,
+    "auditor_compensation_gross_atomic": "30000",
+    "auditor_compensation_net_atomic": "30000",
+    "auditor_gain_minus_check_debit_atomic": 30000
+  },
+  {
+    "trial": "trial-03",
+    "initial_auditor_atomic": "5981",
+    "check_fee_atomic": 0,
+    "check_gas_atomic": 0,
+    "auditor_compensation_gross_atomic": "30000",
+    "auditor_compensation_net_atomic": "29954",
+    "auditor_gain_minus_check_debit_atomic": 29954
+  },
+  {
+    "trial": "trial-04",
+    "initial_auditor_atomic": "5981",
+    "check_fee_atomic": 2000,
+    "check_gas_atomic": "29",
+    "auditor_compensation_gross_atomic": "10000",
+    "auditor_compensation_net_atomic": "10000",
+    "auditor_gain_minus_check_debit_atomic": 7971
+  }
+]

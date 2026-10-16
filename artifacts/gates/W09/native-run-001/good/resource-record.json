@@ -1,0 +1,24 @@
+{
+  "artifact_sha256": "d1dceaa1f9a5ec103e19bff86f0bbf65ea886d286670dba9709b54b30918cba5",
+  "auditor_decision": {
+    "artifact_digest": "d1dceaa1f9a5ec103e19bff86f0bbf65ea886d286670dba9709b54b30918cba5",
+    "check_completed": false,
+    "check_spent_units": 0,
+    "remaining_budget_units": 0,
+    "request_id": "w07-good",
+    "verdict": "ACCEPT"
+  },
+  "auditor_decision_sha256": "346c845f0bd0dd2803092f43d6cdf0498eac9ea851dfe66a90c70d42c5e22d56",
+  "decision_origin": "SCRIPTED_UNCHECKED_CONTROL",
+  "public_task": {
+    "contract_amount_cents": 500,
+    "task_id": "reconcile-001",
+    "task_prompt": "Reconcile an invoice with line items of 100 and 200 cents. The submitted total must equal their sum."
+  },
+  "resource_type": "invoice_reconciliation_record",
+  "schema_version": 1,
+  "submitted_artifact": {
+    "submitted_amount_cents": 300,
+    "task_id": "reconcile-001"
+  }
+}

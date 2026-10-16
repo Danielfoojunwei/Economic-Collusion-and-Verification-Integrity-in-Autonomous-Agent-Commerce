@@ -1,0 +1,93 @@
+test_insufficient_budget_does_not_mutate_state (test_core.AuditTests.test_insufficient_budget_does_not_mutate_state) ... ok
+test_role_guard_and_exactly_one_charge_across_reconstruction (test_core.AuditTests.test_role_guard_and_exactly_one_charge_across_reconstruction) ... ok
+test_snapshot_forgery_is_rejected (test_core.AuditTests.test_snapshot_forgery_is_rejected) ... ok
+test_submit_can_be_unchecked_but_cannot_change_or_follow_check (test_core.AuditTests.test_submit_can_be_unchecked_but_cannot_change_or_follow_check) ... ok
+test_accept_transfers_once_and_preserves_conservation (test_core.MockSettlementTests.test_accept_transfers_once_and_preserves_conservation) ... ok
+test_reject_refunds_principal_and_invalid_verdict_does_not_transfer (test_core.MockSettlementTests.test_reject_refunds_principal_and_invalid_verdict_does_not_transfer) ... ok
+test_good_bad_and_ambiguous_ground_truth (test_core.OracleTests.test_good_bad_and_ambiguous_ground_truth) ... ok
+test_invalid_inputs_and_artifact_digest (test_core.OracleTests.test_invalid_inputs_and_artifact_digest) ... ok
+test_public_task_and_precheck_state_do_not_expose_private_truth (test_core.OracleTests.test_public_task_and_precheck_state_do_not_expose_private_truth) ... ok
+test_exception_event_is_scrubbed (test_evidence.EvidenceWriterTests.test_exception_event_is_scrubbed) ... ok
+test_independent_verifier_rejects_tampered_file (test_evidence.EvidenceWriterTests.test_independent_verifier_rejects_tampered_file) ... ok
+test_invalid_event_and_causality_leave_no_partial_record (test_evidence.EvidenceWriterTests.test_invalid_event_and_causality_leave_no_partial_record) ... ok
+test_replay_is_byte_identical_and_hash_is_canonical (test_evidence.EvidenceWriterTests.test_replay_is_byte_identical_and_hash_is_canonical) ... ok
+test_secret_values_are_scrubbed_in_all_files (test_evidence.EvidenceWriterTests.test_secret_values_are_scrubbed_in_all_files) ... ok
+test_valid_events_outcome_and_manifest_hashes (test_evidence.EvidenceWriterTests.test_valid_events_outcome_and_manifest_hashes) ... ok
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79f1d299a0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79f1dbb920>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79f1c2c410>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79f02f8440>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79f02ccef0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79f0265b80>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79f01e9850>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79f01384d0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79f0123da0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+test_actual_orbit_inspect_task_and_role_scopes (test_orbit_integration.NativeOrbitPilotTests.test_actual_orbit_inspect_task_and_role_scopes) ... ok
+test_native_log_private_target_is_absent_from_model_inputs (test_orbit_integration.NativeOrbitPilotTests.test_native_log_private_target_is_absent_from_model_inputs) ... ok
+test_oracle_and_priced_check_on_good_bad_ambiguous (test_orbit_integration.NativeOrbitPilotTests.test_oracle_and_priced_check_on_good_bad_ambiguous) ... ok
+test_repeat_native_check_is_cached_and_charged_once (test_orbit_integration.NativeOrbitPilotTests.test_repeat_native_check_is_cached_and_charged_once) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79efd90680>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79efa28f20>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79efa65b50>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_saved_schema_evidence_and_same_seed_replay (test_orbit_integration.NativeOrbitPilotTests.test_saved_schema_evidence_and_same_seed_replay) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79f0120d40>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79efc4f6e0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79ef9b0110>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_scripted_negative_controls_expose_both_failure_directions (test_orbit_integration.NativeOrbitPilotTests.test_scripted_negative_controls_expose_both_failure_directions) ... ok
+test_worker_audit_tool_probe_is_denied_without_budget_spend (test_orbit_integration.NativeOrbitPilotTests.test_worker_audit_tool_probe_is_denied_without_budget_spend) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79ed3822a0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79ed396600>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f79ed5fde80>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 6.796s
+
+OK

@@ -1,0 +1,2 @@
+{"id":"charge-check-sdk_explicit_obligation_scope","status":"PASS","wrong_obligation_status":402,"legitimate_A_status":200}
+{"id":"charge-check-authored_adapter_obligation_guard","status":"PASS","wrong_obligation_status":403,"legitimate_A_status":200}

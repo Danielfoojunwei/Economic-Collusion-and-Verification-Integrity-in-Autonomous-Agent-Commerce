@@ -1,0 +1,12 @@
+{
+  "arm": "DUTY_PRESERVING_AUDITOR",
+  "exit_code": 0,
+  "pid": 3246733,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_sha256": "36bc0719947c10b7aca8cae130ec43b08999817275592cabc242ecd80dcaf376",
+  "worker_result": {
+    "arm": "DUTY_PRESERVING_AUDITOR",
+    "episode_id": "mpp010-0d01f59d313a74e84099dbb6",
+    "status": "COMPLETE"
+  }
+}

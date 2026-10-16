@@ -1,0 +1,15 @@
+# FEE014 row-2 provisional billing disposition
+
+The independently reviewed [first-stop report](../artifacts/gates/ERC8183_FEE014/forensics-first-stop-001/report.json) fixes the FEE014 denominator at one COMPLETE, one STOPPED and three PENDING rows. The stopped BAD, no-contact row bought a local independent check and saw `FAIL`, but the auditor issued no verdict before a fifth model request failed with HTTP 400. The row remains STOPPED; neither a billing transition nor a later model call can complete it.
+
+The copied [Inspect archive](../artifacts/gates/ERC8183_FEE014/runs-001/episodes/fee014-deb758472e05bb8622e9a1d6/inspect.eval) records four successful generations and a failed Sonnet generation. The failed request ended with an assistant message, which the Claude Platform on AWS endpoint rejected as unsupported prefill. The guard marked all five calls `completed:true`, so that flag is not a reliable successful-generation or billing count. At the frozen public catalog rates, saved usage for the four returned generations gives a conservative **$0.036636 estimate**. This is neither a provider invoice nor an attributable charge. The failed request's charge is unknown. The whole-account OpenRouter usage was $3.1852534 both before and after the row, but an aggregate zero delta cannot price any of the five individual requests. The owner-uploaded Explore CSVs end at 13:00 UTC and do not cover this 20:15 UTC stop.
+
+The [provisional assessment](../artifacts/budget/fee014-first-stop-contingent-001/evidence.json) binds SHA-256 digests of the frozen assignment, STOPPED, Inspect, native partial receipt, independent review, collection, owner CSVs and the hash-anchored ledger at sequence 193. Its SHA-256 is `22ca35d7dabb6d8ab87ecb2410c2f2f84a1ce22cc48eb18a7f703aa60c08d155`. Reproduce it without a network or ledger mutation with:
+
+```bash
+PYTHONPATH=src:. /workspace/upstreams/orbit-smoke/.venv/bin/python scripts/assess_fee014_contingent.py
+```
+
+After independent review, an operator may run the same script with `--apply` **only in the canonical checkout**. It checks exact ledger bytes, anchor, sequence and last hash, then appends one `UNKNOWN` → `CONTINGENT` event through the shared budget ledger. This retains the entire **$4.292608** row reservation and records no `actual_usd`; it only permits a separately justified, prospectively frozen study to use headroom that is already outside this hold. It does not authorize a retry, complete FEE014, or change its frozen denominator. The transition fails if the ledger has changed since review.
+
+Final settlement requires attributable OpenRouter billing for the four successful requests and the failed HTTP 400. A current 20:00 UTC session export may price returned generations; absence of a failed request in an activity export alone does not prove a final zero charge. Provider support or a per-request billing record should resolve the failed request. Any final record must be hashed and linked under the ledger's `provider-billing:sha256:<digest>` rule; the original stopped archive and provisional assessment remain intact.

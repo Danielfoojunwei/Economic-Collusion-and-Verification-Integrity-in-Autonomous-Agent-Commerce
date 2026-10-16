@@ -1,0 +1,162 @@
+{
+  "caller_checks": [
+    "proposed transaction equality",
+    "one-use replay ledger"
+  ],
+  "cases": [
+    {
+      "actual": "PASS",
+      "detail": "authorized",
+      "expected": "PASS",
+      "name": "valid_signed_delegation",
+      "presentation_sha256": "4f5ff3d8da4b395b384c7c7d0c5ff97cd49d0bbf4d6489d16d53f7d2027fa2f3",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: replay: mandate reference already used",
+      "expected": "REJECT",
+      "name": "replay_guard",
+      "presentation_sha256": "4f5ff3d8da4b395b384c7c7d0c5ff97cd49d0bbf4d6489d16d53f7d2027fa2f3",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "InvalidJWSSignature: Verification failed for all signatures[\"Failed: [InvalidJWSSignature('Verification failed')]\"]",
+      "expected": "REJECT",
+      "name": "bad_signature",
+      "presentation_sha256": "6cc1903b611ac57d3429c32300790c83d175de85cb5e0c1ca7197b358a3e4e94",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "InvalidJWSSignature: Verification failed for all signatures[\"Failed: [InvalidJWSSignature('Verification failed')]\"]",
+      "expected": "REJECT",
+      "name": "wrong_trusted_issuer",
+      "presentation_sha256": "4f5ff3d8da4b395b384c7c7d0c5ff97cd49d0bbf4d6489d16d53f7d2027fa2f3",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "InvalidJWSSignature: Verification failed for all signatures[\"Failed: [InvalidJWSSignature('Verification failed')]\"]",
+      "expected": "REJECT",
+      "name": "wrong_holder_key",
+      "presentation_sha256": "73e760d1c74a4fcab135c5b39a644e457afb29b5d04c1aea0f966de95bc56a41",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: KB-SD-JWT aud mismatch: expected 'https://wrong.invalid', got 'https://example.invalid/ap2/merchant-test'",
+      "expected": "REJECT",
+      "name": "wrong_audience",
+      "presentation_sha256": "4f5ff3d8da4b395b384c7c7d0c5ff97cd49d0bbf4d6489d16d53f7d2027fa2f3",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: KB-SD-JWT nonce mismatch: expected 'different-challenge', got 'w15-local-challenge-1'",
+      "expected": "REJECT",
+      "name": "wrong_nonce",
+      "presentation_sha256": "4f5ff3d8da4b395b384c7c7d0c5ff97cd49d0bbf4d6489d16d53f7d2027fa2f3",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: Token 0 expired at 1792063791",
+      "expected": "REJECT",
+      "name": "expired_root",
+      "presentation_sha256": "fd2b8f117fcc43fbd9e9936195f69649828b6fd23d0ad3cc97098e14e64108da",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: Token 1 expired at 1792063791",
+      "expected": "REJECT",
+      "name": "expired_leaf",
+      "presentation_sha256": "c06308681040a12cb9fac00ca599e9d50ea46530a64783be2fca745cd290dba6",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: scope: Payee Demo Merchant not in allowed list",
+      "expected": "REJECT",
+      "name": "out_of_scope_payee",
+      "presentation_sha256": "f005941d7c04a02d4742d87d3e162f5968ac632a1cd3cee037fe8f3d96922829",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: scope: Amount 7000 exceeds maximum 5000",
+      "expected": "REJECT",
+      "name": "out_of_scope_amount",
+      "presentation_sha256": "99fbb8067a275aa5f6b64e456e74fbc89b372f336943b61e6b077ceefb2a8d44",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: scope: Currency mismatch: expected USD, got EUR",
+      "expected": "REJECT",
+      "name": "out_of_scope_currency",
+      "presentation_sha256": "f926914a6858f161f635f04afdf5709eeae58d34a9015e68b589d91ce45dcb7c",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: scope: Payment instrument other-instrument not in allowed list",
+      "expected": "REJECT",
+      "name": "out_of_scope_instrument",
+      "presentation_sha256": "d22fb3bf8e62b952bc457f396e67e0bf05d0dde96f310435450605d8cc9315ec",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: transaction payee mismatch",
+      "expected": "REJECT",
+      "name": "proposed_payee_mismatch",
+      "presentation_sha256": "4f5ff3d8da4b395b384c7c7d0c5ff97cd49d0bbf4d6489d16d53f7d2027fa2f3",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: transaction amount or currency mismatch",
+      "expected": "REJECT",
+      "name": "proposed_amount_mismatch",
+      "presentation_sha256": "4f5ff3d8da4b395b384c7c7d0c5ff97cd49d0bbf4d6489d16d53f7d2027fa2f3",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: transaction instrument mismatch",
+      "expected": "REJECT",
+      "name": "proposed_instrument_mismatch",
+      "presentation_sha256": "4f5ff3d8da4b395b384c7c7d0c5ff97cd49d0bbf4d6489d16d53f7d2027fa2f3",
+      "test_passed": true
+    },
+    {
+      "actual": "REJECT",
+      "detail": "ValueError: scope: Payment transaction_id mismatch: expected different-checkout-hash, got 9lSRSXfpL0z8n97RqFPO4yCVd0CAwyXUwL2ExwoTMfQ",
+      "expected": "REJECT",
+      "name": "transaction_reference_mismatch",
+      "presentation_sha256": "4f5ff3d8da4b395b384c7c7d0c5ff97cd49d0bbf4d6489d16d53f7d2027fa2f3",
+      "test_passed": true
+    }
+  ],
+  "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+  "fail_count": 0,
+  "generated_utc": "2026-10-15T11:38:11.601936+00:00",
+  "pass_count": 17,
+  "payment_execution": "NONE: signed authorization only; no PSP or funds",
+  "private_keys_written": false,
+  "protocol": "AP2",
+  "sdk_checks": [
+    "ES256 root/holder signatures",
+    "audience",
+    "challenge nonce",
+    "exp",
+    "open-to-closed constraints"
+  ],
+  "sdk_package_version": "0.1",
+  "upstream_commit": "b4587ac1d055888a73b4b21750973cffba961793",
+  "upstream_tag": "v0.2.0",
+  "work_order": "W15"
+}

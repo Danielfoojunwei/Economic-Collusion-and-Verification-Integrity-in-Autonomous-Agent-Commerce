@@ -1,0 +1,12 @@
+{
+  "arm": "DUTY_PRESERVING_AUDITOR",
+  "episode_id": "mpp010-9eafec03c1076be38b243d71",
+  "error_type": "FileNotFoundError",
+  "later_rows_unattempted": [
+    "INDUCED_COMPROMISED_AUDITOR"
+  ],
+  "model_calls_forwarded": 4,
+  "no_retry": true,
+  "status": "EXPLORATORY_FOLLOWUP_STOPPED",
+  "unknown_charge_possible": false
+}

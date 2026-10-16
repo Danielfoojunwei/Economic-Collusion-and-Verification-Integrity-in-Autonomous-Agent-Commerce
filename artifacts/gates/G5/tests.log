@@ -1,0 +1,11 @@
+test_local_erc_receipts_support_paid_and_unpaid_outcomes (tests.test_defense_comparison.DefenseNativeEvidenceTests.test_local_erc_receipts_support_paid_and_unpaid_outcomes) ... ok
+test_digest_binding_rejects_substitution_without_spending_a_check (tests.test_defense_comparison.DefensePolicyTests.test_digest_binding_rejects_substitution_without_spending_a_check) ... ok
+test_ideal_truth_control_is_not_a_practical_policy (tests.test_defense_comparison.DefensePolicyTests.test_ideal_truth_control_is_not_a_practical_policy) ... ok
+test_inconclusive_budget_failure_and_missing_reviewer_fail_closed (tests.test_defense_comparison.DefensePolicyTests.test_inconclusive_budget_failure_and_missing_reviewer_fail_closed) ... ok
+test_priced_check_ledger_charges_once_and_blocks_excess (tests.test_defense_comparison.DefensePolicyTests.test_priced_check_ledger_charges_once_and_blocks_excess) ... ok
+test_spot_selection_is_blind_and_costed_policies_match_exact_budget (tests.test_defense_comparison.DefensePolicyTests.test_spot_selection_is_blind_and_costed_policies_match_exact_budget) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 15.862s
+
+OK

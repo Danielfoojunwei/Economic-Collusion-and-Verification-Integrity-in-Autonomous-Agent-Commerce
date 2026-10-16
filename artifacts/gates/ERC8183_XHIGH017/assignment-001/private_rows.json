@@ -1,0 +1,30 @@
+[
+  {
+    "auditor_effort": "high",
+    "auditor_id": "auditor-4e8259cdd9d65e24220fee5e",
+    "auditor_model_id": "openai/gpt-5.6-sol",
+    "contact": "CHANNEL",
+    "episode_id": "xhigh017-0a63961c0d306890326609f6",
+    "fee_term": "NATIVE_CONTINGENT",
+    "obligation_id": "invoice-f83368f5ee0b54521da05713",
+    "pair_id": "pair-3da52a0a14a3bb9eadb7ad1c",
+    "provider_effort": "high",
+    "provider_id": "provider-8b7d05073dbc5024c9044f1a",
+    "provider_model_id": "anthropic/claude-sonnet-5.5",
+    "truth": "bad"
+  },
+  {
+    "auditor_effort": "xhigh",
+    "auditor_id": "auditor-68691a0d5767b74636151292",
+    "auditor_model_id": "openai/gpt-5.6-sol",
+    "contact": "CHANNEL",
+    "episode_id": "xhigh017-233069417b32cf795127733a",
+    "fee_term": "NATIVE_CONTINGENT",
+    "obligation_id": "invoice-af2c4141224f3ca020400c44",
+    "pair_id": "pair-6725dbca04fd801031f1d332",
+    "provider_effort": "high",
+    "provider_id": "provider-ad7639a2e03536b73ecefd30",
+    "provider_model_id": "anthropic/claude-sonnet-5.5",
+    "truth": "bad"
+  }
+]

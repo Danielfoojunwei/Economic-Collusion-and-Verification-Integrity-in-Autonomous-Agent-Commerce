@@ -1,0 +1,54 @@
+{
+  "schema": "fee014-provisional-billing-independent-review-v1",
+  "reviewer_id": "/root/fee014_billing_forensic/fee014_contingent_review",
+  "reviewed_utc": "2026-10-15",
+  "decision": "GO_FOR_ONE_CANONICAL_UNKNOWN_TO_CONTINGENT_TRANSITION",
+  "canonical_head_at_review": "15f543f9f093e756fcc430e017267dfee1a702e1",
+  "canonical_ledger_prestate": {
+    "seq": 193,
+    "last_hash": "a26c433d9a01cfcb2f06297b15d77b1c8eecc78e2f21a2f13a759db11962712c",
+    "ledger_sha256": "62bd28a529e6cc003ad4094c13925cbe3c1c717f55f470bd5331ef94b987b8b2",
+    "anchor_sha256": "a5f56167c710258f64531377b3087a3999a3b670b164358d48f5dd64412cbb0b",
+    "cap_usd": "50",
+    "settled_spent_usd": "8.832534",
+    "reserved_usd": "18.386908",
+    "available_usd": "22.780558",
+    "blocked": true,
+    "unknown_run_ids": [
+      "fee014-d6409ff93bcb-fee014-deb758472e05bb8622e9a1d6"
+    ]
+  },
+  "reviewed_artifacts_sha256": {
+    "scripts/assess_fee014_contingent.py": "5b93782d104758f227a1b0d28567a5c127c6892f2b1cd585d4c4e82bb9c7d6be",
+    "artifacts/budget/fee014-first-stop-contingent-001/evidence.json": "22ca35d7dabb6d8ab87ecb2410c2f2f84a1ce22cc48eb18a7f703aa60c08d155",
+    "artifacts/budget/fee014-first-stop-contingent-001/openrouter-ledger.prestate.jsonl": "62bd28a529e6cc003ad4094c13925cbe3c1c717f55f470bd5331ef94b987b8b2",
+    "artifacts/budget/fee014-first-stop-contingent-001/openrouter-ledger.prestate.jsonl.anchor": "a5f56167c710258f64531377b3087a3999a3b670b164358d48f5dd64412cbb0b"
+  },
+  "verification": {
+    "read_only_assessment": "PASS_IN_CANONICAL_CHECKOUT",
+    "focused_tests": "3_PASS_0_FAIL",
+    "frozen_itt_denominator": "1_COMPLETE_1_STOPPED_3_PENDING_NO_RETRY_OR_SUBSTITUTION",
+    "saved_inspect_generation_count": 4,
+    "saved_inspect_failed_http_400_count": 1,
+    "returned_generation_usage_estimate_usd": "0.036636",
+    "usage_estimate_is_provider_invoice": false,
+    "owner_csv_latest_hour_utc": "2026-10-15 13:00:00",
+    "owner_csv_covers_20_15_utc_stop": false,
+    "whole_account_zero_delta_is_per_request_bill": false,
+    "expected_retained_fee014_reservation_usd": "4.292608",
+    "expected_post_transition_seq": 194,
+    "expected_post_transition_unknown_run_ids": [],
+    "expected_post_transition_available_usd": "22.780558"
+  },
+  "limits": [
+    "The transition is provisional: charges for four returned generations and one failed HTTP 400 remain unattributed.",
+    "No actual_usd or zero charge may be inferred from the assessment or the whole-account delta.",
+    "The FEE014 stopped row remains STOPPED; this review authorizes no retry, row recode, or causal inference.",
+    "Apply only if canonical ledger bytes, anchor, seq, and last_hash still match this reviewed prestate; final settlement requires attributable provider billing."
+  ],
+  "review_actions": {
+    "paid_model_calls": 0,
+    "ledger_mutations": 0,
+    "native_payment_transactions": 0
+  }
+}

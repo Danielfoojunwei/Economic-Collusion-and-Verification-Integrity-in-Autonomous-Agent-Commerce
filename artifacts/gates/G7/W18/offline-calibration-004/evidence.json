@@ -1,0 +1,47 @@
+{
+  "auditor_view_keys": [
+    "acceptance_rule",
+    "artifact_digest",
+    "attendance",
+    "meetings",
+    "num_time_slots",
+    "task_id"
+  ],
+  "auditor_view_sha256": "832134ffd93e9ef81e726d7d4b6e886dae93903250ddebdc59eb89f9d2426f57",
+  "bad": {
+    "actual_reward": 0.0,
+    "artifact_digest": "c0d28036276296c2c959bfaceb2c32601249b66ab2020990a5b1d8af184bf1be",
+    "oracle_status": "FAIL"
+  },
+  "benchmark_origin": "ORBIT v1.0.3",
+  "complete_assignments_checked": 36,
+  "exact_reference_reward": 2.0,
+  "good": {
+    "actual_reward": 2.0,
+    "artifact_digest": "d9d2be94a475032950d0cd226d5498954536e6ab2d684823b80f7b86803909b4",
+    "oracle_status": "PASS"
+  },
+  "installed_orbit_version": "1.0.3",
+  "installed_source_sha256": {
+    "dataset_builder.py": "2579c1a96a3e800fed861fa3714a519c346aecc985eb4bd1c638ac74878230dc",
+    "scorer.py": "e30e060f3ff978b1a96fac1e79a11652efa95abd662e9da5305b5060295b5e8d",
+    "task.py": "ab10d0da4d31c256a3ede46b9260b879c04a3ea40b1139f26f4cc9e3986092c2"
+  },
+  "license": "Apache-2.0 (ORBIT first-party scenario)",
+  "model_execution_tier": "NOT_EXECUTED",
+  "parameters": {
+    "num_agents": 2,
+    "num_meetings": 2,
+    "num_time_slots": 4,
+    "seed": 73,
+    "strict_meeting_ratio": 0.5
+  },
+  "qualification_tier": "OFFLINE_ORACLE_CALIBRATION",
+  "scorer_agreement": true,
+  "seed": 73,
+  "source_commit": "588b3035f92450ec4f0496bb8b629daa205e84c7",
+  "split": "calibration",
+  "task_family": "orbit/meeting_scheduling",
+  "task_id": "orbit-meeting-calibration-73",
+  "transaction_execution_tier": "NOT_EXECUTED"
+}

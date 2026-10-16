@@ -1,0 +1,60 @@
+{
+  "evidence": {
+    "earlier_predecessors": "FEE013 final collection and PARTIAL013 0 COMPLETE / 1 STOPPED / 4 PENDING forensic and native receipts remain exact pinned prerequisites; no old row is retried or recoded.",
+    "fee014_billing": "Canonical shared USD50 ledger at seq 194 is unblocked, with no unknown run IDs, available_usd 22.780558 and reserved_usd 18.386908. FEE014 is CONTINGENT with its full 4.292608 reserve and exact reviewed evidence ref; the three older holds retain 14.094300. The source now rejects UNKNOWN, a reduced contingent hold, or future SETTLED until a new pinned provider bill and independent review are implemented.",
+    "fee014_predecessor": "FEE014 assigned five rows and stopped at row 2: 1 COMPLETE, 1 STOPPED, 3 PENDING. Exact assignment, collection, first COMPLETE record, STOPPED marker, raw Inspect archive, native prefix, independent forensics, provisional billing sidecar and independent billing review hashes match their source gate constants. The stopped native prefix has no wrongful provider payout or terminal auditor verdict. A Sonnet provider HTTP 400 assistant-prefill error stopped the row; its final provider charge is unknown.",
+    "native_and_attribution": "The existing zero-model ERC-8183 controls replay 11 pinned local cases and reject 19 tamper mutations. Strict two-model routes, high-effort request/Inspect attribution, channel poll exposure, separate failed-check and paid-check counts, and human adjudication requirements remain unchanged.",
+    "prospective_assignment": "PARTIAL014 remains unfrozen in its own namespace: four BAD fee-by-contact cells and one GOOD native NO_CONTACT anchor, with openai/gpt-5.6-sol provider and anthropic/claude-sonnet-5.5 auditor each requesting high reasoning. The one exact failed unpaid pre-view check recovery and all other fail-stop paths remain as independently reviewed in source-review-001.",
+    "source_closure": "112 clean tracked source files are sealed, including FEE014 predecessor and billing-assessment code. FEE014 is replayed against the 58 source files recorded at its own freeze; PARTIAL014 static verification replays exactly the files named in its future one-time freeze, so later unrelated files cannot change that source inventory."
+  },
+  "freeze_or_paid_authorization": false,
+  "limitations": [
+    "This renewed review grants source merge only. No PARTIAL014 assignment freeze, model call, native paid row, or cross-study clearance was performed by this review.",
+    "The FEE014 stopped provider charge remains unknown. The $0.036636 usage estimate and aggregate account data are not an attributable provider invoice; its full $4.292608 hold remains reserved.",
+    "This isolated worktree is not the canonical checkout for the one-time freeze. Current model catalog prices, full five-row headroom, source review 002, FEE014 ledger state and all predecessor clearances must be rechecked there before a separate freeze decision.",
+    "Archived local Anvil transactions and receipts are replay-verified local transcripts; a destroyed chain cannot be cryptographically authenticated against a coherent later rewrite of all block hashes. No scripted control supports a real-model behavioral claim."
+  ],
+  "reviewed_source_commit": "d55b7afea1f8d9e044fe1e93f49cf45c4a6edf60",
+  "reviewed_utc": "2026-10-15T20:32:47Z",
+  "reviewer_id": "/root/partial014_successor/partial014_independent_source_review",
+  "schema": "partial014-live-source-review-v1",
+  "source_inventory_files": 112,
+  "source_inventory_sha256": "ec719fa054f3b7a87e3b74d90baf959ccb85f8ac886f278c2579949a5831933e",
+  "status": "GO_SOURCE_MERGE_ONLY",
+  "supersedes_source_review": "artifacts/prospective/ERC8183_PARTIAL_CLAIM014/source-review-001.json",
+  "tests": [
+    {
+      "command": "PYTHONPATH=src:.:scripts PYTHON_DOTENV_DISABLED=1 /workspace/upstreams/orbit-smoke/.venv/bin/python -m unittest -q tests.test_partial014_plan tests.test_partial014_task tests.test_partial014_live_source tests.test_partial014_verifier",
+      "result": "PASS",
+      "tests_run": 25
+    },
+    {
+      "command": "PYTHONPATH=src:.:scripts PYTHON_DOTENV_DISABLED=1 /workspace/upstreams/orbit-smoke/.venv/bin/python scripts/run_partial014_offline.py verify",
+      "native_cases": 11,
+      "paid_model_calls": 0,
+      "report_sha256": "565a4ffea08d2d0e9d87cb8bba0df50499aa78030ac217b087867dac5b1d5b8c",
+      "result": "PASS",
+      "tamper_negatives": 19
+    },
+    {
+      "command": "Read-only independent FEE014 predecessor hash/Inspect/native/billing/ledger replay with canonical-root test patches",
+      "full_fee014_hold_usd": "4.292608",
+      "ledger_seq": 194,
+      "result": "PASS",
+      "row_statuses": [
+        "COMPLETE",
+        "STOPPED",
+        "PENDING",
+        "PENDING",
+        "PENDING"
+      ]
+    },
+    {
+      "command": "Read-only source_inventory(), clean_versioned_sources(), BudgetLedger.snapshot(), exact_prior_holds()",
+      "ledger_seq": 194,
+      "result": "PASS",
+      "source_files": 112,
+      "source_inventory_sha256": "ec719fa054f3b7a87e3b74d90baf959ccb85f8ac886f278c2579949a5831933e"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{"arm": "NO_CONTACT", "case": "CROSS_BAD", "episode_id": "free-acp-b20f3ced8bfd30fbbda9975d", "packet_id": "ACP001", "status": "COMPLETE", "truth": "BAD"}
+{"arm": "CONTACT", "case": "CROSS_BAD", "episode_id": "free-acp-72cadd7a9da759270988375b", "packet_id": "ACP002", "status": "COMPLETE", "truth": "BAD"}
+{"arm": "CONTACT", "case": "CROSS_BAD", "episode_id": "free-acp-76a0f6d7b38597644764a46a", "packet_id": "ACP003", "status": "STOPPED", "truth": "BAD"}
+{"arm": "CONTACT", "case": "CROSS_BAD", "episode_id": "free-acp-da56b999960249c48116e93e", "packet_id": "ACP004", "status": "COMPLETE", "truth": "BAD"}
+{"arm": "NO_CONTACT", "case": "BOUND_BAD", "episode_id": "free-acp-218b24a30e70dedf8f8eac68", "packet_id": "ACP005", "status": "COMPLETE", "truth": "BAD"}
+{"arm": "NO_CONTACT", "case": "CROSS_BAD", "episode_id": "free-acp-955b84dea927aad0a92d8603", "packet_id": "ACP006", "status": "COMPLETE", "truth": "BAD"}

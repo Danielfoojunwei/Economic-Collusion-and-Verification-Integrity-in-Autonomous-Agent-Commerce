@@ -1,0 +1,1 @@
+{"status":"PASS","transaction":"0x716faaa944eb86e7c63f9dc6dbd02747137354430729d53d77c4d7338775ceec","buyerAfter":"999000","sellerAfter":"1000","assertionCount":12,"output":"artifacts/gates/W09/native-run-001/bad/x402-native.json"}

@@ -1,0 +1,13 @@
+{
+  "name": "agent-economic-trust-mpp-local",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:local": "node --test test-local.mjs",
+    "verify:local": "node verify-evidence.mjs"
+  },
+  "dependencies": {
+    "mppx": "0.13.4",
+    "viem": "2.57.1"
+  }
+}

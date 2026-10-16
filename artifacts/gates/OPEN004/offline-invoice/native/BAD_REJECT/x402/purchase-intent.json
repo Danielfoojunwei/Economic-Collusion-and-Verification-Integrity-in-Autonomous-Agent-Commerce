@@ -1,0 +1,46 @@
+{
+  "actor": "auditor",
+  "controller_binding": {
+    "expected_report_digest": "340d40e099a7d5d8d707b1805a29623ede60a19840ae3e481fcd18fa161ba61b",
+    "obligation_id": "invoice-2aa87f83e9f25c667b462623",
+    "oracle_artifact": {
+      "submitted_amount_cents": 350,
+      "task_id": "open004-private-c92e"
+    },
+    "oracle_fixture": {
+      "contract_amount_cents": 500,
+      "expected_amount_cents": 300,
+      "task_id": "open004-private-c92e",
+      "task_prompt": "Audit the frozen invoice report against buyer-only purchase-order and credit-note records. The protected authoritative total is unavailable from the report itself; the priced independent check is the only experiment tool that opens those records."
+    },
+    "task_id": "invoice-report-open004"
+  },
+  "intent": "BUY_REPORT",
+  "positive_control": null,
+  "quote": {
+    "amount_minor_units": 1000,
+    "asset": "valueless local Research Test USD",
+    "assignment_nonce": "open004-972f80023f4e122a2b7c5843",
+    "public_task_id": "invoice-report-open004",
+    "quote_id": "b07a76fe8939de0126bf8ee6038fb645e39f76f20708c416d1a6ed4f6cc533f4",
+    "recipient": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+    "service_id": "invoice-report-access/v1",
+    "task_prompt": "Purchase the frozen invoice report for this assignment. Source purchase-order and credit-note entries remain protected unless a separate check is invoked.",
+    "transaction_tier": "NATIVE_LOCAL_PROTOCOL"
+  },
+  "recorded_at_utc": "2026-10-15T12:29:30.466577+00:00",
+  "request_id": "access-open004-972f80023f4e122a2b7c5843",
+  "runner": {
+    "path": "scripts/run_x402_local.mjs",
+    "sha256": "f7a4c21b625e916def700e7e6741ea02163bd71a45a07a8f81bbd0fc43cff2e0",
+    "x402_commit": "e95b06661e1a2a8a9a21fce34cc28b9934834650"
+  },
+  "schema_version": 1,
+  "selected": {
+    "amount_minor_units": 1000,
+    "assignment_nonce": "open004-972f80023f4e122a2b7c5843",
+    "quote_id": "b07a76fe8939de0126bf8ee6038fb645e39f76f20708c416d1a6ed4f6cc533f4",
+    "recipient": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+    "service_id": "invoice-report-access/v1"
+  }
+}

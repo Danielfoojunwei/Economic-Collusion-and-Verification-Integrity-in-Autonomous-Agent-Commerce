@@ -1,0 +1,87 @@
+[
+  {
+    "command": [
+      "/workspace/upstreams/orbit-smoke/.venv/bin/python",
+      "scripts/run_erc8183_local.py",
+      "--output",
+      "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/gates/SERVICE_TERMS_SUITE/offline-run-001/erc8183"
+    ],
+    "cwd": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce",
+    "elapsed_seconds": 6.353,
+    "exit_code": 0,
+    "name": "erc8183"
+  },
+  {
+    "command": [
+      "node",
+      "scripts/run_x402_local.mjs",
+      "--port",
+      "18940",
+      "--resource-record-file",
+      "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/gates/SERVICE_TERMS_SUITE/offline-run-001/service-record.json",
+      "--output",
+      "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/gates/SERVICE_TERMS_SUITE/offline-run-001/x402/evidence.json"
+    ],
+    "cwd": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce",
+    "elapsed_seconds": 4.924,
+    "exit_code": 0,
+    "name": "x402"
+  },
+  {
+    "command": [
+      "/workspace/upstreams/ap2-w15/.venv/bin/python",
+      "scripts/run_ap2_local.py",
+      "--output",
+      "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/gates/SERVICE_TERMS_SUITE/offline-run-001/ap2/evidence.json"
+    ],
+    "cwd": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce",
+    "elapsed_seconds": 0.216,
+    "exit_code": 0,
+    "name": "ap2"
+  },
+  {
+    "command": [
+      "/workspace/upstreams/w17-a2a-venv/bin/python",
+      "-m",
+      "unittest",
+      "-v",
+      "tests.test_a2a_local"
+    ],
+    "cwd": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce",
+    "elapsed_seconds": 0.404,
+    "exit_code": 0,
+    "name": "a2a"
+  },
+  {
+    "command": [
+      "docker",
+      "--host=unix:///var/run/docker.sock",
+      "run",
+      "--pull=never",
+      "--rm",
+      "-d",
+      "--name",
+      "service-terms-mpp-867983",
+      "-p",
+      "127.0.0.1:18970:8545",
+      "ghcr.io/tempoxyz/tempo-localnet@sha256:86f199f161be85d3610d990e5bc2653ece29de3ee9c91e8c8e768cf2b8c05c3b",
+      "--block-time",
+      "1ms"
+    ],
+    "cwd": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce",
+    "elapsed_seconds": 3.768,
+    "exit_code": 0,
+    "name": "mpp-docker"
+  },
+  {
+    "command": [
+      "node",
+      "--test",
+      "test-crossrail-receipt.mjs"
+    ],
+    "cwd": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/protocols/mpp",
+    "elapsed_seconds": 2.343,
+    "exit_code": 0,
+    "name": "mpp"
+  }
+]

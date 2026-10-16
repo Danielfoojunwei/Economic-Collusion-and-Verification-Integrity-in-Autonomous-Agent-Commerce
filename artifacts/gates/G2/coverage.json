@@ -1,0 +1,23 @@
+{
+  "name": "ERC-8183",
+  "component_type": "evaluator_job_escrow",
+  "official_url": "https://github.com/erc-8183/base-contracts",
+  "spec_version": "base-contracts pinned implementation 142e669c1fd318486a4628395b629f033654dd06",
+  "commit_sha": "142e669c1fd318486a4628395b629f033654dd06",
+  "native_sdk_installed": true,
+  "credential_type": "deterministic Anvil unlocked test accounts only",
+  "test_environment": "Anvil 1.8.5, Cancun, chain 31337, 127.0.0.1 ephemeral port, valueless MockUSDC",
+  "native_transactions": 49,
+  "tests_total": 78,
+  "pass_count": 78,
+  "fail_count": 0,
+  "skip_count": 0,
+  "skip_reason": null,
+  "supports_evaluator": true,
+  "supports_refund": true,
+  "application_guard_needed": true,
+  "evidence_file": "artifacts/gates/G2/local-run-004/evidence.json",
+  "model_behavior_tier": "SCRIPTED",
+  "payment_tier": "NATIVE_LOCAL_CHAIN",
+  "note": "native_sdk_installed denotes the pinned official contract implementation and Foundry toolchain; the separate W07 application guard is pending"
+}

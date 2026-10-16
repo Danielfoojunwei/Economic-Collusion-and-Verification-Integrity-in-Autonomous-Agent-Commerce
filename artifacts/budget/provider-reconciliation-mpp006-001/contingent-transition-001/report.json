@@ -1,0 +1,26 @@
+{
+  "actual_final_total_usd": null,
+  "anchor_sha256": "b3fe9719955efd24b330e372816a0302bf41b325a824f1c16d8aad6ada3037d9",
+  "applied_at_utc": "2026-10-15T15:04:00.826522Z",
+  "available_usd": "38.37894",
+  "blocked": false,
+  "cap_usd": "50",
+  "contingent_run_ids": [
+    "mpp006-0e11d0595056-mpp006-bc092a2baae1584874c4f308"
+  ],
+  "evidence_ref": "sha256:1b06d264b6a60bdfcff4e4a6de5bfe26c0fdf6e3d5aa61483b45cf4d5ddc8fc3",
+  "ledger_event_hash": "ff69e4349dbf3c23543f30630843ed709fe5710c2bf4720eea18f6be41ea6d9a",
+  "ledger_seq": 133,
+  "ledger_sha256": "557790fa440f2dfebb7cc04fe19c6e2d4ebdc5f226bffc7617835d7147193e31",
+  "original_collection_sha256": "e6a323ac4c49382c96860693e43c954a6ddd251d4421db75496eeca561670f52",
+  "original_stopped_sha256": "afe3648e287db7cc3f05a87417ea6852969ae222dd043b26493854b983746745",
+  "paid_model_calls_from_transition": 0,
+  "payment_transactions_from_transition": 0,
+  "prior_anchor_sha256": "c77675a2510594e4c9eac42becd5abc6c01e135cfad2f313e39969f0aa1067b7",
+  "prior_ledger_sha256": "e5067415a2abfd589cfa9c3073e8dedcc0cbc25ce2af4635978fea7c3486b440",
+  "reserved_usd": "6.30784",
+  "run_id": "mpp006-0e11d0595056-mpp006-bc092a2baae1584874c4f308",
+  "schema": "mpp006-contingent-ledger-transition-v1",
+  "settled_spent_usd": "5.31322",
+  "unknown_run_ids": []
+}

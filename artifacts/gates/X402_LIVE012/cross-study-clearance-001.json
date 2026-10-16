@@ -1,0 +1,15 @@
+{
+  "competing_gate_inventory_sha256": "8adc4b204b15cb99bae1f70071a1ec73c9b3d09ed319eee0b1b07de6b8d5a059",
+  "ledger_at_clearance": {
+    "cap_usd": "50",
+    "last_hash": "0f7347df59a82f7a44ba9664331261faf2e52b98052c4b5bd673952b90fa320d",
+    "seq": 165
+  },
+  "mpp011_disposition": "CLOSED_AFTER_COMPLETE_COLLECTION",
+  "mpp011_final_collection_path": "artifacts/gates/MPP011/collection-005-final.json",
+  "mpp011_final_collection_sha256": "ad5e6eaf7587e322f1bcd8ff63766ebbdbc483e8aad2a81f3ae4cf37978604f0",
+  "schema": "x402-live012-cross-study-clearance-v1",
+  "status": "GO_AFTER_MPP011_FINAL_DISPOSITION",
+  "x402011_final_collection_path": "artifacts/gates/X402_LIVE011/collection-001-after-first-stop.json",
+  "x402011_final_collection_sha256": "49e3d3bb707700a55f89156c0423bd28f9d474344dfab8be4b676c065b5c281b"
+}

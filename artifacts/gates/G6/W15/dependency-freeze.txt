@@ -1,0 +1,18 @@
+annotated-types==0.8.0
+-e file:///workspace/upstreams/ap2-w15
+cffi==2.1.1
+cryptography==46.0.5
+iniconfig==2.3.1
+jwcrypto==1.5.6
+packaging==26.3
+pluggy==1.6.0
+py==1.11.0
+pycparser==3.11
+pydantic==2.12.5
+pydantic-core==2.41.5
+pygments==2.21.0
+pytest==9.0.2
+pyyaml==6.0.3
+sd-jwt==0.10.4
+typing-extensions==4.16.0
+typing-inspection==0.4.4

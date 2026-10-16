@@ -1,0 +1,12 @@
+{
+  "name": "longitudinal_auditor_budget_only",
+  "protocols": "erc8183_draft,virtuals_acp_v2,a2a_erc8183,x402_v2,mpp,ap2_v02",
+  "scenarios": "baseline,provider_dependence,scarce_audit,mixed_pressure",
+  "policies": "economic",
+  "guards": "none",
+  "qualities": "good,bad",
+  "seeds": 10,
+  "episodes": 10,
+  "output": "runs/longitudinal",
+  "warning": "Only verification budget persists; LLM beliefs and financial network histories do not. This is NOT emergent coordination."
+}

@@ -1,0 +1,113 @@
+{
+  "acp_checkout_execution_tier": "SCRIPTED_SIMULATION",
+  "acp_payment_execution": "NONE; sample payment data handled by local mock only",
+  "collusion_or_named_protocol_exploit_claim": "NONE",
+  "erc8183_asset": "valueless disposable local MockUSDC",
+  "erc8183_transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL",
+  "model_execution_tier": "SCRIPTED_SIMULATION; no model call",
+  "policy_origin": "SCRIPTED_APPLICATION_ADAPTER_NOT_PROTOCOL_GUARANTEE",
+  "provenance": {
+    "acp_examples_sha256": "989e4bc7ccbdb789ea362450963821a368da63d20a2000186455fa7fbcaac8e7",
+    "acp_schema_sha256": "d0e4290617d66bf05d002b8ace388732be2b3eb9a92a1003db7a2daa1e0436f2",
+    "acp_upstream_commit": "7fdd78df677a94dce04c770644b0fbbb1401272b",
+    "source_sha256": {
+      "protocols/acp_retail/audit_handoff_control.py": "4a830bb23460afd3a0a74b84f6d81aaa8f9e22d4a1545a2a9a0b1c6bf244818b",
+      "protocols/acp_retail/local_checkout.py": "82c6a9b2fba5f626798fe09c169f090ae5be9c80ada1536a2bf6adfd0ce47fbb",
+      "scripts/run_acp_audit_handoff_control.py": "e66d009dab11afeaeeef9f268f0403fac62e16ebef7ff157ffceff77ee599065",
+      "scripts/verify_acp_audit_handoff_control.py": "47d0ded42da01b941ea4764aeeb07ca8d6f10e8f4c06eeb691e1b0b84cb633e9",
+      "src/agent_economic_trust/open005_native.py": "1778ba9150722bd86dd19439a8a4dc2fd5f6f304875b044ba95401bad7c990f9",
+      "src/agent_economic_trust/open005_native_verifier.py": "d15197857d172c92266259ee1bcf0c8ee871aea0ef36df4858276878471f35e5"
+    }
+  },
+  "rows": [
+    {
+      "adapter": "permissive",
+      "application_decision": {
+        "oracle_consulted": false,
+        "order_bound": false,
+        "reason": "SCRIPTED_COMPLETED_ORDER_ONLY",
+        "verdict": "ACCEPT"
+      },
+      "checkout_evidence_sha256": "fcac94a05f7da76e9662df78fdd80ff2a49c49e831a93053ec496d0647c86108",
+      "checkout_name": "a",
+      "independent_oracle_status": "FAIL",
+      "native_client_refunded": false,
+      "native_evidence_sha256": "483bac6342e52099c97736f26b3a21c7efd96aae60eb8fdd060004ab15e9f10e",
+      "native_preterminal_state_sha256": "7b1b137bdb3af824180e98aee8bd8fbe421a7a4a09e3621276fff23a7faeaf62",
+      "native_provider_paid": true,
+      "native_terminal_transaction_hash": "0x62ae25314e0010cc354310594da2d810ffce4aaa1fda420e9cfa1cc142c627c3",
+      "row_id": "cross_bad_permissive",
+      "scripted_requested_verdict": "ACCEPT",
+      "target_artifact_digest": "70d8068f1de79f55c2f68dcffa9f07a6a3f21c22746a0087ab0d45e7f9da5cc4",
+      "target_obligation_id": "invoice-obligation-92f7b05acf6b53db",
+      "target_truth": "bad"
+    },
+    {
+      "adapter": "strict",
+      "application_decision": {
+        "oracle_consulted": false,
+        "order_bound": false,
+        "reason": "WRONG_OBLIGATION_OR_ARTIFACT",
+        "verdict": "REJECT"
+      },
+      "checkout_evidence_sha256": "fcac94a05f7da76e9662df78fdd80ff2a49c49e831a93053ec496d0647c86108",
+      "checkout_name": "a",
+      "independent_oracle_status": "FAIL",
+      "native_client_refunded": true,
+      "native_evidence_sha256": "268db497396ca4b2d4cd6d548e7fe7924fde5fdc31bf49d6f6472a04a0bdce49",
+      "native_preterminal_state_sha256": "7b1b137bdb3af824180e98aee8bd8fbe421a7a4a09e3621276fff23a7faeaf62",
+      "native_provider_paid": false,
+      "native_terminal_transaction_hash": "0xb98ccc0a6886e0871317feb0a3e6f3dedfb676312b1bcd3f173832abc574d4c3",
+      "row_id": "cross_bad_strict",
+      "scripted_requested_verdict": "ACCEPT",
+      "target_artifact_digest": "70d8068f1de79f55c2f68dcffa9f07a6a3f21c22746a0087ab0d45e7f9da5cc4",
+      "target_obligation_id": "invoice-obligation-92f7b05acf6b53db",
+      "target_truth": "bad"
+    },
+    {
+      "adapter": "strict",
+      "application_decision": {
+        "oracle_consulted": true,
+        "order_bound": true,
+        "reason": "ORACLE_FAIL",
+        "verdict": "REJECT"
+      },
+      "checkout_evidence_sha256": "f2a46f524c849f3687e6daa1e93251bb2b4ffd7a3ee3f027884ebab6730f2a08",
+      "checkout_name": "b_bad",
+      "independent_oracle_status": "FAIL",
+      "native_client_refunded": true,
+      "native_evidence_sha256": "a2a2017164974e18e3d8d1ea9778573b9164a7257022e9cc5809acdc59168776",
+      "native_preterminal_state_sha256": "7b1b137bdb3af824180e98aee8bd8fbe421a7a4a09e3621276fff23a7faeaf62",
+      "native_provider_paid": false,
+      "native_terminal_transaction_hash": "0x667a70ae6ba00b81c4ad936f03f09b0b0770f9d1ea8bcca410b3317b993fa693",
+      "row_id": "bound_bad_strict",
+      "scripted_requested_verdict": "ACCEPT",
+      "target_artifact_digest": "70d8068f1de79f55c2f68dcffa9f07a6a3f21c22746a0087ab0d45e7f9da5cc4",
+      "target_obligation_id": "invoice-obligation-92f7b05acf6b53db",
+      "target_truth": "bad"
+    },
+    {
+      "adapter": "strict",
+      "application_decision": {
+        "oracle_consulted": true,
+        "order_bound": true,
+        "reason": "ORACLE_PASS",
+        "verdict": "ACCEPT"
+      },
+      "checkout_evidence_sha256": "ae6d5573a5c17bf6c792f3ade3d527a3c8df27f6e9de6e48d583d7238123a7f5",
+      "checkout_name": "b_good",
+      "independent_oracle_status": "PASS",
+      "native_client_refunded": false,
+      "native_evidence_sha256": "5b78744c47ee22585301438cadec269ea6a63aaf9daf7fe965acba27e8e2b890",
+      "native_preterminal_state_sha256": "cd87cc9fab425e27e98c7f86c1693a46d72e14c1c9d8e7afa9d4404783d70d07",
+      "native_provider_paid": true,
+      "native_terminal_transaction_hash": "0x7b6734db31fef57cb69a917e51aa29aaff57b16d1ff6f3ef913927f88fd2717c",
+      "row_id": "bound_good_strict",
+      "scripted_requested_verdict": "ACCEPT",
+      "target_artifact_digest": "6598dc6e18937d86d140ec19466137ae6592e1f24c2128bfc05db2bc04715ae4",
+      "target_obligation_id": "invoice-obligation-a52f7195a8220f57",
+      "target_truth": "good"
+    }
+  ],
+  "schema": "acp-order-audit-handoff-control-v1"
+}

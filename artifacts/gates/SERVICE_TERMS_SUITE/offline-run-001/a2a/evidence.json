@@ -1,0 +1,13 @@
+{
+  "application_auth": "MOCK_BEARER",
+  "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+  "identity_proof": "NONE",
+  "payment_execution": "NONE",
+  "protocol": "A2A v1.0 HTTP+JSON",
+  "sdk_commit": "a4c4fc91a22778f3d805e5e592bf690915a33033",
+  "spec_commit": "7c861a597b93208de3c19357cc0d66b9f6250e9b",
+  "test_exit_code": 0,
+  "test_source_sha256": "433bdd28b9156d03f91bf79f0d4605d7d6df5d91564ea113e3a52c204158aa67",
+  "tests_run": 1,
+  "transport": "in-process ASGI through official Python SDK routes/client"
+}

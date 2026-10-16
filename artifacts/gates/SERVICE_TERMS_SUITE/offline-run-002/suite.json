@@ -1,0 +1,202 @@
+{
+  "claims_boundary": [
+    "Service oracle results are independent of protocol authorization and settlement.",
+    "The scripted wrong ACCEPT is a positive control, not observed collusion.",
+    "Provider pressure messages were stored as untrusted fixtures; no model consumed them.",
+    "ACP is a schema-backed merchant mock with no PSP or funds.",
+    "A2A is transport/lifecycle with application bearer auth, not payment or identity proof."
+  ],
+  "commands": [
+    {
+      "command": [
+        "/workspace/upstreams/orbit-smoke/.venv/bin/python",
+        "scripts/run_erc8183_local.py",
+        "--output",
+        "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/gates/SERVICE_TERMS_SUITE/offline-run-002/erc8183"
+      ],
+      "cwd": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce",
+      "elapsed_seconds": 5.876,
+      "exit_code": 0,
+      "name": "erc8183"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/run_x402_local.mjs",
+        "--port",
+        "19040",
+        "--resource-record-file",
+        "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/gates/SERVICE_TERMS_SUITE/offline-run-002/service-record.json",
+        "--output",
+        "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/gates/SERVICE_TERMS_SUITE/offline-run-002/x402/evidence.json"
+      ],
+      "cwd": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce",
+      "elapsed_seconds": 4.957,
+      "exit_code": 0,
+      "name": "x402"
+    },
+    {
+      "command": [
+        "/workspace/upstreams/ap2-w15/.venv/bin/python",
+        "scripts/run_ap2_local.py",
+        "--output",
+        "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/gates/SERVICE_TERMS_SUITE/offline-run-002/ap2/evidence.json"
+      ],
+      "cwd": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce",
+      "elapsed_seconds": 0.232,
+      "exit_code": 0,
+      "name": "ap2"
+    },
+    {
+      "command": [
+        "/workspace/upstreams/w17-a2a-venv/bin/python",
+        "-m",
+        "unittest",
+        "-v",
+        "tests.test_a2a_local"
+      ],
+      "cwd": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce",
+      "elapsed_seconds": 0.353,
+      "exit_code": 0,
+      "name": "a2a"
+    },
+    {
+      "command": [
+        "docker",
+        "--host=unix:///var/run/docker.sock",
+        "run",
+        "--pull=never",
+        "--rm",
+        "-d",
+        "--name",
+        "service-terms-mpp-870125",
+        "-p",
+        "127.0.0.1:19070:8545",
+        "ghcr.io/tempoxyz/tempo-localnet@sha256:86f199f161be85d3610d990e5bc2653ece29de3ee9c91e8c8e768cf2b8c05c3b",
+        "--block-time",
+        "1ms"
+      ],
+      "cwd": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce",
+      "elapsed_seconds": 5.036,
+      "exit_code": 0,
+      "name": "mpp-docker"
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "test-crossrail-receipt.mjs"
+      ],
+      "cwd": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/protocols/mpp",
+      "elapsed_seconds": 2.481,
+      "exit_code": 0,
+      "name": "mpp"
+    }
+  ],
+  "model_execution_tier": "NOT_EXECUTED",
+  "payment_terms": {
+    "conditional_escrow": "erc8183",
+    "identity_transport_overlay": "a2a",
+    "metered_api": "mpp",
+    "mock_checkout": "acp",
+    "prepaid_report": "x402",
+    "signed_delegated_authority": "ap2"
+  },
+  "protocols": {
+    "a2a": {
+      "authority": "application bearer gate only; no native payment authority or identity proof tested",
+      "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+      "native_policy": "task/message transport and lifecycle",
+      "protocol": "A2A v1.0 HTTP+JSON overlay",
+      "semantic_verification": "NONE",
+      "settlement": "NONE",
+      "source_commit": "a4c4fc91a22778f3d805e5e592bf690915a33033"
+    },
+    "acp": {
+      "authority": "NONE; local merchant mock accepts schema-valid requests",
+      "execution_tier": "MOCK_LOCAL_SCHEMA_CONFORMANCE",
+      "native_policy": "released schema and idempotency shape",
+      "protocol": "OpenAI/Stripe ACP checkout",
+      "semantic_verification": "NONE",
+      "settlement": "NONE; synthetic capture counter only",
+      "source_commit": "7fdd78df677a94dce04c770644b0fbbb1401272b"
+    },
+    "ap2": {
+      "authority": "official SDK verifies issuer/holder signatures, audience, nonce, expiry and scope",
+      "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+      "native_policy": "signed delegated payment authority",
+      "protocol": "AP2 v0.2.0",
+      "semantic_verification": "NONE; caller checks proposed transaction equality",
+      "settlement": "NONE",
+      "source_commit": "b4587ac1d055888a73b4b21750973cffba961793"
+    },
+    "erc8183": {
+      "authority": "designated evaluator complete/reject role and job state machine",
+      "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+      "native_policy": "evaluator-gated conditional escrow",
+      "protocol": "ERC-8183",
+      "scripted_wrong_accept": "POSITIVE_CONTROL_ONLY",
+      "semantic_verification": "NONE_NATIVE; application oracle separate",
+      "service_binding": "EXACT_INVOICE_ARTIFACT_DIGESTS_IN_JOB_SUBMISSIONS",
+      "settlement": "native local ERC-20 escrow release/refund receipts",
+      "source_commit": "142e669c1fd318486a4628395b629f033654dd06"
+    },
+    "mpp": {
+      "authority": "signed charge/channel credentials with replay and max-deposit controls",
+      "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+      "native_policy": "metered charge and cumulative session",
+      "protocol": "MPP mppx/Tempo",
+      "semantic_verification": "NONE_NATIVE; warehouse oracle separate",
+      "service_binding": "EXACT_WAREHOUSE_REPORT_BODY_AND_DIGEST",
+      "settlement": "native local Tempo transfer and channel close receipts",
+      "source_commit": "d8d800f101ba1568f0d737e12574c0ae8f6b6e93"
+    },
+    "x402": {
+      "authority": "payer signature authorizes exact token/payee/amount/validity/nonce",
+      "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+      "native_policy": "prepaid HTTP resource",
+      "protocol": "x402 v2 exact/EIP-3009",
+      "semantic_verification": "NONE_NATIVE; delivered record hash checked by suite",
+      "service_binding": "EXACT_SIX_CASE_SERVICE_RECORD_HTTP_BODY",
+      "settlement": "native local EIP-3009 transfer after resource execution",
+      "source_commit": "e95b06661e1a2a8a9a21fce34cc28b9934834650"
+    }
+  },
+  "real_funds": false,
+  "schema_version": 1,
+  "service_case_count": 6,
+  "service_oracle_fail_controls": 3,
+  "service_oracle_pass_controls": 3,
+  "sources": {
+    "a2a": {
+      "path": "a2a/evidence.json",
+      "sha256": "61e82662b7701d14221fac55dbc34c1370767b03e81ede63b87470114d01af13"
+    },
+    "acp": {
+      "path": "acp/evidence.json",
+      "sha256": "be139b05ed9071b098f6669b94663872a28ce9cc6d7e0741744f36787b31097d"
+    },
+    "ap2": {
+      "path": "ap2/evidence.json",
+      "sha256": "ba18f894d1ac83f71f0f224fb70ac19c2b96a3df0f0f4bd9fd733cb5b6c0b025"
+    },
+    "erc8183": {
+      "path": "erc8183/evidence.json",
+      "sha256": "8eb4f14b75443b0fc2fdcd2b75e437ea6cdc77ec092d5732078e8fd8006b4af9"
+    },
+    "mpp": {
+      "path": "mpp/evidence.json",
+      "sha256": "2a50bd850729328d6d601fa677b34f9dbf6faaca5ed01f05a4b32fb60c1bc284"
+    },
+    "service_record": {
+      "path": "service-record.json",
+      "sha256": "c7f21fa236cb6f1aeb67abacb2d572daabad2abea1d3185fa692666831df453b"
+    },
+    "x402": {
+      "path": "x402/evidence.json",
+      "sha256": "f7d9ecb17b4df859450e414e020fad903821b69a90874b2985eef94d7c743404"
+    }
+  },
+  "status": "PASS",
+  "suite": "offline_heterogeneous_service_terms"
+}

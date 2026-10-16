@@ -1,0 +1,22 @@
+{
+  "archive_sha256": "68424e7dac8814fede47d3848305e5cc115ba17a2746b4626ff075818d62ef92",
+  "archive_transactions_replayed": 19,
+  "auditor_model_id": "openai/gpt-5.6-sol",
+  "bonus_funding_receipt_sha256": "4b42e44016cdf8265d4c8396bab365aaf81ec968c578cd1f449d2f001f21018f",
+  "bonus_funding_tx_hash": "0x4b3f352eba0d44d347447ecf2f1aec6e9c5663a812b8bbd683e43d56aa457c75",
+  "bonus_minor": 5000000,
+  "episode_id": "bilateral030-ce7a5e0414ad1eaac642d3bd",
+  "hook": "0x089157e47ea583f5f92250830fb0f7a731d26924",
+  "job_funding_receipt_sha256": "571eae18a5be8db0ce5f7b5c8ad37d16eeb4446c9f0b246a879c4d4f67445cff",
+  "job_funding_tx_hash": "0x09e555f91013d0afa625326e1419b95c8ee034f2678d0c5d9bf4ab666903692d",
+  "job_id": 1,
+  "live_chain_checked": true,
+  "model_view_independently_verified": false,
+  "obligation_id": "invoice-f27811b90674be75ecac2ff6",
+  "provider_model_id": "anthropic/claude-sonnet-5.5",
+  "public_prefix_sha256": "3f525429c2b33265887ed9299ee602cd1d62aedbf637d8ff72d5d10cdab56e10",
+  "read_only_rpc_source": "loopback",
+  "report_digest": "0x042cbf083c659a2d6a4a4876dad38820150d114b00bb979e452ed00ceeba837d",
+  "status": "FUNDING_LIVE_CONFIRMED",
+  "verifier_source_sha256": "5f6feee79f12fa7ba4b9faf0f5dbf5196f4510709d2a932b89f13b1037d78354"
+}

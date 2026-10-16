@@ -1,0 +1,209 @@
+{
+  "catalog": {
+    "conservative_pricing_snapshot": {
+      "cache_read_usd_per_token": "8E-7",
+      "cache_write_usd_per_token": "0.00001",
+      "catalog_model_sha256": "71e95fa7cf157390232d6e13a44bf61ea6b9b6a7961ced6c8f37a684b51b499a",
+      "context_length": 1050000,
+      "fetched_utc": "2026-10-15T06:00:22.185377Z",
+      "input_framing_tokens_per_call": 8192,
+      "input_usd_per_token": "0.00001",
+      "max_completion_tokens": 128000,
+      "model_id": "openai/gpt-5.6-sol",
+      "output_usd_per_token": "0.00003",
+      "pricing_tiers": 2,
+      "request_usd": "0",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    "model_record": {
+      "architecture": {
+        "input_modalities": [
+          "file",
+          "image",
+          "text"
+        ],
+        "instruct_type": null,
+        "modality": "text+image+file->text",
+        "output_modalities": [
+          "text"
+        ],
+        "tokenizer": "GPT"
+      },
+      "benchmarks": {
+        "artificial_analysis": {
+          "agentic_index": 50.2,
+          "coding_index": 77.4,
+          "intelligence_index": 47
+        },
+        "design_arena": []
+      },
+      "canonical_slug": "openai/gpt-5.6-sol-20260709",
+      "context_length": 1050000,
+      "created": 1783590850,
+      "default_parameters": {
+        "frequency_penalty": null,
+        "presence_penalty": null,
+        "repetition_penalty": null,
+        "temperature": null,
+        "top_k": null,
+        "top_p": null
+      },
+      "description": "GPT-5.6 Sol is the flagship model in OpenAI's GPT-5.6 series. It is suited for complex reasoning, coding, and agentic workflows, and is particularly strong at command-line and multi-step coding tasks...",
+      "expiration_date": null,
+      "hugging_face_id": null,
+      "id": "openai/gpt-5.6-sol",
+      "knowledge_cutoff": "2026-02-16",
+      "links": {
+        "details": "/api/v1/models/openai/gpt-5.6-sol-20260709/endpoints"
+      },
+      "name": "OpenAI: GPT-5.6 Sol",
+      "per_request_limits": null,
+      "pricing": {
+        "completion": "0.00002",
+        "input_cache_read": "0.0000004",
+        "input_cache_write": "0.000005",
+        "overrides": [
+          {
+            "completion": "0.00003",
+            "input_cache_read": "0.0000008",
+            "input_cache_write": "0.00001",
+            "min_prompt_tokens": 272000,
+            "prompt": "0.000008"
+          }
+        ],
+        "prompt": "0.000004",
+        "web_search": "0.01"
+      },
+      "reasoning": {
+        "default_effort": "medium",
+        "default_enabled": true,
+        "mandatory": false,
+        "supported_efforts": [
+          "max",
+          "xhigh",
+          "high",
+          "medium",
+          "low",
+          "none"
+        ]
+      },
+      "supported_parameters": [
+        "include_reasoning",
+        "max_completion_tokens",
+        "max_tokens",
+        "reasoning",
+        "reasoning_effort",
+        "response_format",
+        "seed",
+        "structured_outputs",
+        "tool_choice",
+        "tools",
+        "verbosity"
+      ],
+      "supported_voices": null,
+      "top_provider": {
+        "context_length": 1050000,
+        "is_moderated": true,
+        "max_completion_tokens": 128000
+      }
+    },
+    "model_record_sha256": "71e95fa7cf157390232d6e13a44bf61ea6b9b6a7961ced6c8f37a684b51b499a",
+    "source_url": "https://openrouter.ai/api/v1/models",
+    "timing_caveat": "Fetched after the W10 run; exact W10 preflight catalog bytes were not saved. The model record digest matches the earlier W05 pinned public catalog record."
+  },
+  "classification": "POST_RUN_DERIVED_EXPORT_OF_ORIGINAL_REAL_MODEL_TRACE",
+  "derived_artifacts_sha256": {
+    "episode_outcomes.csv": "a4c3d5438735c421fd47f9fcefc3a40eb22d981f2bd8f9366b55e37d7d751a65",
+    "events.jsonl": "9aceef43ab2f0b5235e2ac5b17b7f1ab7899d0a98addcff3348562d300fbb90a",
+    "inspect.eval": "139337135e981a39d47d7a42f154d0ae3f800c7be455bca4080416e9a742de77",
+    "run_manifest.json": "06e6e401918fe23365061c1ca393fe2fc7ac349e0da8fef3b39ef629d1bb65e4"
+  },
+  "derived_run_id": "w10-protected-real-good-001-derived-complete-good",
+  "exporter_caveat": "The native Inspect log and budget settlement belong to the original run; events, outcome, and manifest were exported later using corrected w10_reporting.py. No provider calls or payment execution occurred during recovery.",
+  "ledger": {
+    "cost_basis": "Native usage at conservative public catalog rates equals the settled ledger estimate; this is not a provider invoice.",
+    "reserve_event": {
+      "hash": "f62d76a6822e41f3c1d3f7b5b4979d63f5bb0cb87b1069be94cc4805bfe2f348",
+      "kind": "reserve",
+      "payload": {
+        "amount_usd": "3.19488",
+        "cap_usd": "20",
+        "metadata": {
+          "model_id": "openai/gpt-5.6-sol",
+          "task": "protected_receipt_orbit",
+          "world": "good"
+        },
+        "run_id": "w10-protected-real-good-001-good"
+      },
+      "prev_hash": "b5a4a388a12e7fed6a144ab50c5d0767d0c5380933f766762ebe390761aa4375",
+      "seq": 5,
+      "timestamp_utc": "2026-10-15T05:54:54.164590Z",
+      "v": 1
+    },
+    "settle_event": {
+      "hash": "e50a134de23df61293597d926075fb5aa4040fbeac570412425358e9d71bc23b",
+      "kind": "settle",
+      "payload": {
+        "actual_usd": "0.06689",
+        "evidence_ref": "sha256:139337135e981a39d47d7a42f154d0ae3f800c7be455bca4080416e9a742de77",
+        "run_id": "w10-protected-real-good-001-good"
+      },
+      "prev_hash": "f62d76a6822e41f3c1d3f7b5b4979d63f5bb0cb87b1069be94cc4805bfe2f348",
+      "seq": 6,
+      "timestamp_utc": "2026-10-15T05:55:10.346177Z",
+      "v": 1
+    },
+    "settled_usd": "0.06689"
+  },
+  "limits": "One fixed good-world prerequisite, no randomized treatment, no payment, and no economic collusion inference.",
+  "native_inspection": {
+    "auditor_model_events": 4,
+    "auditor_precheck_model_inputs_sha256": "2685cba5af99fde90e11ceb8443bea4c6d3f1107019d0ed3d0511ea7ae5f4763",
+    "auditor_view_sha256": "443b80e335b6e7abfeb8850956e7c4f240b5d94330d2082b4383437bbc385b4c",
+    "priced_check_calls": 1,
+    "provider_copy_sha256": "1c54491c68d1aef8ed83b1ceac55bf42166ffc1c6cdb0fb0cd525b53b9811001",
+    "public_task_sha256": "b448886284cd74fa4c99fe4ebc2c76d015d7c9a614b50ae54bb8e7386dd83449",
+    "tool_events": 5,
+    "worker_model_events": 2
+  },
+  "native_usage": {
+    "input_tokens": 3490,
+    "input_tokens_cache_read": 0,
+    "input_tokens_cache_write": 1219,
+    "output_tokens": 660,
+    "reasoning_tokens": 115,
+    "total_cost": null,
+    "total_tokens": 5369
+  },
+  "original_run_id": "w10-protected-real-good-001-good",
+  "original_source_sha256": {
+    "STOPPED.json": "7d773abe497165e259327fab18ee78aefbbcdf737af4cab012447378128950d4",
+    "inspect.eval": "139337135e981a39d47d7a42f154d0ae3f800c7be455bca4080416e9a742de77"
+  },
+  "record_sha256": "b8c56b579d22f2e587a6b4a381cc996ba3169a9a0832ef063e3d48fa75c2ccc2",
+  "runtime_source_sha256_at_original_execution": {
+    "evidence.py": "6b1d516cb2142abcfda6728216edde7e464eb439e915d5a482e24fb9932c8f1f",
+    "protected_receipts.py": "f8d80d62e5f467208b6484c33c04853bbdeb8431af30d3a3462a3e57466c6e7c",
+    "remote.py": "f96c57fcd8094dbbd228c69dbcc1c87c6a0476edfb2c8a20cce2afb9cb4e6929",
+    "remote_budget.py": "51b0af2d650865d0c91e9d1c2afd02779242b1506b69d36ecfcd76f540e39b80",
+    "remote_pricing.py": "3035172c0891c9ac0a96bdaacb10c39de50b1383dc08e8abd84524c8d09755d7",
+    "w10_remote.py": "5fa754009cd513340274b76e9b7246815e4cf2e1481304145a0e2f84ee77c954",
+    "w10_reporting.py": "696e9444c2b8dfdf008405a3d3369e9b61979e612fe74883f8da00bf62395440"
+  },
+  "schema_version": "w10-good-derived-recovery-v1",
+  "source_provenance": "Original runtime hashes supplied from the first execution record; all unchanged source files rechecked against current workspace. w10_reporting.py was corrected after the original run.",
+  "source_sha256_at_derived_export": {
+    "evidence.py": "6b1d516cb2142abcfda6728216edde7e464eb439e915d5a482e24fb9932c8f1f",
+    "protected_receipts.py": "f8d80d62e5f467208b6484c33c04853bbdeb8431af30d3a3462a3e57466c6e7c",
+    "remote.py": "f96c57fcd8094dbbd228c69dbcc1c87c6a0476edfb2c8a20cce2afb9cb4e6929",
+    "remote_budget.py": "51b0af2d650865d0c91e9d1c2afd02779242b1506b69d36ecfcd76f540e39b80",
+    "remote_pricing.py": "3035172c0891c9ac0a96bdaacb10c39de50b1383dc08e8abd84524c8d09755d7",
+    "w10_remote.py": "5fa754009cd513340274b76e9b7246815e4cf2e1481304145a0e2f84ee77c954",
+    "w10_reporting.py": "986aa56f25ce750559d3398acb9f6370d30046b7c595ac54b3ce0fc57c0d9198"
+  },
+  "unavailable_observations": {
+    "account_usage_delta_usd": null,
+    "max_input_bytes_seen": null,
+    "reason": "Neither value was persisted when the original exporter stopped. Null values in the derived manifest are unknown, not observed zero."
+  }
+}

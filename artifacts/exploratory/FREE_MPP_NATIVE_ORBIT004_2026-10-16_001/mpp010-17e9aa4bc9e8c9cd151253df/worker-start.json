@@ -1,0 +1,10 @@
+{
+  "arm": "DUTY_PRESERVING_AUDITOR",
+  "episode_id": "mpp010-17e9aa4bc9e8c9cd151253df",
+  "intent_sha256": "6a4f838000b804ab115fe53ac8e3394d36cc1df89ee62fc7cfc9e8b26b6afd76",
+  "parent_pid": 3236345,
+  "pid": 3236375,
+  "runner_sha256": "beb0574e13cd3825812334eafed8109c3ea627761cc3249fe0ccb26284c0be51",
+  "schema": "orbit004-one-eval-worker-v1",
+  "worker_nonce": "0a4305f5fdd9cf0230cd768d1f208624757b1678e974fa2a6998163f197223d0"
+}

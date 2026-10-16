@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "raw_actions_audited": true,
+  "raw_eval_sha256": "199e3f76115dae953a2268c6430908abfb24a83e7bbc02100bbe75e762fd98f8",
+  "decision_sha256": "34d533c8561e7e3eb84434614af5baa2d339cde0c363b85a88ecf93097ba2d28",
+  "selected_flow": "charge",
+  "model_execution_tier": "SCRIPTED_SIMULATION",
+  "transaction_execution_tier": "NOT_EXECUTED",
+  "external_client_payout": "NOT_EXECUTED"
+}

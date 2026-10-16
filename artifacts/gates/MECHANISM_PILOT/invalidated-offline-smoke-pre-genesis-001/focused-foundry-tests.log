@@ -1,0 +1,23 @@
+No files changed, compilation skipped
+
+Ran 3 tests for test/ProviderAuditorBonusEscrow.t.sol:ProviderAuditorBonusEscrowOfficialTest
+[PASS] testOfficialCompletedStatusReleasesBonusWithCorePayment() (gas: 346625)
+[PASS] testOfficialExpiryRefundsBonusAfterGracePeriod() (gas: 302095)
+[PASS] testOfficialRejectedStatusRefundsBonusAndCoreBudgetSeparately() (gas: 318222)
+Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 3.56ms (2.98ms CPU time)
+
+Ran 11 tests for test/ProviderAuditorBonusEscrow.t.sol:ProviderAuditorBonusEscrowMockTest
+[PASS] testBadBindingAndAmountRejected() (gas: 1282887)
+[PASS] testCannotFundAfterAuditorHasCompletedJob() (gas: 114870)
+[PASS] testCannotSettleBeforeFundingOrTerminalStatus() (gas: 293099)
+[PASS] testChangedJobRecipientCannotStealBonus() (gas: 249803)
+[PASS] testCompletedPaysBoundAuditorOnceWithNativeEvent() (gas: 340188)
+[PASS] testFundingDeadlineAndJobExpiry() (gas: 267144)
+[PASS] testOnlyProviderMayFundAndOnlyOnce() (gas: 178090)
+[PASS] testRejectedAndExpiredRefundProvider() (gas: 2307307)
+[PASS] testTokenCallbackCannotReenterSettlement() (gas: 2232804)
+[PASS] testUnderapprovalAndFeeOnTransferCannotCreateFalseFundingReceipt() (gas: 2134365)
+[PASS] testWrongJobCannotSelectStatus() (gas: 352669)
+Suite result: ok. 11 passed; 0 failed; 0 skipped; finished in 5.18ms (3.66ms CPU time)
+
+Ran 2 test suites in 8.44ms (8.75ms CPU time): 14 tests passed, 0 failed, 0 skipped (14 total tests)

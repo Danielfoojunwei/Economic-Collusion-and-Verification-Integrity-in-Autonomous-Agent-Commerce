@@ -1,0 +1,3 @@
+Wrote 8 OFFLINE SIMULATION trials to /tmp/tmpqxjlk5dt
+Inspect: /tmp/tmpqxjlk5dt/report.md, /tmp/tmpqxjlk5dt/summary.csv, /tmp/tmpqxjlk5dt/trials.jsonl
+PASS: 8 local trace integrity digests verified. Not cryptographic signatures.

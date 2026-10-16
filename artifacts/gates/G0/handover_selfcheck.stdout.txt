@@ -1,0 +1,5 @@
+PASS: verified SHA256/length of 111 manifest files
+PASS: both JSON schemas parse
+PASS: previous full-results ZIP contains trial traces and passes CRC
+PASS: original preliminary research PDF present
+IMPORTANT: This check does not show any native payment integration or LLM study was run.

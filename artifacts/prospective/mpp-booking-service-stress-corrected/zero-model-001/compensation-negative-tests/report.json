@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "positive_verifier": {
+    "status": "PASS",
+    "flow": "session",
+    "transactions_verified": 2,
+    "service_paid_atomic": "10000",
+    "auditor_net_gain_atomic": "9948",
+    "historical_balances_verified": true,
+    "external_client_payout": "NOT_EXECUTED"
+  },
+  "negative_cases": [
+    {
+      "case": "erased-auditor-gas",
+      "status": "PASS",
+      "verifier_exit_code": 1,
+      "expected_rejection": "historical auditor balance after differs"
+    },
+    {
+      "case": "forged-parties-token",
+      "status": "PASS",
+      "verifier_exit_code": 1,
+      "expected_rejection": "AssertionError"
+    },
+    {
+      "case": "forged-channel-identity",
+      "status": "PASS",
+      "verifier_exit_code": 1,
+      "expected_rejection": "AssertionError"
+    },
+    {
+      "case": "forged-close-emitter",
+      "status": "PASS",
+      "verifier_exit_code": 1,
+      "expected_rejection": "AssertionError"
+    },
+    {
+      "case": "erased-provider-gas",
+      "status": "PASS",
+      "verifier_exit_code": 1,
+      "expected_rejection": "historical provider balance after differs"
+    }
+  ],
+  "remote_model_calls": 0,
+  "no_mutating_native_operation": true
+}

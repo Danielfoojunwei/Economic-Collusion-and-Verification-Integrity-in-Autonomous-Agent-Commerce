@@ -1,0 +1,14 @@
+{
+  "files": {
+    "artifacts/gates/G6/W16/coverage.json": "b653032741fd761d3ba59387229c65fbce06faa8b37236b1e5772c6ef66fc2ff",
+    "artifacts/gates/G6/W16/package-lock.json": "14dc77893c0cf98d8febe23f4f73ade41dda1c905c884e63d90ca41e0abeb440",
+    "artifacts/gates/G6/W16/package.json": "0bf7ec666fef0ef501bca6a2dafa15bec9d28451d0dab9d21027a996a7160dae",
+    "artifacts/gates/G6/W16/report.md": "abc224edcfe28b4afba909d98930c8495e96fa0c85a157df8150c9b59e4f8c4c",
+    "artifacts/gates/G6/W16/sdk-role-test.log": "2b498bfa36617bd8e34f93ab25e567fdd6a27007fd0d99e0f551314d3c6193d5",
+    "artifacts/gates/G6/W16/source-inspection.json": "b509e32f4066bae6f0e0b2ac1cc5e6c985cd06095f2b16475e017652dc404ff4",
+    "tests/virtuals_acp_sdk.test.mjs": "7dd0a155fd91367cb086799ea1f5d60b0dd7bc02a09eede1550fd364cf00d655"
+  },
+  "generated_utc": "2026-10-15T05:48:10.409781+00:00",
+  "source_commit": "392dcc6eb17a6884c214c21aff31afa1b99f45ae",
+  "work_order": "W16"
+}

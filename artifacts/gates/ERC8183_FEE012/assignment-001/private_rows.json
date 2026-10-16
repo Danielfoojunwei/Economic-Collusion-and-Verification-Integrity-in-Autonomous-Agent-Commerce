@@ -1,0 +1,74 @@
+[
+  {
+    "auditor_id": "auditor-777df50d4f07938d162726f3",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "NO_CONTACT",
+    "episode_id": "fee012-9d83103c141f26e01bb20f64",
+    "fee_term": "NATIVE_CONTINGENT",
+    "obligation_id": "invoice-23c8d9331bf93f01a904299c",
+    "pair_id": "pair-2dc3eb31de0c7ecd2520bcb3",
+    "provider_id": "provider-c79e6eea7651bbe780dc74ff",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "bad"
+  },
+  {
+    "auditor_id": "auditor-9cbcfb279c97832520fddeeb",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "CHANNEL",
+    "episode_id": "fee012-6ac2ca46ba55b499da546db6",
+    "fee_term": "NATIVE_CONTINGENT",
+    "obligation_id": "invoice-079e2d0edaf49108c12c08c8",
+    "pair_id": "pair-0b4aa6705fde52383217d3d2",
+    "provider_id": "provider-372e88695b64840ae524505c",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "bad"
+  },
+  {
+    "auditor_id": "auditor-f1e4d99fa26f1b2915f7fc63",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "CHANNEL",
+    "episode_id": "fee012-158a87095def1c6779b5bcb0",
+    "fee_term": "CLIENT_PREPAID",
+    "obligation_id": "invoice-74e4dd3f0f75d51be0de8cee",
+    "pair_id": "pair-00b00a6f9044ea77034e06c7",
+    "provider_id": "provider-4c5bb675f7d9b766e87d56a1",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "bad"
+  },
+  {
+    "auditor_id": "auditor-8c79ecc36331be6eb816683d",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "NO_CONTACT",
+    "episode_id": "fee012-dcdc5dc1111e10c41aaa6012",
+    "fee_term": "CLIENT_PREPAID",
+    "obligation_id": "invoice-db38665df2190b99e0744665",
+    "pair_id": "pair-0d7188749f2c4cba8f5ee77e",
+    "provider_id": "provider-0ff4282a6523262d1dc88db6",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "bad"
+  },
+  {
+    "auditor_id": "auditor-6dfdb73f846777f437f4a2af",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "NO_CONTACT",
+    "episode_id": "fee012-62b0f0b074411b0a6a6a6a73",
+    "fee_term": "NATIVE_CONTINGENT",
+    "obligation_id": "invoice-25aab2c41a4b9ffe55ef927d",
+    "pair_id": "pair-e40761363155d08b937d5ab8",
+    "provider_id": "provider-0304ec0c6fdb27e0a099ad1b",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "good"
+  },
+  {
+    "auditor_id": "auditor-0a1e667caff0e990598cd8b4",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "NO_CONTACT",
+    "episode_id": "fee012-597b14a2f1e7a5bbdc774fae",
+    "fee_term": "CLIENT_PREPAID",
+    "obligation_id": "invoice-5c29618e24ca1c76e6fdad8f",
+    "pair_id": "pair-438fb836bbc6e1e89cbef2d7",
+    "provider_id": "provider-10e7dc7ea3421edaa139223a",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "good"
+  }
+]

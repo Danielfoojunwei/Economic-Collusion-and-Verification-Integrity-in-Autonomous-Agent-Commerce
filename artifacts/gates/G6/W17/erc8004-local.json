@@ -1,0 +1,113 @@
+{
+  "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+  "upstream_commit": "b9e466c250744a7e06b13dff9d3c2844ed64f825",
+  "upstream_lock_sha256": "c869ae3bde4d17067998631756dcb0bfb0dda8f5153ea64e75b041fabe449e5c",
+  "compiler_soljson_sha256": "fb59b825b7d57f9de89cd9de2415b12aab1fcc7eb2573fd2bf5c9b969eacf4d9",
+  "chain_id": 31337,
+  "identity_registry": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+  "reputation_registry": "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707",
+  "deterministic_test_wallets": {
+    "agent_owner": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+    "separate_client": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
+  },
+  "agent_id": "0",
+  "self_feedback_rejected": true,
+  "separate_client_feedback": {
+    "value": "100",
+    "count_before_revoke": "1",
+    "revoked": true
+  },
+  "transactions": [
+    {
+      "kind": "IdentityRegistryUpgradeable.upgrade",
+      "hash": "0x96d6d7f1b3ad43e73677f7d510a1d1ef1239a6cc0b9c41d589fcfc1c41301635",
+      "status": "success",
+      "block": "4",
+      "logs": [
+        {
+          "address": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+          "logIndex": 0,
+          "topic0": "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b"
+        },
+        {
+          "address": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+          "logIndex": 1,
+          "topic0": "0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2"
+        }
+      ]
+    },
+    {
+      "kind": "ReputationRegistryUpgradeable.upgrade",
+      "hash": "0x1ee4cb03f7bf6a89d974fdfd939de538a2dff107aa4f876e0198107007f1b418",
+      "status": "success",
+      "block": "8",
+      "logs": [
+        {
+          "address": "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707",
+          "logIndex": 0,
+          "topic0": "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b"
+        },
+        {
+          "address": "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707",
+          "logIndex": 1,
+          "topic0": "0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2"
+        }
+      ]
+    },
+    {
+      "kind": "identity.register",
+      "hash": "0x1e8d4e839064307aca99ae7c20c08af12bdbe173b5b0bef111c863dcd11f319a",
+      "status": "success",
+      "block": "9",
+      "logs": [
+        {
+          "address": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+          "logIndex": 0,
+          "topic0": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+        },
+        {
+          "address": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+          "logIndex": 1,
+          "topic0": "0xf8e1a15aba9398e019f0b49df1a4fde98ee17ae345cb5f6b5e2c27f5033e8ce7"
+        },
+        {
+          "address": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+          "logIndex": 2,
+          "topic0": "0xca52e62c367d81bb2e328eb795f7c7ba24afb478408a26c0e201d155c449bc4a"
+        },
+        {
+          "address": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+          "logIndex": 3,
+          "topic0": "0x2c149ed548c6d2993cd73efe187df6eccabe4538091b33adbd25fafdb8a1468b"
+        }
+      ]
+    },
+    {
+      "kind": "reputation.giveFeedback",
+      "hash": "0x9915aba68a8bf37e1a57a3ee594f9f96f51767e826b6fccdb0732be6006c5a73",
+      "status": "success",
+      "block": "10",
+      "logs": [
+        {
+          "address": "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707",
+          "logIndex": 0,
+          "topic0": "0x6a4a61743519c9d648a14e6493f47dbe3ff1aa29e7785c96c8326a205e58febc"
+        }
+      ]
+    },
+    {
+      "kind": "reputation.revokeFeedback",
+      "hash": "0x3591b6259001590b0490e37da417c253e7c513bd8aa7435a4a1297343286c2fd",
+      "status": "success",
+      "block": "11",
+      "logs": [
+        {
+          "address": "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707",
+          "logIndex": 0,
+          "topic0": "0x25156fd3288212246d8b008d5921fde376c71ed14ac2e072a506eb06fde6d09d"
+        }
+      ]
+    }
+  ],
+  "boundary": "The second wallet is controlled by this test. The registry rejects owner-address feedback, not common-control or sybil feedback. No escrow/payment or work oracle is attached."
+}

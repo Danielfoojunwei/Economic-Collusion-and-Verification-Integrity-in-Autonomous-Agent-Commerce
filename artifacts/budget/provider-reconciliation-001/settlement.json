@@ -1,0 +1,30 @@
+{
+  "actual_provider_usage_usd": "0.037002",
+  "ledger_prestate_head_sha256": "6c7220cbf39b8a433645868f70ce175526d4a762e4edc6e5d0e77e8807f40f44",
+  "ledger_prestate_seq": 88,
+  "ledger_settlement_event_sha256": "fba9976633f7be4d4addaeea51e8f2d6a7d39289ac45e73bdbcbb598a944015f",
+  "ledger_settlement_seq": 89,
+  "ledger_settlement_timestamp_utc": "2026-10-15T09:30:58.328424Z",
+  "net_headroom_recovered_usd": "4.222838",
+  "new_model_calls": 0,
+  "new_payment_transactions": 0,
+  "original_native_job_status": "OPEN",
+  "post_settlement": {
+    "available_usd": "17.418358",
+    "blocked": false,
+    "cap_usd": "20",
+    "committed_usd": "2.581642",
+    "last_hash": "fba9976633f7be4d4addaeea51e8f2d6a7d39289ac45e73bdbcbb598a944015f",
+    "reserved_usd": "0",
+    "seq": 89,
+    "settled_spent_usd": "2.581642",
+    "unknown_run_ids": []
+  },
+  "pre_settlement_evidence_sha256": "5fe58996bf273f8d64efd693229f5f3a0fab4423bcd834b4b491302e32ee588f",
+  "provider_session_id": "X3NZV22BrmsPPw3eFEjYkb",
+  "provider_usage_csv_sha256": "98ffde82372cf346e6b3b52a98745bf329c71b90e094fb91e2f65e5ef960f27a",
+  "released_reservation_usd": "4.25984",
+  "research_episode_status": "STOPPED_INCOMPLETE",
+  "run_id": "w11-market-ae037b6df7b0-episode-de0a57bf5b8ca2bbe753",
+  "schema": "w11-provider-session-settlement-v1"
+}

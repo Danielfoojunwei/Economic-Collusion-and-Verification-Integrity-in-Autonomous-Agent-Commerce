@@ -1,0 +1,15 @@
+{
+  "files_sha256": {
+    "artifacts/gates/W19_PREP/report.md": "99a8cf54d6b73f25a673d0d67457d541bf9058883b118d41582b3a97c7318fd3",
+    "docs/W19_PREREGISTRATION_CANDIDATE.md": "01a384fb7eaef03a4727a38eb67038df40454eb221bcefa470b3a08b04472ea8",
+    "scripts/run_w19_power.py": "40881ad69ea0916898f496df0220363f67bd92211845c022270ac2be7d5e9d74",
+    "src/agent_economic_trust/w19_analysis.py": "9c4deb2a7eefa33b2824a75e4e6d5bbf15d7262015f5438c8970e7b5f1142557",
+    "src/agent_economic_trust/w19_power.py": "fb50bb59ed0beaec0a79005979816f4fc0395c526444ac27f4a0051301258259",
+    "tests/test_w19_analysis.py": "d2d9c4d669f06ba54b3c71119049dcee25b9049016e80a275f05e1b081bdebce"
+  },
+  "observed_treatment_outcomes_used": false,
+  "schema": "w19-candidate-preoutcome-seal-v1",
+  "sealed_at_utc": "2026-10-15T06:17:13+00:00",
+  "status": "CANDIDATE_ONLY_NOT_PREREGISTERED",
+  "synthetic_unit_tests_passed": 6
+}

@@ -1,0 +1,63 @@
+{
+  "csv_sha256": {
+    "request_count_hourly.csv": "036a3624757588dea51a5dc2d690266a9353d11d7b1cf99ac23c020901d8b7b7",
+    "usage_by_session.csv": "98ffde82372cf346e6b3b52a98745bf329c71b90e094fb91e2f65e5ef960f27a",
+    "usage_count_hourly.csv": "8be54addbc06115536f98479ba7874f6a5109898a17fe5d2578e88019c680d82"
+  },
+  "ledger_mutations": 0,
+  "ledger_prestate": {
+    "blocked": true,
+    "cap_usd": "20",
+    "frozen_anchor_sha256": "506764391cc43ce8117268c9e4b4ade1ef2fb9e671f64d1a979342a21e4de017",
+    "frozen_ledger_sha256": "9edd923e2ca4cfb329b326ac0f4e743df6a5db4101d0d85ff0fbe7595e55c4ed",
+    "head_sha256": "6c7220cbf39b8a433645868f70ce175526d4a762e4edc6e5d0e77e8807f40f44",
+    "reserved_usd": "4.25984",
+    "run_id": "w11-market-ae037b6df7b0-episode-de0a57bf5b8ca2bbe753",
+    "run_reservation_usd": "4.25984",
+    "run_status": "UNKNOWN",
+    "seq": 88,
+    "settled_spent_usd": "2.54464"
+  },
+  "limitations": [
+    "The user-supplied CSV export is not cryptographically signed by OpenRouter.",
+    "The export is a session aggregate; it does not contain eight individual request IDs or costs.",
+    "The original W11 episode remains STOPPED and must not be counted as a completed experimental round."
+  ],
+  "paid_model_calls": 0,
+  "provider_export_kind": "user_uploaded_openrouter_explore_csv",
+  "provider_tables": {
+    "hourly_request_counts": {
+      "2026-10-15 05:00:00": 16,
+      "2026-10-15 06:00:00": 204,
+      "2026-10-15 07:00:00": 44
+    },
+    "hourly_usage_usd": {
+      "2026-10-15 05:00:00": "0.079867",
+      "2026-10-15 06:00:00": "0.986154",
+      "2026-10-15 07:00:00": "0.215055"
+    },
+    "session_id": "X3NZV22BrmsPPw3eFEjYkb",
+    "target_hour_session_sum_usd": "0.215055",
+    "target_hour_utc": "2026-10-15 07:00:00",
+    "target_request_count": 8,
+    "target_total_usage_usd": "0.037002"
+  },
+  "result": "MATCHED_PROVIDER_SESSION",
+  "saved_run": {
+    "assignment_manifest_sha256": "ae037b6df7b0e0130578c6f6f7fe210a23690ad653ee54d0877315173ee9f0d9",
+    "frozen_runner_preimage_sha256": "294e50ddfc3628ba00f9405215ddbe06d45611d4cd95af7294f5d01ceffb2214",
+    "inspect_completed_at_utc": "2026-10-15T07:25:29.072357+00:00",
+    "inspect_model": "openrouter/openai/gpt-5.6-sol",
+    "inspect_sample_uuid": "X3NZV22BrmsPPw3eFEjYkb",
+    "inspect_sha256": "aa3f66f10f4f9a1165f9990687a7f52963d6c855dc340160aa06dab59efb04cb",
+    "inspect_started_at_utc": "2026-10-15T07:25:09.446930+00:00",
+    "model_events": 8,
+    "pre_settlement_forensic_sha256": "3e24e1cef1665d3de61e12fb5ec967c4ad3a7dc91b7f84a062dae28a144b8643",
+    "stop_stage": "provider_request",
+    "stopped_sha256": "556b933b2eadd6dbafe41a4bbb089516533b02df796e4d9d027663f50b3da1ae",
+    "underlying_model": "openai/gpt-5.6-sol"
+  },
+  "schema": "w11-provider-session-reconciliation-v1",
+  "settlement_candidate_basis": "provider Explore total_usage grouped by exact Inspect sample UUID",
+  "settlement_candidate_usd": "0.037002"
+}

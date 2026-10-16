@@ -1,0 +1,56 @@
+{
+  "chain_marker": {
+    "asset": "valueless local TIP-20",
+    "block_time": "500ms",
+    "chain_id": 1337,
+    "container": "free-mpp-decision-playback-localnet",
+    "funder": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "genesis_hash": "0xb54e201b325f207061d3502a1f4022b8a57c57bc86b7851958cc21a922b26a1f",
+    "image": "ghcr.io/tempoxyz/tempo-localnet@sha256:86f199f161be85d3610d990e5bc2653ece29de3ee9c91e8c8e768cf2b8c05c3b",
+    "marker_amount_atomic": "1010",
+    "marker_block_hash": "0xd2fa862bbbedd0025c5c96aa7bf194d4e9925b07c57a191e30b7454f2f7e88e5",
+    "marker_block_number": "50",
+    "marker_transaction_hash": "0xcbfbdd6d88281a0c727e32ab709a2ac188742e188c05db6e514e5c0f0685f977",
+    "rpc_url": "http://127.0.0.1:19867",
+    "source_sha256": "8baa9f6d43d57a914978e3b4445f2d684209f4e7c0b86ac9a43860a3747edc5f",
+    "test_only": true,
+    "token": "0x20c0000000000000000000000000000000000000",
+    "treasury": "0x8e4D1a7b8c4f7F4204EB0643C85AA7656880E18b"
+  },
+  "helper_hashes": {
+    "mpp010-chain-identity.mjs": {
+      "changed": true,
+      "original_sha256": "41d0d257edb7779b09ba85b7c2f2673e40dc27936264f0ec5c6c8698fe1bbf1a",
+      "playback_sha256": "2926a177948d222032ecc765eec1fa929aac6f0fd595523be15663daaebadf11"
+    },
+    "mpp010-meeting-local.mjs": {
+      "changed": false,
+      "original_sha256": "b68c8ff48802c879d35602702d53c0031f8a33620dd5c6a8efb73b20876a973c",
+      "playback_sha256": "b68c8ff48802c879d35602702d53c0031f8a33620dd5c6a8efb73b20876a973c"
+    },
+    "mpp010-meeting-service.mjs": {
+      "changed": false,
+      "original_sha256": "828d79e77202b29279d30520c5fb0da7b22c79eacf27202d2826ad8baf993ef1",
+      "playback_sha256": "828d79e77202b29279d30520c5fb0da7b22c79eacf27202d2826ad8baf993ef1"
+    },
+    "mpp010-verify-meeting-evidence.mjs": {
+      "changed": false,
+      "original_sha256": "355082c4f88286b900f3e8d8735e008bf80d65a639f105f9e35e00b4e548f745",
+      "playback_sha256": "355082c4f88286b900f3e8d8735e008bf80d65a639f105f9e35e00b4e548f745"
+    },
+    "mpp010-verify-meeting-service.mjs": {
+      "changed": false,
+      "original_sha256": "7f2807685480d4fc0619d627c717785e868b0a89117a8f0395afe85e3e75b269",
+      "playback_sha256": "7f2807685480d4fc0619d627c717785e868b0a89117a8f0395afe85e3e75b269"
+    },
+    "package-lock.json": {
+      "changed": false,
+      "original_sha256": "ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad",
+      "playback_sha256": "ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad"
+    }
+  },
+  "only_change": "chain RPC/HTTP loopback ports and isolated marker block/hash",
+  "original_helper_root": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/protocols/mpp",
+  "playback_helper_root": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/exploratory/free-mpp-native-decision-playback-2026-10-16-001/native-overlay/protocols/mpp",
+  "source_marker_sha256": "b946c4f5cbdd498e2eacb487446b9f9ab0f5d9cd183c9b4e0e2af9e8c09bf989"
+}

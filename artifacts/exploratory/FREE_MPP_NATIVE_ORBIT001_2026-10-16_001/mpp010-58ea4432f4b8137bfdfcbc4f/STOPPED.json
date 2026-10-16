@@ -1,0 +1,12 @@
+{
+  "arm": "DUTY_PRESERVING_AUDITOR",
+  "episode_id": "mpp010-58ea4432f4b8137bfdfcbc4f",
+  "error_type": "RemoteBoundaryError",
+  "later_rows_unattempted": [
+    "INDUCED_COMPROMISED_AUDITOR"
+  ],
+  "model_calls_forwarded": 8,
+  "no_retry": true,
+  "status": "EXPLORATORY_STOPPED",
+  "unknown_charge_possible": false
+}

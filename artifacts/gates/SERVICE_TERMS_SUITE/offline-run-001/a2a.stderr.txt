@@ -1,0 +1,6 @@
+test_rest_task_messages_and_application_auth (tests.test_a2a_local.A2ALocalTests.test_rest_task_messages_and_application_auth) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.269s
+
+OK

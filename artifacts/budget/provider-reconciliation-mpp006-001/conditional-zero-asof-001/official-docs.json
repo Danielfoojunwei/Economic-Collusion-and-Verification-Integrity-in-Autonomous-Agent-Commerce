@@ -1,0 +1,29 @@
+{
+  "activity-export": {
+    "archive_file": "activity-export.html.gz",
+    "archive_sha256": "75928546acb79e468543efc161ec1e3c0f1df941e187131300f84b52bde51301",
+    "http_status": 200,
+    "page_bytes": 418893,
+    "page_sha256": "2a39f416b8b69ee018b34032df17258567e0a22bcf784d6653a8a82e1b5af9a5",
+    "retrieved_at_utc": "2026-10-15T14:45:38.071619+00:00",
+    "url": "https://openrouter.ai/docs/cookbook/administration/activity-export"
+  },
+  "errors-and-debugging": {
+    "archive_file": "errors-and-debugging.html.gz",
+    "archive_sha256": "81ba4580729704ae0b638233a75b7fae2f71f6f158f1660cb2fc266fbe385aa1",
+    "http_status": 200,
+    "page_bytes": 1171743,
+    "page_sha256": "0fba9ed243296de460a5800d8717d394cd854577068be5588cb3055dd264f1e0",
+    "retrieved_at_utc": "2026-10-15T14:45:30.800341+00:00",
+    "url": "https://openrouter.ai/docs/api_reference/errors-and-debugging"
+  },
+  "zero-completion-insurance": {
+    "archive_file": "zero-completion-insurance.html.gz",
+    "archive_sha256": "9a43b959f2f25af0aae0c63d98d216281f3eb6df788b03677b4c9ec14cc7eb30",
+    "http_status": 200,
+    "page_bytes": 525711,
+    "page_sha256": "9e8a4e965717deb6de80899d030b82943ef91381184f7cf9cbf270626d67c137",
+    "retrieved_at_utc": "2026-10-15T14:45:35.561719+00:00",
+    "url": "https://openrouter.ai/docs/guides/features/zero-completion-insurance"
+  }
+}

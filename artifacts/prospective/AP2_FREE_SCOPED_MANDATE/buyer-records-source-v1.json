@@ -1,0 +1,16 @@
+{
+  "schema": "ap2-independent-buyer-po-credit-note-v1",
+  "origin": "Existing AP2 protected buyer fixture, not supplier report or mandate",
+  "source_path": "src/agent_economic_trust/ap2_live_fixture.py",
+  "source_sha256": "988fdb4b3f71be5f520529b37d78cef35e82d3801def8b563274d3939bb550d8",
+  "cases": {
+    "BAD": {
+      "purchase_order_amount_cents": 350,
+      "credit_note_amount_cents": 50
+    },
+    "GOOD": {
+      "purchase_order_amount_cents": 400,
+      "credit_note_amount_cents": 50
+    }
+  }
+}

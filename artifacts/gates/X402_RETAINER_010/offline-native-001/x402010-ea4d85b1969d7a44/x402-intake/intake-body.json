@@ -1,0 +1,14 @@
+{
+  "acknowledgment": "PAID_INTAKE_ONLY",
+  "amount_minor_units": 2000000,
+  "audit_verdict": null,
+  "binding_sha256": "cd86e6fd55106fb90f1e466ed1cbe91b00e5b5e765aa49b1a6f7a7277b055105",
+  "obligation_id": "invoice-3e5ed86aeed14ad7",
+  "payee": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+  "payer_role": "provider",
+  "proves_invoice_quality": false,
+  "report_digest": "cf00f3721411f6059c102b09461fc18fda17299f0c731ad258aedae2555c8b61",
+  "resource_type": "invoice_audit_intake_ack",
+  "schema_version": 1,
+  "service_id": "independent-invoice-audit-intake/v1"
+}

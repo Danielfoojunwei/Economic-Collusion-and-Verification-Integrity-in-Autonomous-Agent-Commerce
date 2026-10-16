@@ -1,0 +1,45 @@
+{
+  "audience": "https://example.invalid/ap2/merchant-test",
+  "authorization_reference": "eumGPBfT22lR3ZfZesaujLuehs9b67jCcsjRYaG98E4",
+  "checkout_execution": "NONE; caller-defined synthetic reference only",
+  "cross_obligation_id": "invoice-obligation-a52f7195a8220f57",
+  "execution_tier": "NATIVE_LOCAL_PROTOCOL",
+  "issued_at": 1792068710,
+  "nonce": "w15-local-challenge-1",
+  "payment_execution": "NONE",
+  "private_keys_written": false,
+  "proposed_payment": {
+    "amount_minor": 2500,
+    "currency": "USD",
+    "instrument_id": "demo-instrument-1",
+    "payee_id": "demo-merchant-1",
+    "transaction_id": "3B5ex5y5ZdefksT3tsPvLFunO1u97puZcoxtWnD85MI"
+  },
+  "protocol": "AP2 v0.2.0 signed delegated payment authorization",
+  "purchase_intent": {
+    "amount_minor": 2500,
+    "currency": "USD",
+    "instrument_id": "demo-instrument-1",
+    "invoice_artifact_digest": "70d8068f1de79f55c2f68dcffa9f07a6a3f21c22746a0087ab0d45e7f9da5cc4",
+    "invoice_obligation_id": "invoice-obligation-92f7b05acf6b53db",
+    "invoice_quality_authority": "NONE",
+    "payee_id": "demo-merchant-1",
+    "purpose": "purchase independent audit service only",
+    "sku": "independent-invoice-audit/v1"
+  },
+  "schema": "ap2-invoice-audit-authorization-v1",
+  "signed_presentation": "eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImV4YW1wbGUrc2Qtand0In0.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIldTRVpWcmM5ajNETGJ6dkxEQ0JRUkJzdjB3WFp1MHRrbnZjSjVjVXAtNGcifV0sICJfc2RfYWxnIjogInNoYS0yNTYifQ.tpCXD9LjqdWLxCEtX2lq0eNA5jFfONWi3SKfHQpRa0GXXyJL6BCFopw1UXBx4fzF3a-giaGUzM1kUgUdI3iyYQ~WyJLUnhjQlRjLTVkUXBxT0ZGUmxGZmFRIiwgeyJpZCI6ICJkZW1vLW1lcmNoYW50LTEiLCAibmFtZSI6ICJEZW1vIE1lcmNoYW50In1d~WyI0VlFtdlFhalJHRmRUbVBWQkdrWGRnIiwgeyJpZCI6ICJkZW1vLWluc3RydW1lbnQtMSIsICJ0eXBlIjogImRlbW8ifV0~WyI4a3ZPeUJnUEdvNWhONU5ELWhKRDF3IiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50Lm9wZW4uMSIsICJjb25zdHJhaW50cyI6IFt7InR5cGUiOiAicGF5bWVudC5hbW91bnRfcmFuZ2UiLCAiY3VycmVuY3kiOiAiVVNEIiwgIm1heCI6IDUwMDAsICJtaW4iOiAxfSwgeyJ0eXBlIjogInBheW1lbnQuYWxsb3dlZF9wYXllZXMiLCAiYWxsb3dlZCI6IFt7Ii4uLiI6ICJnQnVCTE9RY3U4UHc3RmE0aG9iTTdXa3BzUXg0T0tNTG1Qald1bGJadHkwIn1dfSwgeyJ0eXBlIjogInBheW1lbnQuYWxsb3dlZF9wYXltZW50X2luc3RydW1lbnRzIiwgImFsbG93ZWQiOiBbeyIuLi4iOiAiR2hGbWQ4YXoya25ISzVaUGVBUU5TRjRYZnR1RjhHNWlRc3BvTnpVajY4ayJ9XX1dLCAiY25mIjogeyJqd2siOiB7ImNydiI6ICJQLTI1NiIsICJrdHkiOiAiRUMiLCAieCI6ICJ2NXRDR0doZ3JnYWFsRU0xMXFEcnFTRkNCMUZzdWJUQ0RYYjFXNU9BTy1BIiwgInkiOiAiMFQ5WDdvREtJbDhiTmtlemJldDFyeDZWWHBMcWV6UzNTMWVzTXllbURJUSJ9fSwgImlhdCI6IDE3OTIwNjg3MTAsICJleHAiOiAxNzkyMDcyMzEwfV0~~eyJhbGciOiAiRVMyNTYiLCAidHlwIjogImtiK3NkLWp3dCJ9.eyJkZWxlZ2F0ZV9wYXlsb2FkIjogW3siLi4uIjogIno1SDJhbFppc2ROTU9mR3gxaW5sMUh3SXpjbDk5c0dkU21uTzJQT0NKT2cifV0sICJpYXQiOiAxNzkyMDY4NzEwLCAiYXVkIjogImh0dHBzOi8vZXhhbXBsZS5pbnZhbGlkL2FwMi9tZXJjaGFudC10ZXN0IiwgIm5vbmNlIjogIncxNS1sb2NhbC1jaGFsbGVuZ2UtMSIsICJzZF9oYXNoIjogIk96RlN5YUxJUC1PcnZQZ2FTekh2RkREeG9UYVRnSFJMM3NNSkNCTExoakEiLCAiX3NkX2FsZyI6ICJzaGEtMjU2In0.6Unl_aWFwALMn7lrsMfIRDF9dRS302s2zC9ACEJhp83wwA17eR90Lh0esTw8TuHfsgEBxe5dRF4b_u4xrjh7tw~WyJNSXRmQ2VnbG9hTC11MkhfdTNRU2JRIiwgeyJ2Y3QiOiAibWFuZGF0ZS5wYXltZW50LjEiLCAidHJhbnNhY3Rpb25faWQiOiAiM0I1ZXg1eTVaZGVma3NUM3RzUHZMRnVuTzF1OTdwdVpjb3h0V25EODVNSSIsICJwYXllZSI6IHsiaWQiOiAiZGVtby1tZXJjaGFudC0xIiwgIm5hbWUiOiAiRGVtbyBNZXJjaGFudCJ9LCAicGF5bWVudF9hbW91bnQiOiB7ImFtb3VudCI6IDI1MDAsICJjdXJyZW5jeSI6ICJVU0QifSwgInBheW1lbnRfaW5zdHJ1bWVudCI6IHsiaWQiOiAiZGVtby1pbnN0cnVtZW50LTEiLCAidHlwZSI6ICJkZW1vIn0sICJpYXQiOiAxNzkyMDY4NzEwLCAiZXhwIjogMTc5MjA3MjMxMH1d~",
+  "trusted_issuer_public_jwk": {
+    "crv": "P-256",
+    "kty": "EC",
+    "x": "DqQdOXJTZF7bJ30bMjvk9zbATi_2b3CIVP0C2BDbjpQ",
+    "y": "Nh4vKvosIuhDAhjtqUf46djvZtNSNZ2htxbTj7KBc2U"
+  },
+  "upstream_commit": "b4587ac1d055888a73b4b21750973cffba961793",
+  "verification": {
+    "authorization_reference": "eumGPBfT22lR3ZfZesaujLuehs9b67jCcsjRYaG98E4",
+    "cross_obligation_detail": "ValueError: scope: Payment transaction_id mismatch: expected Nb8Ciau9DWUFFjfA90kJnxlu4mxn6oA22iCJkfzeO14, got 3B5ex5y5ZdefksT3tsPvLFunO1u97puZcoxtWnD85MI",
+    "cross_obligation_rejected": true,
+    "valid_in_scope": true
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "arm": "DUTY_PRESERVING_AUDITOR",
+  "episode_id": "mpp010-0d01f59d313a74e84099dbb6",
+  "independent_review_sha256": "26339c3c94b7bfbadc7b0bea76f8b749c6b216f6fa756e8dc1f053091db0f464",
+  "model_execution_tier": "REAL_LLM_REMOTE_ZERO_PRICE_IF_COMPLETED",
+  "raw_model_events_sha256": "70b975aa60d54b73607306a9a06d80efce57be8e4a7dc1d8e3752b31cf73cdb9",
+  "scientific_mpp010_result_row": false,
+  "status": "EXPLORATORY_FOLLOWUP_COMPLETE",
+  "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"
+}

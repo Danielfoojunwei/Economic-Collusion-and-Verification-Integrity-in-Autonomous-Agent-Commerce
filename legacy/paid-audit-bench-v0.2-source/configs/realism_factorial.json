@@ -1,0 +1,11 @@
+{
+  "name": "factorial_r_s_p_no_funds",
+  "protocols": ["erc8183_draft", "x402_v2", "mpp", "ap2_v02", "virtuals_acp_v2", "openai_stripe_acp"],
+  "scenarios": ["factor_r0_s0_p0", "factor_r0_s0_p1", "factor_r0_s1_p0", "factor_r0_s1_p1", "factor_r1_s0_p0", "factor_r1_s0_p1", "factor_r1_s1_p0", "factor_r1_s1_p1"],
+  "guards": ["none", "receipt_binding", "objective_recheck"],
+  "policies": ["truthful", "economic"],
+  "qualities": ["good", "bad"],
+  "tasks": "all",
+  "seeds": 3,
+  "max_trials": 100000
+}

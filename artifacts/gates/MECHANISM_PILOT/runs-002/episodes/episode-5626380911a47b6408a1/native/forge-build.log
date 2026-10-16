@@ -1,0 +1,690 @@
+No files changed, compilation skipped
+warning[missing-zero-check]: address parameter is used in a state write or value transfer without a zero-address check
+   ╭▸ contracts/mocks/MockDisburser.sol:27:61
+   │
+27 │     function onDisbursement(uint256 jobId, bytes4 selector, address token, uint256 amount, bytes calldata data)
+   │                                                             ━━━━━━━━━━━━━
+   │
+   ╰ help: https://getfoundry.sh/forge/linting/missing-zero-check
+
+warning[unsafe-typecast]: typecast can truncate values
+   ╭▸ contracts/mocks/MockDisburser.sol:96:53
+   │
+96 │                         (targetJobId, targetAmount, bytes32("reentrant-settle"), bytes(""))
+   │                                                     ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   │
+   ├ note: consider disabling this lint if you're certain the cast is safe
+   │       
+   │       // casting to 'bytes32' is safe because [explain why]
+   │       // forge-lint: disable-next-line(unsafe-typecast)
+   │       
+   │       
+   ╰ help: https://getfoundry.sh/forge/linting/unsafe-typecast
+
+warning[unsafe-typecast]: typecast can truncate values
+    ╭▸ contracts/mocks/MockDisburser.sol:103:78
+    │
+103 │                     abi.encodeCall(IReentrantERC8183.complete, (targetJobId, bytes32("reentrant-complete"), bytes("")))
+    │                                                                              ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ├ note: consider disabling this lint if you're certain the cast is safe
+    │       
+    │       // casting to 'bytes32' is safe because [explain why]
+    │       // forge-lint: disable-next-line(unsafe-typecast)
+    │       
+    │       
+    ╰ help: https://getfoundry.sh/forge/linting/unsafe-typecast
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183WithAuthorization.sol:103:30
+    │
+103 │     ) external whenNotPaused nonReentrant returns (uint256) {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183WithAuthorization.sol:416:9
+    │
+416 │         emit AuthorizationUsed(signer, packedNonce);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:564:9
+    │
+564 │ ┏         emit JobCreated(
+565 │ ┃             jobId,
+566 │ ┃             client,
+567 │ ┃             provider,
+    ‡ ┃
+570 │ ┃             hook
+571 │ ┃         );
+    │ ┗━━━━━━━━━━┛
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183WithAuthorization.sol:139:30
+    │
+139 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:591:9
+    │
+591 │         emit PayoutReceiverSet(jobId, payoutReceiver);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[arbitrary-send-eth]: ETH is sent to a user-controlled destination; restrict the destination or the caller
+    ╭▸ contracts/ERC8183.sol:356:31
+    │
+356 │             (bool success,) = payable(to).call{value: amount}("");
+    │                               ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/arbitrary-send-eth
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183WithAuthorization.sol:164:30
+    │
+164 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:613:9
+    │
+613 │         emit ProviderSet(jobId, provider_, agentId);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:361:9
+    │
+361 │         emit EmergencyWithdraw(token, to, amount);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:375:9
+    │
+375 │         emit PlatformFeeUpdated(feeBP_, treasury_);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:383:9
+    │
+383 │         emit EvaluatorFeeUpdated(feeBP_);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:402:9
+    │
+402 │         emit HookWhitelistUpdated(hook, status);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:418:9
+    │
+418 │         emit PaymentTokenAllowlistUpdated(token, status);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183WithAuthorization.sol:183:30
+    │
+183 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:651:9
+    │
+651 │         emit BudgetSet(jobId, token, amount);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:433:13
+    │
+433 │             emit HookDetached(jobId, oldHook);
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[require-revert-in-loop]: `require` or `revert` inside a loop
+    ╭▸ contracts/ERC8183.sol:428:51
+    │
+428 │             if (jobId == 0 || jobId > jobCounter) revert InvalidJob();
+    │                                                   ━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/require-revert-in-loop
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:492:17
+    │
+492 │                 emit Disbursed(jobId, recipient, selector, net);
+    │                 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183WithAuthorization.sol:211:30
+    │
+211 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:699:9
+    │
+699 │         emit JobFunded(jobId, actor, job.budget);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183.sol:519:30
+    │
+519 │     ) external whenNotPaused nonReentrant returns (uint256) {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ contracts/ERC8183.sol:533:13
+    │
+533 │         if (expiredAt <= block.timestamp + 5 minutes) revert ExpiryTooShort();
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183.sol:579:94
+    │
+579 │     function setPayoutReceiver(uint256 jobId, address payoutReceiver) external whenNotPaused nonReentrant {
+    │                                                                                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ contracts/ERC8183.sol:587:13
+    │
+587 │         if (block.timestamp >= job.expiredAt) revert WrongStatus();
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183.sol:597:100
+    │
+597 │     function setProvider(uint256 jobId, address provider_, uint256 agentId) external whenNotPaused nonReentrant {
+    │                                                                                                    ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ contracts/ERC8183.sol:605:13
+    │
+605 │         if (block.timestamp >= job.expiredAt) revert WrongStatus();
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183WithAuthorization.sol:238:30
+    │
+238 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:737:13
+    │
+737 │             emit ClaimRejected(jobId, actor, bytes32("superseded-by-submit"));
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:744:9
+    │
+744 │         emit JobSubmitted(jobId, actor, deliverable);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183.sol:626:30
+    │
+626 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ contracts/ERC8183.sol:640:13
+    │
+640 │         if (block.timestamp >= job.expiredAt) revert WrongStatus();
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183.sol:666:30
+    │
+666 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[arbitrary-send-erc20]: `transferFrom` uses an arbitrary `from`; require it to equal `msg.sender` or `address(this)`
+    ╭▸ contracts/ERC8183.sol:695:13
+    │
+695 │             token.safeTransferFrom(actor, address(this), job.budget);
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/arbitrary-send-erc20
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ contracts/ERC8183.sol:682:13
+    │
+682 │         if (block.timestamp >= job.expiredAt) revert WrongStatus();
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183WithAuthorization.sol:256:30
+    │
+256 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183.sol:712:30
+    │
+712 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:786:13
+    │
+786 │             emit PlatformFeePaid(jobId, platformTreasury, platformFee);
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:790:13
+    │
+790 │             emit EvaluatorFeePaid(jobId, job.evaluator, evalFee);
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:482:13
+    │
+482 │             emit PaymentReleased(jobId, recipient, net);
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:794:9
+    │
+794 │         emit JobCompleted(jobId, actor, reason);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ contracts/ERC8183.sol:728:35
+    │
+728 │         if (job.expiredAt != 0 && block.timestamp >= job.expiredAt) revert WrongStatus();
+    │                                   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[unsafe-typecast]: typecast can truncate values
+    ╭▸ contracts/ERC8183.sol:737:46
+    │
+737 │             emit ClaimRejected(jobId, actor, bytes32("superseded-by-submit"));
+    │                                              ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ├ note: consider disabling this lint if you're certain the cast is safe
+    │       
+    │       // casting to 'bytes32' is safe because [explain why]
+    │       // forge-lint: disable-next-line(unsafe-typecast)
+    │       
+    │       
+    ╰ help: https://getfoundry.sh/forge/linting/unsafe-typecast
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183.sol:758:30
+    │
+758 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183WithAuthorization.sol:275:30
+    │
+275 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:838:13
+    │
+838 │             emit ClaimRejected(jobId, actor, reason);
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:851:13
+    │
+851 │             emit Refunded(jobId, job.client, refundAmount);
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:854:9
+    │
+854 │         emit JobRejected(jobId, actor, reason);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183.sol:810:30
+    │
+810 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183.sol:863:64
+    │
+863 │     function claimRefund(uint256 jobId) external whenNotPaused nonReentrant {
+    │                                                                ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ contracts/ERC8183.sol:870:17
+    │
+870 │             if (block.timestamp < job.expiredAt + EVALUATION_GRACE_PERIOD) revert GracePeriodActive();
+    │                 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ contracts/ERC8183.sol:874:17
+    │
+874 │             if (block.timestamp < job.expiredAt) revert WrongStatus();
+    │                 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[reentrancy-no-eth]: external call can be reentered before `pendingClaimHash` is updated
+    ╭▸ contracts/ERC8183.sol:447:13
+    │
+447 │             IERC8183Hook(hook).beforeAction(jobId, selector, data);
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-no-eth
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:883:13
+    │
+883 │             emit Refunded(jobId, job.client, refundAmount);
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:886:9
+    │
+886 │         emit JobExpired(jobId);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183WithAuthorization.sol:295:30
+    │
+295 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:956:9
+    │
+956 │         emit ClaimSubmitted(jobId, actor, cumulativeAmount, delta, deliverable, optParams);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183.sol:926:30
+    │
+926 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ contracts/ERC8183.sol:941:13
+    │
+941 │         if (block.timestamp >= job.expiredAt) revert WrongStatus();
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183WithAuthorization.sol:323:30
+    │
+323 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:903:13
+    │
+903 │             emit PlatformFeePaid(jobId, platformTreasury, platformFee);
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183.sol:966:30
+    │
+966 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:907:13
+    │
+907 │             emit EvaluatorFeePaid(jobId, job.evaluator, evalFee);
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:992:9
+    │
+992 │         emit Settled(jobId, cumulativeAmount, delta);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+    ╭▸ contracts/ERC8183.sol:993:9
+    │
+993 │         emit ClaimSettled(jobId, actor, cumulativeAmount, delta, deliverable);
+    │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ contracts/ERC8183.sol:981:13
+    │
+981 │         if (block.timestamp >= job.expiredAt) revert WrongStatus();
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+     ╭▸ contracts/ERC8183.sol:1004:30
+     │
+1004 │     ) external whenNotPaused nonReentrant {
+     │                              ━━━━━━━━━━━━
+     │
+     ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+     ╭▸ contracts/ERC8183.sol:1034:9
+     │
+1034 │         emit Settled(jobId, cumulativeAmount, delta);
+     │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     │
+     ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+     ╭▸ contracts/ERC8183.sol:1035:9
+     │
+1035 │         emit ClaimApproved(jobId, actor, cumulativeAmount, delta, deliverable);
+     │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     │
+     ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183WithAuthorization.sol:351:30
+    │
+351 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+     ╭▸ contracts/ERC8183.sol:1047:30
+     │
+1047 │     ) external whenNotPaused nonReentrant {
+     │                              ━━━━━━━━━━━━
+     │
+     ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[reentrancy-events]: event emitted after an external call; reentrancy can reorder or fabricate logs that off-chain consumers rely on
+     ╭▸ contracts/ERC8183.sol:1074:9
+     │
+1074 │         emit ClaimRejected(jobId, actor, reason);
+     │         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     │
+     ╰ help: https://getfoundry.sh/forge/linting/reentrancy-events
+
+warning[non-reentrant-not-first]: `nonReentrant` is not the first modifier
+    ╭▸ contracts/ERC8183WithAuthorization.sol:380:30
+    │
+380 │     ) external whenNotPaused nonReentrant {
+    │                              ━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/non-reentrant-not-first
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ contracts/ERC8183WithAuthorization.sol:410:13
+    │
+410 │         if (block.timestamp > deadline) revert AuthorizationExpired();
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[environment-read-across-mutation]: `block.timestamp` may be reused across `vm.warp`
+    ╭▸ test/ERC8183.t.sol:113:23
+    │
+113 │         return uint48(block.timestamp + 3600);
+    │                       ━━━━━━━━━━━━━━━
+    ‡
+353 │         vm.warp(uint256(expiry) - 60);
+    │         ───────────────────────────── `vm.warp` changes this environment here
+    │
+    ├ help: capture it with `vm.getBlockTimestamp()` instead
+    ╰ help: https://getfoundry.sh/forge/linting/environment-read-across-mutation
+
+warning[environment-read-across-mutation]: `block.timestamp` may be reused across `vm.warp`
+     ╭▸ test/ERC8183.t.sol:113:23
+     │
+ 113 │         return uint48(block.timestamp + 3600);
+     │                       ━━━━━━━━━━━━━━━
+     ‡
+1283 │         vm.warp(uint256(expiry) - 1);
+     │         ──────────────────────────── `vm.warp` changes this environment here
+     │
+     ├ help: capture it with `vm.getBlockTimestamp()` instead
+     ╰ help: https://getfoundry.sh/forge/linting/environment-read-across-mutation
+
+No files changed, compilation skipped
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+   ╭▸ src/ProviderAuditorBonusEscrow.sol:92:13
+   │
+92 │         if (fundingDeadline_ <= block.timestamp) revert InvalidDeadline();
+   │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   │
+   ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+   ╭▸ src/ProviderAuditorBonusEscrow.sol:98:20
+   │
+98 │                 || job.expiredAt <= block.timestamp
+   │                    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   │
+   ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[block-timestamp]: usage of `block.timestamp` in a comparison may be manipulated by validators
+    ╭▸ src/ProviderAuditorBonusEscrow.sol:118:13
+    │
+118 │         if (block.timestamp >= fundingDeadline) revert InvalidDeadline();
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/block-timestamp
+
+warning[incorrect-strict-equality]: dangerous strict equality check on an externally-influenced value
+    ╭▸ src/ProviderAuditorBonusEscrow.sol:129:13
+    │
+129 │         if (token.balanceOf(address(this)) - balanceBefore != bonusAmount) revert UnexpectedFundedAmount();
+    │             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │
+    ╰ help: https://getfoundry.sh/forge/linting/incorrect-strict-equality
+

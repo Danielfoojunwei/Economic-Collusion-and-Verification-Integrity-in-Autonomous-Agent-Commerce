@@ -1,0 +1,7 @@
+test_existing_output_is_not_overwritten (test_erc8183_local.ERC8183NativeEvidenceTests.test_existing_output_is_not_overwritten) ... ok
+test_local_receipts_reconstruct_conserved_balances_and_native_outcomes (test_erc8183_local.ERC8183NativeEvidenceTests.test_local_receipts_reconstruct_conserved_balances_and_native_outcomes) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 5.920s
+
+OK

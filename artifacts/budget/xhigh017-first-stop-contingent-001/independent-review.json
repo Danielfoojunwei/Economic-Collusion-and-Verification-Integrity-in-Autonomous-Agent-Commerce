@@ -1,0 +1,60 @@
+{
+  "schema": "xhigh017-provisional-billing-independent-review-v1",
+  "reviewer_id": "/root/xhigh017_billing_independent",
+  "reviewed_utc": "2026-10-15",
+  "decision": "GO_FOR_ONE_CANONICAL_UNKNOWN_TO_CONTINGENT_TRANSITION",
+  "canonical_head_at_review": "b610f185ef32c2fe4ca0a0a8c95f484b04185402",
+  "canonical_ledger_prestate": {
+    "seq": 216,
+    "last_hash": "f0e592b73cfb4091e8459e637365352ce49fb444f5ab1a2d40d03f355e0b1fcf",
+    "ledger_sha256": "22d8e15df568f151edb0589715ec5489ce89f2d9c01d5917fa4dbb6503b36bd9",
+    "anchor_sha256": "0ffd24b300c70d21fba155cbadbd76d0a36622852b2226d6cb826786a6871219",
+    "cap_usd": "50",
+    "settled_spent_usd": "9.814298",
+    "reserved_usd": "23.1055",
+    "available_usd": "17.080202",
+    "blocked": true,
+    "unknown_run_ids": [
+      "xhigh017-a0f79e6ba7de-xhigh017-0a63961c0d306890326609f6"
+    ]
+  },
+  "reviewed_artifacts_sha256": {
+    "scripts/assess_xhigh017_contingent.py": "5659141493001486693511b5f896a26f0b93c4bfa7caefb891055d9bf2844fa2",
+    "artifacts/budget/xhigh017-first-stop-contingent-001/evidence.json": "53bdf0afe52a99f0ee18ab48772fac41b1a7054cb3b8f34386d392205c9ca009",
+    "artifacts/budget/xhigh017-first-stop-contingent-001/openrouter-ledger.prestate.jsonl": "22d8e15df568f151edb0589715ec5489ce89f2d9c01d5917fa4dbb6503b36bd9",
+    "artifacts/budget/xhigh017-first-stop-contingent-001/openrouter-ledger.prestate.jsonl.anchor": "0ffd24b300c70d21fba155cbadbd76d0a36622852b2226d6cb826786a6871219",
+    "artifacts/gates/ERC8183_XHIGH017/independent-first-stop-forensics-001.json": "66b0c983ebc587380fcaaad8ce8f16a4f9b169684981385b3df0512751780e17",
+    "artifacts/gates/ERC8183_XHIGH017/collection-001-after-first-stop.json": "eefd7c61b9b8667a3923a8979c78226e8433488f9a032e537b11f418633e95ec",
+    "artifacts/gates/ERC8183_XHIGH017/runs-001/episodes/xhigh017-0a63961c0d306890326609f6/STOPPED.json": "20628ac8c11a1e658728ba37b04d5ae3d9ff22c99c94da7be5418b5bb9f1097d"
+  },
+  "verification": {
+    "read_only_assessment": "PASS_IN_CANONICAL_CHECKOUT",
+    "focused_tests": "4_PASS_0_FAIL",
+    "frozen_denominator": "ZERO_COMPLETE_ONE_STOPPED_ONE_PENDING_NO_RETRY",
+    "stop_cause": "LOCAL_INSPECT_API_RESULT_TUPLE_SHAPE_MISMATCH",
+    "guarded_provider_api_invocations": 1,
+    "completed_guard_returns": 0,
+    "auditor_api_invocations": 0,
+    "saved_inspect_model_event": "ONE_SYNTHETIC_FAILED_EVENT_NO_USAGE_OR_RAW_MODEL_CALL",
+    "native_state": "FUNDED_SUBMITTED_NO_TERMINAL_VERDICT_OR_PAYOUT",
+    "whole_account_zero_delta_is_per_request_bill": false,
+    "expected_post_transition_seq": 217,
+    "expected_post_transition_unknown_run_ids": [],
+    "expected_post_transition_reserved_usd": "23.1055",
+    "expected_post_transition_available_usd": "17.080202"
+  },
+  "retained_reservation_usd": "4.718592",
+  "attributable_final_provider_bill_usd": null,
+  "no_paid_calls_or_ledger_mutations": true,
+  "limits": [
+    "This is a provisional accounting status, not an actual charge or a zero-dollar settlement. The single guarded provider invocation may have incurred a charge that the saved record cannot attribute.",
+    "Retain the entire USD 4.718592 run reservation under the unchanged USD 50 project cap; do not credit any budget based on the whole-account zero delta.",
+    "The frozen XHIGH017 first row remains STOPPED and its second row remains PENDING. Do not retry, substitute, or infer a high-versus-xhigh effect.",
+    "Apply only once if the canonical ledger bytes, anchor, sequence, and last hash still equal this reviewed prestate. Final settlement requires attributable provider billing; discredited evidence must reblock the run."
+  ],
+  "review_actions": {
+    "paid_model_calls": 0,
+    "ledger_mutations": 0,
+    "native_payment_transactions": 0
+  }
+}

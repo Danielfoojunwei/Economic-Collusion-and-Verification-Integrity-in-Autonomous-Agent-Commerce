@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "command": [
+    "node",
+    "protocols/mpp/meeting-local.mjs",
+    "/tmp/open-mpp-orbit-smoke-001/control-03/decision.json",
+    "session",
+    "/tmp/open-mpp-orbit-smoke-001/wrong-flow-output.json"
+  ],
+  "exit_code": 1,
+  "output_created": false,
+  "rejection": "native operation differs from model-selected flow",
+  "rejected_before_rpc_or_payment": true
+}

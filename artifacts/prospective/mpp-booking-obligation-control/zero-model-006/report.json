@@ -1,0 +1,83 @@
+{
+  "component": "MPP_BOOKING_OBLIGATION_CONTROL_REPORT",
+  "status": "PASS",
+  "cases": [
+    {
+      "id": "charge-check-sdk_explicit_obligation_scope",
+      "flow": "charge",
+      "operation": "check",
+      "policy": "SDK_EXPLICIT_OBLIGATION_SCOPE",
+      "evidence_file": "charge-check-sdk_explicit_obligation_scope.json",
+      "status": "PASS"
+    },
+    {
+      "id": "charge-check-authored_adapter_obligation_guard",
+      "flow": "charge",
+      "operation": "check",
+      "policy": "AUTHORED_ADAPTER_OBLIGATION_GUARD",
+      "evidence_file": "charge-check-authored_adapter_obligation_guard.json",
+      "status": "PASS"
+    },
+    {
+      "id": "charge-release-sdk_explicit_obligation_scope",
+      "flow": "charge",
+      "operation": "release",
+      "policy": "SDK_EXPLICIT_OBLIGATION_SCOPE",
+      "evidence_file": "charge-release-sdk_explicit_obligation_scope.json",
+      "status": "PASS"
+    },
+    {
+      "id": "charge-release-authored_adapter_obligation_guard",
+      "flow": "charge",
+      "operation": "release",
+      "policy": "AUTHORED_ADAPTER_OBLIGATION_GUARD",
+      "evidence_file": "charge-release-authored_adapter_obligation_guard.json",
+      "status": "PASS"
+    },
+    {
+      "id": "session-check-sdk_explicit_obligation_scope",
+      "flow": "session",
+      "operation": "check",
+      "policy": "SDK_EXPLICIT_OBLIGATION_SCOPE",
+      "evidence_file": "session-check-sdk_explicit_obligation_scope.json",
+      "status": "PASS"
+    },
+    {
+      "id": "session-check-authored_adapter_obligation_guard",
+      "flow": "session",
+      "operation": "check",
+      "policy": "AUTHORED_ADAPTER_OBLIGATION_GUARD",
+      "evidence_file": "session-check-authored_adapter_obligation_guard.json",
+      "status": "PASS"
+    },
+    {
+      "id": "session-release-sdk_explicit_obligation_scope",
+      "flow": "session",
+      "operation": "release",
+      "policy": "SDK_EXPLICIT_OBLIGATION_SCOPE",
+      "evidence_file": "session-release-sdk_explicit_obligation_scope.json",
+      "status": "PASS"
+    },
+    {
+      "id": "session-release-authored_adapter_obligation_guard",
+      "flow": "session",
+      "operation": "release",
+      "policy": "AUTHORED_ADAPTER_OBLIGATION_GUARD",
+      "evidence_file": "session-release-authored_adapter_obligation_guard.json",
+      "status": "PASS"
+    }
+  ],
+  "remote_model_calls_executed": 0,
+  "model_execution_tier": "NOT_APPLICABLE",
+  "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL",
+  "source_hashes": {
+    "booking-obligation-control.mjs": "fcb41ad7e3797678664e762f4c67315a426dc418c9fa7ced7493e1d83e5f9e0e",
+    "verify-booking-obligation-control.mjs": "2160c430970653210ca1b612ae65cf47b894910935446dc36401e4c867b373d6",
+    "package-lock.json": "ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad",
+    "mppx/dist/server/Mppx.js": "ea8b836d8e1a9be9e18e17391b7d51f170cc816912b45b706c25bce26d499cd9",
+    "mppx/dist/server/internal/scope.js": "0fb5f4307d3ff65b5863125f2429249086f59511584aa9b7e276f421ab837690",
+    "mppx/dist/tempo/client/Charge.js": "3b86698d64619156829c08cc419ec597935a324c25d928edb3e73d51d3c9de7f",
+    "mppx/dist/tempo/session/client/Session.js": "bbbc854f476feb4a9b648e373d1707a721284f8fa15e45e6b56b95b6a8e488d0",
+    "mppx/dist/tempo/session/precompile/Voucher.js": "91972c9c56653f7a6166b13137fbe00d0cce93c0120a36f990be3f5044f1869c"
+  }
+}

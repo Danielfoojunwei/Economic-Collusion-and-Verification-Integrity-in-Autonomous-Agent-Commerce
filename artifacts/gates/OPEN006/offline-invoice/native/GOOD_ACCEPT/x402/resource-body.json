@@ -1,0 +1,16 @@
+{
+  "application_binding": {
+    "binding_sha256": "a2e46d72820d98eadab6cd4588ce9e8db21520c7ac34aabcbbb221ff4c92ad33",
+    "obligation_id": "invoice-cf9812134d197ca17d5e245b",
+    "report_digest": "5cd690c5147c5a6c4346a70f12405f0c380378068ae7e20b6f2f218c1cfcbb7c",
+    "task_id": "invoice-report-open004"
+  },
+  "report": {
+    "submitted_amount_cents": 300,
+    "task_id": "invoice-report-open004"
+  },
+  "report_digest": "5cd690c5147c5a6c4346a70f12405f0c380378068ae7e20b6f2f218c1cfcbb7c",
+  "resource_type": "invoice_audit_report",
+  "schema_version": 1,
+  "service_id": "invoice-report-access/v1"
+}

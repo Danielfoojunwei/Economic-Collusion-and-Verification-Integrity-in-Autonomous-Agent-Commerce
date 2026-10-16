@@ -1,0 +1,92 @@
+{
+  "schema": "mpp012-unguarded-test-independent-ledger-poststate-v1",
+  "reviewer_id": "/root/pressure016_billing_independent",
+  "reviewed_utc": "2026-10-15",
+  "decision": "CONFIRMED_FULL_HEADROOM_HELD_UNKNOWN_PAID_WORK_BLOCKED",
+  "reviewed_commit": "819d324462fa5ed53528aadbdffdba3b2ce4224e",
+  "reviewed_sha256": {
+    "artifacts/incidents/MPP012_UNGUARDED_TEST_001/incident.json": "320a0cd74b72efb850402c1bb3bc22ed5a28e80c076775f5c34f3f736ea80d79",
+    "artifacts/incidents/MPP012_UNGUARDED_TEST_001/independent-budget-review-001.json": "dc64326b09c3ab0a82154c367e78dde1918c6082e7421fd319b80554f226963c",
+    "artifacts/incidents/MPP012_UNGUARDED_TEST_001/test-source-at-incident.py": "c53b9d71375f38988e8b29f5be4c52c73348435bc38c9187ddc27bb9af94dd8b",
+    "artifacts/incidents/MPP012_UNGUARDED_TEST_001/terminal-excerpt.txt": "d0244a356c2e6e1659f17ed9ce8fcd7e0df8a392fcdde6146d5a3c1e7dda859e",
+    "artifacts/budget/openrouter-ledger.jsonl": "0af6cc74bdc1f035ab6f54f39721e437f154f85ffe03fa1b9f1fca37a3399fc9",
+    "artifacts/budget/openrouter-ledger.jsonl.anchor": "a6fcc32f12c0192d1adf0cfb9461e9273860c52bc2d891185f9fb66377f14b3d"
+  },
+  "prestate_from_parent_commit": {
+    "seq": 224,
+    "last_hash": "e02531523015f58b36f8c86d9217d7684f536960dcbdb17cded74ac0ae77381f",
+    "ledger_sha256": "4e2f2e05d3507f8abf4e660910fcd4f0414b928bd03f5dda51972c6d457b88df",
+    "anchor_sha256": "c69ceaa93261fb24e11a55086c6d8f1ea7ff86ed13ffcc9ddd3ccd7c7fdd31c5",
+    "cap_usd": "50",
+    "settled_spent_usd": "10.096926",
+    "reserved_usd": "27.086812",
+    "available_usd": "12.816262",
+    "blocked": false,
+    "unknown_run_ids": []
+  },
+  "append_only_transition": [
+    {
+      "seq": 225,
+      "kind": "reserve",
+      "run_id": "mpp012-unguarded-source-test-20261015-221720",
+      "amount_usd": "12.816262",
+      "prev_hash": "e02531523015f58b36f8c86d9217d7684f536960dcbdb17cded74ac0ae77381f",
+      "event_hash": "1997831757eedb3f4eb20740e7444c5ef9eaf601c44fa09d2bd5af786b52fb4a",
+      "incident_sha256": "320a0cd74b72efb850402c1bb3bc22ed5a28e80c076775f5c34f3f736ea80d79",
+      "independent_review_sha256": "dc64326b09c3ab0a82154c367e78dde1918c6082e7421fd319b80554f226963c",
+      "retroactive_reservation": true
+    },
+    {
+      "seq": 226,
+      "kind": "unknown",
+      "run_id": "mpp012-unguarded-source-test-20261015-221720",
+      "reason": "UNGUARDED_SOURCE_TEST_UNATTRIBUTED_BILLING",
+      "prev_hash": "1997831757eedb3f4eb20740e7444c5ef9eaf601c44fa09d2bd5af786b52fb4a",
+      "event_hash": "49eabe342883ff03ba90cd67504549674d0244ddada5a62530a5b34483a2201d"
+    }
+  ],
+  "verified_poststate": {
+    "seq": 226,
+    "last_hash": "49eabe342883ff03ba90cd67504549674d0244ddada5a62530a5b34483a2201d",
+    "cap_usd": "50",
+    "settled_spent_usd": "10.096926",
+    "reserved_usd": "39.903074",
+    "available_usd": "0",
+    "blocked": true,
+    "unknown_run_ids": [
+      "mpp012-unguarded-source-test-20261015-221720"
+    ],
+    "incident_run_status": "UNKNOWN",
+    "incident_run_reserved_usd": "12.816262",
+    "historical_unsettled_holds_unchanged_usd": {
+      "fee011_failed_request": "3.379164",
+      "fee014": "4.292608",
+      "mpp006": "6.30784",
+      "pressure016_third_stop": "3.981312",
+      "x402011": "4.407296",
+      "xhigh017": "4.718592"
+    },
+    "historical_holds_sum_usd": "27.086812",
+    "total_reserved_including_incident_usd": "39.903074",
+    "settled_plus_reserved_usd": "50"
+  },
+  "scientific_and_billing_disposition": {
+    "unfrozen_source_test_excluded_from_scientific_results": true,
+    "prospective_mpp012_assignment_or_raw_inspect_archive_for_incident": false,
+    "independent_native_payment_receipt_for_incident": false,
+    "actual_incident_provider_charge_usd": null,
+    "source_test_catalog_scenario_usd": "2.621440",
+    "catalog_scenario_is_actual_charge_or_hard_cap": false,
+    "remaining_project_headroom_after_hold_usd": "0",
+    "paid_runs_permitted": false,
+    "project_cap_compliance_proven_by_poststate": false,
+    "final_reconciliation_requires": "Attributable provider billing or equivalent provider-specific evidence for the unguarded calls; any later adjustment must preserve the incident and prior ledger events."
+  },
+  "verification_method": "SHA-256 comparison of saved incident, independent review, source and terminal excerpt; git parent blob comparison for seq 224; full append-only ledger and anchor replay with BudgetLedger.read_ledger; exact six historical holds and two new ledger events checked.",
+  "review_actions": {
+    "paid_model_calls": 0,
+    "ledger_mutations": 0,
+    "native_payment_transactions": 0,
+    "source_test_reruns": 0
+  }
+}

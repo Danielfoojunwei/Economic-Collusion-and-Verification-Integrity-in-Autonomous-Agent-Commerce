@@ -1,0 +1,7 @@
+# Isolated chain preparation record
+
+No remote model calls, ORBIT episodes, audit checks, client releases, or MPP compensation have run on this chain as of preparation.
+
+The valid chain is the single running container `free-mpp-live-orbit-localnet` (ID `40c5c4ef95c493f67b41ab9ed263a4fc7dd59f911a0061188bf699b9ec9434c8`) with pinned Tempo image, `--bare --block-time 500ms`, and only `127.0.0.1:19967:8545` published. The separate MPP Node service will use host loopback port 19959. Valid marker: `marker.json` SHA-256 `b4ab809e502288e3d3fb3dd52fe5a79d69e096b96468039574c0e35e5904dc44`, block 20, transfer `0x9ad3dd34bf6f5f2e4e158a90f9296bcbaf369e03dfbf2149592422da1c662330`. The adapted MPP010 chain verifier passed the live genesis, marker receipt, transfer amount, historical pre/post treasury balances, and marker block hash; its saved result is `chain-verification/marker-verification.json`.
+
+A preliminary chain was started with a 100ms block time while the marker source reported 500ms. Its marker was moved to `marker-preliminary-invalidated.json` and its container was removed before any model calls or experiment payments. The preliminary marker must not be used for execution. No historic container, volume, or chain artifact was changed. The final source-only assignment remains `artifacts/prospective/FREE_MPP_NATIVE_ORBIT001/assignment.json` SHA-256 `c81f4b67af61e57b766e8b3676b2b629c3e3ba21842a8bd3e2af72bbd10aa5f5`.

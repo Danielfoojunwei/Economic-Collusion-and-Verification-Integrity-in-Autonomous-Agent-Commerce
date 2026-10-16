@@ -1,0 +1,8 @@
+{
+  "budget_state": "SETTLED",
+  "complete_outcome_exported": false,
+  "error_type": "RemoteBoundaryError",
+  "native_log_sha256": "2cc71be8592e0cd12317e6868dad55448d390d0e05e0a91e7604d57cb9232e22",
+  "run_id": "w18-meeting-f376a261dae2f5bd9ee9679c",
+  "status": "PARTIAL"
+}

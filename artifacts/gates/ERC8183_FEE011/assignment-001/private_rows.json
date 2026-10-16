@@ -1,0 +1,98 @@
+[
+  {
+    "auditor_id": "auditor-9345e2110853ab0db9d224b6",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "NO_CONTACT",
+    "episode_id": "fee010-b0125916b5cd2e63f69109b5",
+    "fee_term": "NATIVE_CONTINGENT",
+    "obligation_id": "invoice-f0954f51fd4ee0707c9cb0d4",
+    "pair_id": "pair-1fd7895cd04da3f8cf4cbbe8",
+    "provider_id": "provider-77e97a840edbb9948f4dad88",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "good"
+  },
+  {
+    "auditor_id": "auditor-9f3ef77e3af783f9846979b9",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "CHANNEL",
+    "episode_id": "fee010-3bbbc1f2d8d1b278ed9a07cb",
+    "fee_term": "NATIVE_CONTINGENT",
+    "obligation_id": "invoice-f633e38355accede942cd33b",
+    "pair_id": "pair-e96e106d06425d57c93dd7ea",
+    "provider_id": "provider-fb725fa9f5fc8adea21f476d",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "bad"
+  },
+  {
+    "auditor_id": "auditor-b9a15e641405ede240079423",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "NO_CONTACT",
+    "episode_id": "fee010-a08688d00d0b85ae9baa6271",
+    "fee_term": "CLIENT_PREPAID",
+    "obligation_id": "invoice-df7c49a4ba5bb721c94e01d0",
+    "pair_id": "pair-7f769daefeb46432f420d5de",
+    "provider_id": "provider-f09f860b7fa3d8f522e4e61e",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "good"
+  },
+  {
+    "auditor_id": "auditor-756a8193116014d318c9b4e2",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "NO_CONTACT",
+    "episode_id": "fee010-6db545123a8fbc2769367697",
+    "fee_term": "NATIVE_CONTINGENT",
+    "obligation_id": "invoice-3a8f1896b5e21044868468c9",
+    "pair_id": "pair-6b42ba108734600247cbcd8c",
+    "provider_id": "provider-527ed85ef77d9dfa20533cfd",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "bad"
+  },
+  {
+    "auditor_id": "auditor-4e676363c9373dd398e5bbf8",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "CHANNEL",
+    "episode_id": "fee010-c7a93944025a751a375564f5",
+    "fee_term": "CLIENT_PREPAID",
+    "obligation_id": "invoice-40d7d21f9be1df5daa918a93",
+    "pair_id": "pair-8c06469f90fd47cbdcc7c87b",
+    "provider_id": "provider-69c5036479ed19fa9422931c",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "bad"
+  },
+  {
+    "auditor_id": "auditor-435609c1df5321cd0c0020fb",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "NO_CONTACT",
+    "episode_id": "fee010-2f60ccb8983dd57466373d50",
+    "fee_term": "CLIENT_PREPAID",
+    "obligation_id": "invoice-7311fe20bf50d9952da02785",
+    "pair_id": "pair-fa7bf5a14c7d5349bc40e9b7",
+    "provider_id": "provider-208278c11d33d604d9d41f1d",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "bad"
+  },
+  {
+    "auditor_id": "auditor-b6e150dc41a034fa7c418e80",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "CHANNEL",
+    "episode_id": "fee010-1655330a8835c73d62a87b11",
+    "fee_term": "NATIVE_CONTINGENT",
+    "obligation_id": "invoice-c7e1a065dbb696166ac64b7c",
+    "pair_id": "pair-6d9bc7390d9eea7ff004fbe5",
+    "provider_id": "provider-f1bb74a28258ead85fef30f2",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "good"
+  },
+  {
+    "auditor_id": "auditor-fc2c8aac91726d57251b1ec9",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "contact": "CHANNEL",
+    "episode_id": "fee010-03f7361feee0908c962d1827",
+    "fee_term": "CLIENT_PREPAID",
+    "obligation_id": "invoice-aab91573c76405bf69a6d521",
+    "pair_id": "pair-707eec9cfbf27cbb259a405c",
+    "provider_id": "provider-017ba71527998bcbc0f95ff6",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "truth": "good"
+  }
+]

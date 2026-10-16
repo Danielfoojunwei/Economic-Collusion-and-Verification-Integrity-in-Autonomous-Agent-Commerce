@@ -1,0 +1,154 @@
+{
+  "python": "3.12.14",
+  "packages": {
+    "orbit": "1.0.3",
+    "inspect-ai": "0.3.263",
+    "openai": "3.31.0",
+    "pydantic": "2.14.1",
+    "anyio": "4.15.1"
+  },
+  "import_paths": {
+    "orbit": "/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/orbit/__init__.py",
+    "inspect_ai": "/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/__init__.py"
+  },
+  "release": {
+    "tag": "v1.0.3",
+    "source_revision": "588b3035f92450ec4f0496bb8b629daa205e84c7",
+    "wheel_sha256": "4be987cbc9ac3ed068fdf8208b3e20012ee8dd3d325547bf7b07afa9ffe2e642",
+    "source_sha256": "0a9d231051ba5c620f0a86fa66b2e0a7b687ee8a21eb8e35207e84d1955c1c8c",
+    "example_sha256": "4af80b1d5888cfbb10cafeeaebc1819b5603801f0fbfecbae4bcdc9e40c70148"
+  },
+  "environment_override": {
+    "XDG_DATA_HOME": "/workspace/upstreams/orbit-smoke/.local/share",
+    "XDG_CACHE_HOME": "/workspace/upstreams/orbit-smoke/.cache",
+    "XDG_CONFIG_HOME": "/workspace/upstreams/orbit-smoke/.config"
+  },
+  "controls": {
+    "positive": {
+      "command": ".venv/bin/python first_benchmark.py --log-dir /workspace/upstreams/orbit-smoke/logs/positive",
+      "exit_code": 0,
+      "log_path": "/workspace/upstreams/orbit-smoke/logs/positive/2026-10-15T05-02-40-00-00_first-benchmark_bBRnD795sTMQYJocfDfq8x.eval",
+      "log_sha256": "2d690e453c48721b0b6990ffcc9e8b2d8d68a2150dd4592a2a9d15c7eb9c0aa0",
+      "log_status": "success",
+      "model": "mockllm/first-benchmark",
+      "completed_sample_epochs": 4,
+      "total_sample_epochs": 4,
+      "sample_ids_epochs": [
+        [
+          "one-each",
+          1
+        ],
+        [
+          "two-for-alice",
+          1
+        ],
+        [
+          "one-each",
+          2
+        ],
+        [
+          "two-for-alice",
+          2
+        ]
+      ],
+      "sample_errors": 0,
+      "sample_limits": 0,
+      "score_metrics": {
+        "inventory_score": {
+          "mean": 1.0
+        }
+      },
+      "event_classes": {
+        "SpanBeginEvent": 84,
+        "SampleInitEvent": 4,
+        "SpanEndEvent": 84,
+        "InfoEvent": 124,
+        "StoreEvent": 56,
+        "ModelEvent": 16,
+        "ToolEvent": 12,
+        "StateEvent": 4,
+        "ScoreEvent": 4
+      },
+      "tool_functions": {
+        "reserve_units": 8,
+        "channel_post": 4
+      },
+      "agent_spans": {
+        "alice": 8,
+        "bob": 8
+      },
+      "score_events": [
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "review_log_path": "artifacts/gates/W01/logs/positive.eval"
+    },
+    "negative": {
+      "command": ".venv/bin/python first_benchmark.py --negative-control --log-dir /workspace/upstreams/orbit-smoke/logs/negative",
+      "exit_code": 0,
+      "log_path": "/workspace/upstreams/orbit-smoke/logs/negative/2026-10-15T05-02-47-00-00_first-benchmark_jqNrrokS248Po4bjGZSUxY.eval",
+      "log_sha256": "a4460018615ed5f0ca0f8c0dfc44d0efaa9595fb474c5e6b32900bf915a65fb9",
+      "log_status": "success",
+      "model": "mockllm/first-benchmark",
+      "completed_sample_epochs": 4,
+      "total_sample_epochs": 4,
+      "sample_ids_epochs": [
+        [
+          "one-each",
+          1
+        ],
+        [
+          "two-for-alice",
+          1
+        ],
+        [
+          "one-each",
+          2
+        ],
+        [
+          "two-for-alice",
+          2
+        ]
+      ],
+      "sample_errors": 0,
+      "sample_limits": 0,
+      "score_metrics": {
+        "inventory_score": {
+          "mean": 0.0
+        }
+      },
+      "event_classes": {
+        "SpanBeginEvent": 80,
+        "SampleInitEvent": 4,
+        "SpanEndEvent": 80,
+        "InfoEvent": 124,
+        "StoreEvent": 52,
+        "ModelEvent": 16,
+        "ToolEvent": 8,
+        "StateEvent": 4,
+        "ScoreEvent": 4
+      },
+      "tool_functions": {
+        "reserve_units": 4,
+        "channel_post": 4
+      },
+      "agent_spans": {
+        "alice": 8,
+        "bob": 8
+      },
+      "score_events": [
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "review_log_path": "artifacts/gates/W01/logs/negative.eval"
+    }
+  },
+  "execution_tier_model": "SCRIPTED_SIMULATION",
+  "execution_tier_payment": "NOT_APPLICABLE",
+  "test_scope": "Official ORBIT two-agent inventory example; deterministic mock model and Inspect scoring, not the proposed worker-auditor research task.",
+  "first_attempt_diagnostic": "Initial positive run exited 1 before evaluation: Inspect platformdirs attempted to create /home/agent/.local/share/inspect_ai on a read-only filesystem. Setting XDG_DATA_HOME, XDG_CACHE_HOME, and XDG_CONFIG_HOME inside /workspace/upstreams/orbit-smoke resolved it."
+}

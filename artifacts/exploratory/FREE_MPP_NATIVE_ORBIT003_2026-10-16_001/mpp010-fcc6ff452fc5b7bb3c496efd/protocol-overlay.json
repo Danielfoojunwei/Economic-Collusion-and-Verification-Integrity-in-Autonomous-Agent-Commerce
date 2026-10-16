@@ -1,0 +1,56 @@
+{
+  "chain_marker": {
+    "asset": "valueless local TIP-20",
+    "block_time": "500ms",
+    "chain_id": 1337,
+    "container": "free-mpp-live-orbit003-localnet",
+    "funder": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "genesis_hash": "0xb54e201b325f207061d3502a1f4022b8a57c57bc86b7851958cc21a922b26a1f",
+    "image": "ghcr.io/tempoxyz/tempo-localnet@sha256:86f199f161be85d3610d990e5bc2653ece29de3ee9c91e8c8e768cf2b8c05c3b",
+    "marker_amount_atomic": "1013",
+    "marker_block_hash": "0x1e98b86142781208fa822066551dff7f0808a2abf8b24ecdcc012959398539fd",
+    "marker_block_number": "38",
+    "marker_transaction_hash": "0x20217c33be83ebfd36dbf3d72cc92cfe7d50b634473b7b2da8f5ce4c7bbbfcaf",
+    "rpc_url": "http://127.0.0.1:19987",
+    "source_sha256": "ea4745a8456a54c3bf75c9c26beb19865cc5ea67ced3b710ff6208025464f510",
+    "test_only": true,
+    "token": "0x20c0000000000000000000000000000000000000",
+    "treasury": "0x8e4D1a7b8c4f7F4204EB0643C85AA7656880E18b"
+  },
+  "exploratory_helper_root": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/exploratory/FREE_MPP_NATIVE_ORBIT003_2026-10-16_001/mpp010-fcc6ff452fc5b7bb3c496efd/native-overlay/protocols/mpp",
+  "helper_hashes": {
+    "mpp010-chain-identity.mjs": {
+      "changed": true,
+      "exploratory_sha256": "6955bd67f15e4d0c668ad5d264131def5333c6e995d16d2ad0349367123f68ba",
+      "original_sha256": "41d0d257edb7779b09ba85b7c2f2673e40dc27936264f0ec5c6c8698fe1bbf1a"
+    },
+    "mpp010-meeting-local.mjs": {
+      "changed": false,
+      "exploratory_sha256": "b68c8ff48802c879d35602702d53c0031f8a33620dd5c6a8efb73b20876a973c",
+      "original_sha256": "b68c8ff48802c879d35602702d53c0031f8a33620dd5c6a8efb73b20876a973c"
+    },
+    "mpp010-meeting-service.mjs": {
+      "changed": false,
+      "exploratory_sha256": "828d79e77202b29279d30520c5fb0da7b22c79eacf27202d2826ad8baf993ef1",
+      "original_sha256": "828d79e77202b29279d30520c5fb0da7b22c79eacf27202d2826ad8baf993ef1"
+    },
+    "mpp010-verify-meeting-evidence.mjs": {
+      "changed": false,
+      "exploratory_sha256": "355082c4f88286b900f3e8d8735e008bf80d65a639f105f9e35e00b4e548f745",
+      "original_sha256": "355082c4f88286b900f3e8d8735e008bf80d65a639f105f9e35e00b4e548f745"
+    },
+    "mpp010-verify-meeting-service.mjs": {
+      "changed": false,
+      "exploratory_sha256": "7f2807685480d4fc0619d627c717785e868b0a89117a8f0395afe85e3e75b269",
+      "original_sha256": "7f2807685480d4fc0619d627c717785e868b0a89117a8f0395afe85e3e75b269"
+    },
+    "package-lock.json": {
+      "changed": false,
+      "exploratory_sha256": "ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad",
+      "original_sha256": "ddf7c365ba0467210452056dd734548a3247ac91783e8b01d99538ee3d48a3ad"
+    }
+  },
+  "only_change": "isolated chain RPC/HTTP ports and first transfer marker",
+  "original_helper_root": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/protocols/mpp",
+  "source_marker_sha256": "54fb60be814642991b66aa9fea5f89c862b4171836702b22ea7a4c1da6e423f1"
+}

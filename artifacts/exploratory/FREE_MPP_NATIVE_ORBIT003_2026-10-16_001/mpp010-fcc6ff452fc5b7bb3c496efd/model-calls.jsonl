@@ -1,0 +1,2 @@
+{"account_usage_before_usd":"4.0299155","call_index":1,"catalog_model_sha256":"657d8fe1307915274b5ca91efdbfd1a1fcd64e36d14a04b2caa3ca8115a28592","event":"FORWARDING","input_bytes":9254,"model":"nvidia/nemotron-3-super-120b-a12b:free","role":"provider","tool_schemas_sha256":"cdc52ab7b1f50129437fb4ef5fd58281e6e523b44ff6381f1877d145fca0ddd3"}
+{"call_index":1,"error_type":"RuntimeError","event":"STOPPED_UNKNOWN_CHARGE"}

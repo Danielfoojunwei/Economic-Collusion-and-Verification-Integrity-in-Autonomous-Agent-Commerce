@@ -1,0 +1,28 @@
+{
+  "files_sha256": {
+    "artifacts/gates/G6/W17/a2a-dependency-freeze.txt": "ec99dec9773f90b78bacef7bac25f1622f7a7e02a6ec0a692adf4f92bf3d3b62",
+    "artifacts/gates/G6/W17/a2a-test.log": "753f1cd6e1771979f346c0146a8e3a4b12afa98c039f0ed59526abbb9130504a",
+    "artifacts/gates/G6/W17/acp-retail-test.log": "901c128f40248bb7d33b67dfa89732070a9649a89844681be7c0cef25c24fe61",
+    "artifacts/gates/G6/W17/coverage.json": "4235e18f5bc62bcae688601bbf197cac034a95a3e1ad029a3107876fa444b035",
+    "artifacts/gates/G6/W17/erc8004-compile.log": "6325f0870ff3eb06c1a1bd25c2ea2856402b652de97ffd55d8d69e6331cb6081",
+    "artifacts/gates/G6/W17/erc8004-core-test.log": "488f07ac04cf9b9fb39f1bc4187e30eac01dc91fbebe576621e1a1863ee5f026",
+    "artifacts/gates/G6/W17/erc8004-local.json": "04c0357e4efc93904792a39f2c3b1048ed31b5131505d0239cb43a0fdde56531",
+    "artifacts/gates/G6/W17/offline-compiler-prepare.json": "376e808c6958aec68b4e5e9eab57d386ecbe6b1dbdb85c23cc0b8db68699b1ab",
+    "artifacts/gates/G6/W17/report.md": "f185af1a64149e70cb3b7f57d03d8c2683bcbcc7c530c9ae6344b55eb2483ede",
+    "artifacts/gates/G6/W17/setup-validation.json": "ee85cfd19a24cb559292150a01c3c3616df6b582ba76870562540855116d43c1",
+    "protocols/acp_retail/local_checkout.py": "82c6a9b2fba5f626798fe09c169f090ae5be9c80ada1536a2bf6adfd0ce47fbb",
+    "protocols/erc8004/local_registry.mjs": "11c6de168bae5b09e8aa942b54f4610ad1172e883d80b8e3514432469df0ee0a",
+    "scripts/prepare_erc8004_offline.py": "aa2814656942962e1e14c134cab6312d20498d1ee56f67f843e4079959550aee",
+    "scripts/setup_cloud_environment.sh": "6d9c16428aad3220f12a45d6fe489f1410e13b7e686d831c1144acdf408cc3e3",
+    "tests/test_a2a_local.py": "433bdd28b9156d03f91bf79f0d4605d7d6df5d91564ea113e3a52c204158aa67",
+    "tests/test_acp_retail_local.py": "ca5a793febc96bb34751418815d571c64ce79e81e48c3bb3ca39bc7f0a7248c0"
+  },
+  "upstream_commits": {
+    "a2a": "7c861a597b93208de3c19357cc0d66b9f6250e9b",
+    "a2a-python": "a4c4fc91a22778f3d805e5e592bf690915a33033",
+    "acp-retail": "7fdd78df677a94dce04c770644b0fbbb1401272b",
+    "erc8004": "b9e466c250744a7e06b13dff9d3c2844ed64f825",
+    "ucp": "d9c18e0d27c7f6892e69243fbc13df0e3685864e"
+  },
+  "work_order": "W17"
+}

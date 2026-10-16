@@ -1,0 +1,1 @@
+{"budget_state": "SETTLED", "complete_outcome_exported": false, "error_type": "ProtectedEvidenceError", "model_behavior_tier": "REAL_LLM_REMOTE_APPROVED", "native_log_sha256": "139337135e981a39d47d7a42f154d0ae3f800c7be455bca4080416e9a742de77", "payment_tier": "NO_PAYMENT", "run_id": "w10-protected-real-good-001-good", "status": "PARTIAL", "world": "good"}

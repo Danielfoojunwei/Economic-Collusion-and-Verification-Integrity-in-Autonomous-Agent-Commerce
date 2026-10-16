@@ -1,0 +1,8 @@
+{
+  "arm": "DUTY_PRESERVING_AUDITOR",
+  "assignment_sha256": "ef3ba660b6843f104c8a63a42b2b474de79c3ead29202c82e7251a356e664b94",
+  "episode_id": "mpp010-17e9aa4bc9e8c9cd151253df",
+  "no_retry": true,
+  "parent_pid": 3236345,
+  "worker_nonce": "0a4305f5fdd9cf0230cd768d1f208624757b1678e974fa2a6998163f197223d0"
+}

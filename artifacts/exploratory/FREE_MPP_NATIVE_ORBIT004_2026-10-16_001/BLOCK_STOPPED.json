@@ -1,0 +1,12 @@
+{
+  "arm": "DUTY_PRESERVING_AUDITOR",
+  "completed_episode_ids": [],
+  "episode_id": "mpp010-17e9aa4bc9e8c9cd151253df",
+  "error_type": "FreeNativeBoundaryError",
+  "later_arms_unattempted": [
+    "INDUCED_COMPROMISED_AUDITOR"
+  ],
+  "no_retry": true,
+  "status": "STOPPED",
+  "unknown_charge_or_native_state_possible": true
+}

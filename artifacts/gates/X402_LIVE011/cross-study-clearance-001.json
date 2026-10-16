@@ -1,0 +1,16 @@
+{
+  "competing_gate_inventory_sha256": "cad78eca98db109c32d0cd13d14acda93594a8b0a547c208c710e43d35784c40",
+  "fee011_disposition": "CLOSED_AFTER_STOPPED_COLLECTION",
+  "fee011_final_collection_path": "artifacts/gates/ERC8183_FEE011/collection-001-after-first-stop.json",
+  "fee011_final_collection_sha256": "469ed70b289a7e142c8ffd01528abd69866147ce0c48f0b30dbf819f8d406309",
+  "ledger_at_clearance": {
+    "cap_usd": "50",
+    "last_hash": "98e20b575b93f832340dfa800339aa395308601922b3a9017a7601593603804a",
+    "seq": 152
+  },
+  "mpp010_disposition": "CLOSED_AFTER_STOPPED_COLLECTION",
+  "mpp010_final_collection_path": "artifacts/gates/MPP010/collection-001-after-first-stop.json",
+  "mpp010_final_collection_sha256": "8adc7a00c3e679d39e2976800af361da096978a7ac9d0d69c36b39779c1ae691",
+  "schema": "x402-live011-cross-study-clearance-v1",
+  "status": "GO_AFTER_MPP010_FINAL_DISPOSITION"
+}

@@ -1,0 +1,16 @@
+[profile.default]
+src = "src"
+test = "test"
+out = "out"
+libs = ["../../../upstreams/erc8183", "../../../upstreams/erc8183/lib"]
+solc_version = "0.8.28"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 200
+
+remappings = [
+    "erc8183/=../../../upstreams/erc8183/",
+    "@openzeppelin/contracts/=../../../upstreams/erc8183/lib/openzeppelin-contracts/contracts/",
+    "@openzeppelin/contracts-upgradeable/=../../../upstreams/erc8183/lib/openzeppelin-contracts-upgradeable/contracts/",
+    "forge-std/=../../../upstreams/erc8183/lib/forge-std/src/",
+]

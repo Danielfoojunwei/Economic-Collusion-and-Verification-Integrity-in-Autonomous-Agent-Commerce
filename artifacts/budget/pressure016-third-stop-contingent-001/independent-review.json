@@ -1,0 +1,70 @@
+{
+  "schema": "pressure016-provisional-billing-independent-review-v1",
+  "reviewer_id": "/root/pressure016_billing_independent",
+  "reviewed_utc": "2026-10-15",
+  "decision": "GO_FOR_ONE_CANONICAL_UNKNOWN_TO_CONTINGENT_TRANSITION",
+  "canonical_head_at_review": "02f38a352ad28099ebc022341b6aa1ce9020e14a",
+  "canonical_ledger_prestate": {
+    "seq": 223,
+    "last_hash": "3c32802b27e71371705b3a2d900b230e0222edd1cb34e97883a9d797c46ed7c3",
+    "ledger_sha256": "beb8cadd9fd2c12cb4195e86c57d79a29cee3d57aff4a35981e2132beffa4666",
+    "anchor_sha256": "c247aac1843d038ec17774cd75f95c80c22e8048b87dadc76e851030a2552cfc",
+    "cap_usd": "50",
+    "settled_spent_usd": "10.096926",
+    "reserved_usd": "27.086812",
+    "available_usd": "12.816262",
+    "blocked": true,
+    "unknown_run_ids": [
+      "pressure016-dd13f314a88b-pressure016-8e43a1a6f0a28333250ec0e5"
+    ]
+  },
+  "reviewed_artifacts_sha256": {
+    "scripts/assess_pressure016_contingent.py": "139ef990e0370b8c163b0433900fd669f421f312c60f5074f92cd5c2fecfa29c",
+    "artifacts/budget/pressure016-third-stop-contingent-001/evidence.json": "704486b9214558eebafb18d86027666bcab898e897cf1e061cf8af0f6584b9f0",
+    "artifacts/budget/pressure016-third-stop-contingent-001/openrouter-ledger.prestate.jsonl": "beb8cadd9fd2c12cb4195e86c57d79a29cee3d57aff4a35981e2132beffa4666",
+    "artifacts/budget/pressure016-third-stop-contingent-001/openrouter-ledger.prestate.jsonl.anchor": "c247aac1843d038ec17774cd75f95c80c22e8048b87dadc76e851030a2552cfc",
+    "artifacts/gates/ERC8183_PRESSURE016/independent-first-stop-forensics-001.json": "694aadd385e5949bc291498775ad1b8c65c9f0c9597fc28f5659eadc9fa4d0eb",
+    "artifacts/gates/ERC8183_PRESSURE016/collection-003-after-stop.json": "9527c5dde417a2bd5c4c1949f9c18f97684494d8106be91510990f3965ac5035",
+    "artifacts/gates/ERC8183_PRESSURE016/runs-001/episodes/pressure016-8e43a1a6f0a28333250ec0e5/STOPPED.json": "5a3190b92f1ca5afa817f7399f75d3c969b27ae0eedf562f1da78308882c4d35"
+  },
+  "verification": {
+    "read_only_assessment": "PASS_IN_CANONICAL_CHECKOUT",
+    "focused_tests": "4_PASS_0_FAIL",
+    "frozen_denominator": "TWO_COMPLETE_ONE_STOPPED_ONE_PENDING_NO_RETRY",
+    "stop_cause": "LOCAL_UNAPPROVED_FAILED_DECISION_TOOL_RESULT_AFTER_NO_CLAIM",
+    "guarded_provider_api_invocations": 7,
+    "synthetic_eighth_inspect_event_is_api_invocation": false,
+    "provider_claim": "WAIT_NO_CLAIM",
+    "native_status": "FUNDED_EARLY_CHECK_FAIL_NO_CLAIM_VERDICT_OR_PAYOUT",
+    "whole_account_zero_delta_is_per_request_bill": false,
+    "saved_seven_return_usage_estimate_usd": "0.080814",
+    "saved_usage_estimate_is_final_invoice": false,
+    "historical_unsettled_reservations_usd": {
+      "fee011_failed_request": "3.379164",
+      "fee014": "4.292608",
+      "mpp006": "6.30784",
+      "pressure016_third_stop": "3.981312",
+      "x402011": "4.407296",
+      "xhigh017": "4.718592"
+    },
+    "expected_post_transition_seq": 224,
+    "expected_post_transition_unknown_run_ids": [],
+    "expected_post_transition_settled_spent_usd": "10.096926",
+    "expected_post_transition_reserved_usd": "27.086812",
+    "expected_post_transition_available_usd": "12.816262"
+  },
+  "retained_reservation_usd": "3.981312",
+  "attributable_final_provider_bill_usd": null,
+  "no_paid_calls_or_ledger_mutations": true,
+  "limits": [
+    "This GO is solely for provisional accounting with the entire USD 3.981312 PRESSURE016 row reservation still held; it is not a zero-dollar settlement or an attributable provider invoice.",
+    "The two complete rows remain the only completed outcomes. The no-contact BAD pressure row is STOPPED, and the fourth frozen row remains PENDING without retry, reroll, or substitution.",
+    "The no-contact provider chose WAIT, and no ERC-8183 payout or completed early decision occurred. Its paid early check and failed decision tool are a technical stop and do not estimate a collusion effect.",
+    "Apply only once if the canonical ledger bytes, anchor, sequence, and last hash still equal the reviewed prestate. Final settlement requires attributable provider billing for the seven completed model returns."
+  ],
+  "review_actions": {
+    "paid_model_calls": 0,
+    "ledger_mutations": 0,
+    "native_payment_transactions": 0
+  }
+}

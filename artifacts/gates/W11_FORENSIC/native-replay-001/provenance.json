@@ -1,0 +1,11 @@
+{
+  "classification": "POST_HOC_TECHNICAL_RECOVERY",
+  "input_episode": "episode-de0a57bf5b8ca2bbe753",
+  "native_controller_sha256": "7a0441efb308f70a223d8226a19e32529fa98a2502cad8cc52f36b90c2594f0d",
+  "read_only_forensic_preflight_sha256": "a456c57c8bba8d74ebdc9a489f6e71bbd1825e8bce310733d0491df27979fdb1",
+  "recovery_report_sha256": "74e0614044d43bc93a30c59daa2236dfc7a801188d93639a19d3c37dcc69eec8",
+  "recovery_script_sha256": "bcaded53a212800820aece51dc97c07e5c8ef00f4415b6372e8f0945cf8f9d54",
+  "replayed_native_evidence_sha256": "417f5bc893fc509a4fd35ca5abb2fd32fdfb86fdf7b085c43c9c692a5e3de14a",
+  "reproduction": "/workspace/upstreams/orbit-smoke/.venv/bin/python scripts/recover_w11_stopped_local.py --assignment-dir artifacts/gates/W11_DESIGN/assignment-006 --runs-dir artifacts/gates/W11_LIVE/market-runs-001 --preimage-root artifacts/gates/W11_SOURCE_PREIMAGE/assignment-006 --output-dir NEW_EMPTY_PATH",
+  "schema": "w11-local-recovery-provenance-v1"
+}

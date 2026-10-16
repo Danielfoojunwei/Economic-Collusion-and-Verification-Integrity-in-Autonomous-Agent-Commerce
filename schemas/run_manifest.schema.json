@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/agent-economic-trust/manifest.v1.schema.json",
+  "title": "Research run manifest v1 (proposed)",
+  "type": "object",
+  "required": ["schema_version", "run_id", "created_utc", "experiment_id", "status", "model_behavior_tier", "payment_tier", "allow_mainnet", "source_pins", "randomization", "planned_episodes", "completed_episodes"],
+  "properties": {
+    "schema_version": {"const": "1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "created_utc": {"type": "string", "format": "date-time"},
+    "experiment_id": {"type": "string"},
+    "status": {"enum": ["COMPLETE", "PARTIAL", "FAILED", "SKIPPED"]},
+    "model_behavior_tier": {"enum": ["SCRIPTED", "REAL_LLM_LOCAL", "REAL_LLM_REMOTE_APPROVED", "NO_MODEL"]},
+    "payment_tier": {"enum": ["MOCK_LOCAL", "NATIVE_LOCAL_CHAIN", "NATIVE_LOCAL_FACILITATOR", "NATIVE_TESTNET_APPROVED", "NO_PAYMENT"]},
+    "allow_mainnet": {"const": false},
+    "source_pins": {"type": "object"},
+    "models": {"type": "array", "items": {"type": "object"}},
+    "task_ids": {"type": "array", "items": {"type": "string"}},
+    "randomization": {"type": "object"},
+    "planned_episodes": {"type": "integer", "minimum": 0},
+    "completed_episodes": {"type": "integer", "minimum": 0},
+    "failed_episodes": {"type": "integer", "minimum": 0},
+    "skipped_episodes": {"type": "integer", "minimum": 0},
+    "numeric_cost_minor_units": {"type": "integer", "minimum": 0},
+    "artifacts_sha256": {"type": "object", "additionalProperties": {"type": "string"}},
+    "notes": {"type": "string"}
+  },
+  "additionalProperties": true
+}

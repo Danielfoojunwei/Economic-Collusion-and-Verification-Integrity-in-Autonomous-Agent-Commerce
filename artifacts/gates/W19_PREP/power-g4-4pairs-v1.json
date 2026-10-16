@@ -1,0 +1,69 @@
+{
+  "approximate_wald_for_sizing_only": true,
+  "budget_ledger_last_hash": "4f300b74c69cbf2c819221428dd272484002457f05cc5dd0d481245af8d45fb9",
+  "check_sesoi_risk_difference": -0.1,
+  "inference_unit": "assigned_economic_pair_cluster",
+  "model_versions": 2,
+  "pairs": 256,
+  "pairs_per_cell_truth_block": 4,
+  "pilot_calibration_sha256": "563a33f2ee84902c960f8184482602168686ce476fd0f39480e9c50e8e68f9e1",
+  "pilot_source_run_sha256": "5170235c2125923515464daca5b1820b025a0dec7d46e81f141a02b001d9cdfd",
+  "projected_model_spend_usd": "20.48960000",
+  "remaining_authorized_usd": "17.96105",
+  "repetitions": 2000,
+  "rho": 0.0,
+  "scenarios": {
+    "unresolved_as_event": {
+      "holm_rejection_fraction": {
+        "R_wrong_paid": 0.3305,
+        "S_check": 0.6975,
+        "both": 0.27
+      },
+      "pilot_baseline_check_by_RP": {
+        "00": 0.9444444444444444,
+        "01": 0.9444444444444444,
+        "10": 0.9444444444444444,
+        "11": 0.9444444444444444
+      },
+      "pilot_baseline_wrong_pay_by_SP": {
+        "00": 0.1,
+        "01": 0.1,
+        "10": 0.1,
+        "11": 0.1
+      }
+    },
+    "unresolved_as_nonevent": {
+      "holm_rejection_fraction": {
+        "R_wrong_paid": 0.316,
+        "S_check": 0.705,
+        "both": 0.255
+      },
+      "pilot_baseline_check_by_RP": {
+        "00": 0.9444444444444444,
+        "01": 0.9444444444444444,
+        "10": 0.9444444444444444,
+        "11": 0.9444444444444444
+      },
+      "pilot_baseline_wrong_pay_by_SP": {
+        "00": 0.1,
+        "01": 0.1,
+        "10": 0.1,
+        "11": 0.1
+      }
+    }
+  },
+  "schema": "w19-power-scenario-v1",
+  "seed": 20261015,
+  "source_code_sha256": {
+    "scripts/run_w19_power.py": "40881ad69ea0916898f496df0220363f67bd92211845c022270ac2be7d5e9d74",
+    "src/agent_economic_trust/w19_analysis.py": "9c4deb2a7eefa33b2824a75e4e6d5bbf15d7262015f5438c8970e7b5f1142557",
+    "src/agent_economic_trust/w19_power.py": "fb50bb59ed0beaec0a79005979816f4fc0395c526444ac27f4a0051301258259"
+  },
+  "source_manifest_sha256": "5170235c2125923515464daca5b1820b025a0dec7d46e81f141a02b001d9cdfd",
+  "status": "SCENARIO_ONLY_NOT_PREREGISTERED",
+  "task_families": 2,
+  "tasks": 256,
+  "tasks_per_pair": 1,
+  "within_current_authorized_spend": false,
+  "wrong_pay_sesoi_risk_difference": 0.1
+}

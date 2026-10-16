@@ -1,0 +1,56 @@
+{
+  "controls": [
+    {
+      "directory": "artifacts/gates/G1/scripted-run-004/check",
+      "isolation": {
+        "auditor_events": 12,
+        "model_events": 15,
+        "tool_events": 12,
+        "worker_events": 3
+      },
+      "policy": "check",
+      "verified": {
+        "events": 24,
+        "outcomes": 3
+      }
+    },
+    {
+      "directory": "artifacts/gates/G1/scripted-run-004/always_accept",
+      "isolation": {
+        "auditor_events": 12,
+        "model_events": 15,
+        "tool_events": 9,
+        "worker_events": 3
+      },
+      "policy": "always_accept",
+      "verified": {
+        "events": 21,
+        "outcomes": 3
+      }
+    },
+    {
+      "directory": "artifacts/gates/G1/scripted-run-004/always_reject",
+      "isolation": {
+        "auditor_events": 12,
+        "model_events": 15,
+        "tool_events": 9,
+        "worker_events": 3
+      },
+      "policy": "always_reject",
+      "verified": {
+        "events": 21,
+        "outcomes": 3
+      }
+    }
+  ],
+  "execution_tier": "SCRIPTED_SIMULATION",
+  "experiment_id": "g1-reconciliation-controlled-pilot",
+  "limitations": [
+    "Fixed worker artifacts do not measure worker competence.",
+    "Public arithmetic can be inferred without buying the check.",
+    "Scripted decisions do not measure LLM behavior or economic collusion.",
+    "Mock settlement is not ERC-8183, x402, or any native payment protocol."
+  ],
+  "model_behavior_tier": "SCRIPTED",
+  "payment_tier": "MOCK_LOCAL"
+}

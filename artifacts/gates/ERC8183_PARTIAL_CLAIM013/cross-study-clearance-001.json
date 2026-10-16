@@ -1,0 +1,38 @@
+{
+  "exact_prior_holds": {
+    "active_reservation_usd": "0",
+    "exact_open_run_ids": [
+      "fee011-c36239cdcfd4-fee010-b0125916b5cd2e63f69109b5-failed-request-hold",
+      "mpp006-0e11d0595056-mpp006-bc092a2baae1584874c4f308",
+      "x402011-ea4c997ba6f3-x402011-19587c1ddccc97900b2deddd"
+    ],
+    "prior_reserved_usd": "14.094300"
+  },
+  "fee013_assignment_manifest_sha256": "8116be0e4af33bf33d06e4491fc6ee4b73072e47d7c8d9ef4855520873570f6e",
+  "fee013_final_collection_sha256": "2c83c30933cc585fc0bf83cd469a52d3ddc741bbab9dd17c75e0204189a1b9eb",
+  "fee013_independent_results_review_sha256": "421e9f1019b51aad69d8e2c05927219331d8ee110633e8ec3f3f9f7310dc6aed",
+  "fee013_row_statuses": [
+    "COMPLETE",
+    "COMPLETE",
+    "COMPLETE",
+    "COMPLETE",
+    "COMPLETE",
+    "COMPLETE"
+  ],
+  "fee013_settled_or_stopped_episode_ids": [
+    "fee013-7a7d0e11f420ba1fa9a85882",
+    "fee013-6db6985c2fdce180acb44743",
+    "fee013-e90da95a020ca211642b0b10",
+    "fee013-e711f16b1ffe4c0848ae30d3",
+    "fee013-7fec75f830c53dae3d76d4d3",
+    "fee013-e90e88d78984717150b7a57e"
+  ],
+  "ledger_at_clearance": {
+    "cap_usd": "50",
+    "last_hash": "527a046cc724b507158b96ee9823ebc4b6a884010423ae53b5b8b822a8ba4c20",
+    "seq": 187
+  },
+  "no_new_paid_calls_authorized_by_clearance": true,
+  "schema": "partial013-cross-study-clearance-v1",
+  "status": "GO_AFTER_FEE013_DISPOSITION"
+}

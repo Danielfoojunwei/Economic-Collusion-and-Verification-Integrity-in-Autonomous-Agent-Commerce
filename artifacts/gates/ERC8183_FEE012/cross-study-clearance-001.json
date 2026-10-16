@@ -1,0 +1,21 @@
+{
+  "exact_prior_holds": {
+    "active_reservation_usd": "0",
+    "exact_open_run_ids": [
+      "fee011-c36239cdcfd4-fee010-b0125916b5cd2e63f69109b5-failed-request-hold",
+      "mpp006-0e11d0595056-mpp006-bc092a2baae1584874c4f308",
+      "x402011-ea4c997ba6f3-x402011-19587c1ddccc97900b2deddd"
+    ],
+    "prior_reserved_usd": "14.094300"
+  },
+  "ledger_at_clearance": {
+    "cap_usd": "50",
+    "last_hash": "2f5dac12ec3fb7f5268bcef1a4e3d6b0e281f54c1bcbd808d1f1c14a507f7290",
+    "seq": 173
+  },
+  "mpp011_final_collection_sha256": "ad5e6eaf7587e322f1bcd8ff63766ebbdbc483e8aad2a81f3ae4cf37978604f0",
+  "no_new_paid_calls_authorized_by_clearance": true,
+  "schema": "fee012-cross-study-clearance-v1",
+  "status": "GO_AFTER_X402012_COMPLETE_COLLECTION",
+  "x402012_final_collection_sha256": "712781e06f351e8cdef2d824d15f8c38e659d543027924461052ff6094622608"
+}

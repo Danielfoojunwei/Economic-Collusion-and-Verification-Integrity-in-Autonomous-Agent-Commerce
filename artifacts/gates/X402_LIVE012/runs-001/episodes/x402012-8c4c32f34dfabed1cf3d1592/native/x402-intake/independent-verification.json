@@ -1,0 +1,19 @@
+{
+  "amount_minor_units": 2000000,
+  "application_binding_valid": true,
+  "asset": "valueless local Research Test USD",
+  "body_sha256": "f76302c1dea1037f10bb68e76a3970d45db7932981a64fdeb40df273df8cd6a2",
+  "model_tier": "SCRIPTED_SIMULATION",
+  "oracle_reason_code": "AMOUNT_MISMATCH",
+  "oracle_status": "FAIL",
+  "payee": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+  "payer": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+  "payer_role": "provider",
+  "protocol_settled": true,
+  "quality_attested_by_payment": false,
+  "raw_sha256": "18c6225cdec2f3c1d07a749936f80dafd4f1846f3e0a8f00ddb9c427de2166a1",
+  "status": "PASS",
+  "transaction_hash": "0x9513fde00f0853920166601bfd6cf7a911d7e9a5c2e690d20560f6d1ba8bb644",
+  "transaction_tier": "NATIVE_LOCAL_PROTOCOL",
+  "transfer_log_index": 1
+}

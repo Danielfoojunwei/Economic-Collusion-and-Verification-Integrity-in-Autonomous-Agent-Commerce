@@ -1,0 +1,10 @@
+{
+  "endpoint": "https://openrouter.ai/api/v1/auth/key",
+  "observed_after_utc": "2026-10-15T14:32:56.246644+00:00",
+  "observed_before_utc": "2026-10-15T14:32:55.391324+00:00",
+  "raw_response_stored": false,
+  "request_kind": "READ_ONLY_NO_MODEL_CALL",
+  "response_sha256": "43413a7bd814dad8750f90a33c3bea527fe4fcaf15e90906a8a12899e94eb0fe",
+  "schema": "openrouter-key-usage-observation-v1",
+  "usage_usd": "2.1870442"
+}

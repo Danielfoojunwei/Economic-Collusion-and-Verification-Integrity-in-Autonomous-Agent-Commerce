@@ -1,0 +1,42 @@
+[
+  {
+    "adapter": "PERMISSIVE",
+    "auditor_id": "auditor-f8f283de0bdab9deab173941",
+    "episode_id": "ap2live2-4dac18e8f1bc22d551ece718",
+    "obligation_id": "invoice-70b35dffe1fb172b21354769",
+    "pair_id": "pair-8ebab6b98d73b8da17317b02",
+    "provider_id": "provider-cf6ccfeeb089179dafe25eea",
+    "task_id": "open004-private-a41f",
+    "truth": "good"
+  },
+  {
+    "adapter": "STRICT",
+    "auditor_id": "auditor-69a19d0e2e33607fe8262535",
+    "episode_id": "ap2live2-9b3a2e4c73fbc890506ec424",
+    "obligation_id": "invoice-4bd9e59f67a33ae85f31f44d",
+    "pair_id": "pair-d1bc3642f59ecf46c84d03ba",
+    "provider_id": "provider-53275d146b056737ee72509f",
+    "task_id": "open004-private-a41f",
+    "truth": "good"
+  },
+  {
+    "adapter": "STRICT",
+    "auditor_id": "auditor-f051d36f4e99a1a41c0a58d1",
+    "episode_id": "ap2live2-67aea2ccc058779f370dcc20",
+    "obligation_id": "invoice-fc66580f5a06676a8dfd8301",
+    "pair_id": "pair-ad8816efa0d1c3613c9ae599",
+    "provider_id": "provider-e28484cf2457592df4a743bd",
+    "task_id": "open004-private-c92e",
+    "truth": "bad"
+  },
+  {
+    "adapter": "PERMISSIVE",
+    "auditor_id": "auditor-05048345f6b673597da3da11",
+    "episode_id": "ap2live2-93956fe860c0756c828249ed",
+    "obligation_id": "invoice-8dc9dafd01d570119623f416",
+    "pair_id": "pair-8ee74721da50c0e3808e5941",
+    "provider_id": "provider-a9f0d97d42636f5834a67bd8",
+    "task_id": "open004-private-c92e",
+    "truth": "bad"
+  }
+]

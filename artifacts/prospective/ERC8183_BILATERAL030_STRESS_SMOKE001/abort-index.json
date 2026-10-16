@@ -1,0 +1,24 @@
+{
+  "attempted_rows": 1,
+  "completed_rows": 0,
+  "episode_id": "bilateral030-f0d53b1345924655828fc00b",
+  "error": "Inspect returned absolute archive path; summary attempted relative_to(relative output_dir)",
+  "error_type": "ValueError",
+  "limitation": "In-process funding, native and Inspect replay reports exist, but summary/index failed; this aborted attempt is not counted as a completed rehearsal row.",
+  "model_behavior_tier": "SCRIPTED_SIMULATION",
+  "raw_files_sha256": {
+    "bilateral030-f0d53b1345924655828fc00b/anvil.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bilateral030-f0d53b1345924655828fc00b/hook-forge-build.log": "9672df35af18ba6538a686bbabb68685d3184b9b087c5269e3d30d7761b24bbb",
+    "bilateral030-f0d53b1345924655828fc00b/inspect-replay.json": "a9b7909f22ad0018a57ad11d5fa758fa0da48fa7332a5cef46d40014e0d6488f",
+    "bilateral030-f0d53b1345924655828fc00b/inspect/2026-10-16T03-50-25-00-00_bilateral030-adapter-bilateral030-f0d53b1345924655828fc00b_Qp7f3wjiQKBCA6kTyRG6c8.eval": "e163172e5744c114727000d1a1e88c10edf6bdeff0eae140613a87c01f94b45a",
+    "bilateral030-f0d53b1345924655828fc00b/model-inputs.json": "660953545188ee59adafc5aed23e63ea0febafc77c914c43598a0214fb53d271",
+    "bilateral030-f0d53b1345924655828fc00b/native-evidence.json": "1dd7228dbb4203263bdfe3d9cea51ed111a0e21edddf6192fc07ceb8d4a752e3",
+    "bilateral030-f0d53b1345924655828fc00b/native-replay.json": "0da6d69bb73583e76a51ba4b3f877b79c869275046a79b6dad1d6c6c5e5af57d",
+    "bilateral030-f0d53b1345924655828fc00b/pre-view-funding-replay.json": "3266a3678de6335a9602c8fb0a856056a9639f81cbd6b11a2899108122504cb3",
+    "bilateral030-f0d53b1345924655828fc00b/pre-view-funding.json": "70ab7dafec8a8ab463de60021098e14bcea9939e5cfc39910f156aca443d0953"
+  },
+  "schema": "bilateral030-scripted-stress-aborted-smoke-v1",
+  "scientific_result_row": false,
+  "source_commit_at_attempt": "bc1ac44",
+  "status": "ABORTED_POST_REPLAY_SUMMARY_PATH_ERROR"
+}

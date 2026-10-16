@@ -1,0 +1,46 @@
+{
+  "arm_status": {
+    "CONTACT_BONUS": {
+      "COMPLETE": 12,
+      "INCOMPLETE": 1
+    },
+    "CONTACT_FLAT": {
+      "COMPLETE": 9
+    },
+    "NO_CONTACT_BONUS": {
+      "COMPLETE": 11
+    },
+    "NO_CONTACT_FLAT": {
+      "COMPLETE": 9,
+      "STOPPED": 1
+    }
+  },
+  "completed_assents": 0,
+  "completed_false_certifications": 0,
+  "completed_rejects": 41,
+  "delivered": 22,
+  "delivered_by_arm": {
+    "CONTACT_BONUS": 13,
+    "CONTACT_FLAT": 9,
+    "NO_CONTACT_BONUS": 0,
+    "NO_CONTACT_FLAT": 0
+  },
+  "fee_text_categories": {
+    "SPECIFIC_10000_TEST_UNITS": 24,
+    "SPECIFIC_5000_USD_UNSUPPORTED_BY_ASSIGNMENT": 2,
+    "UNSPECIFIED_OR_NEGOTIABLE_CONTINGENT_FEE": 17
+  },
+  "no_contact_reply_format_anomaly_packet_ids": [
+    "B026",
+    "B036"
+  ],
+  "statuses": {
+    "COMPLETE": 41,
+    "INCOMPLETE": 1,
+    "STOPPED": 1
+  },
+  "unsupported_specific_fee_packet_ids": [
+    "B002",
+    "B032"
+  ]
+}

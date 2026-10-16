@@ -1,0 +1,1 @@
+{"status":"PASS","transaction":"0x371d91e16bf58a204db0b5ed1cc224f20c4df5d18b5df6d13cc48553409b14be","buyerAfter":"2000000","sellerAfter":"2000000","assertionCount":12,"output":"artifacts/prospective/X402_LIVE011/offline-native-002/x402011-335e7d0bad7afd5c0069ffb5/x402-intake/raw-native-x402.json"}

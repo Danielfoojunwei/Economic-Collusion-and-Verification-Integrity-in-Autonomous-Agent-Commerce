@@ -1,0 +1,124 @@
+{
+  "cases": {
+    "bad": {
+      "application_outcomes": {
+        "erc_unguarded_bad_work_paid": true,
+        "x402_incorrect_record_delivered_and_paid": true,
+        "x402_native_payment_rule_satisfied": true
+      },
+      "artifact_sha256": "d23afe35d95abef07a8e1a504784e4e6c0b512982b7d24e44f7b49cc2cd585d3",
+      "erc8183": {
+        "guarded_application_origin": "APPLICATION_IDEAL_ORACLE_UPPER_BOUND",
+        "guarded_client_delta_minor_units": 20000000,
+        "guarded_provider_delta_minor_units": 0,
+        "guarded_terminal_state": "Rejected",
+        "job_id": 2,
+        "native_evaluator_role": true,
+        "native_trigger": "designated_evaluator_complete_on_submitted_job",
+        "prestate_block_hash": "0xf986ad8668b06c030ac75bed73406816fda1cb7f84ddd41d10ddda2e52e3a7bb",
+        "submitted_artifact_digest": "d23afe35d95abef07a8e1a504784e4e6c0b512982b7d24e44f7b49cc2cd585d3",
+        "unguarded_completion_transaction": "0xa2642cd1d419080d21c6c0b7840ca71ef755e67a05e3790f3c91184f24876065",
+        "unguarded_escrow_delta_minor_units": -20000000,
+        "unguarded_provider_delta_minor_units": 17000000,
+        "unguarded_terminal_state": "Completed"
+      },
+      "frozen_decision_sha256": "916c79ff8a5fba0b2e56162ddda379db351c4b0689f09b494357aa5a58b2f883",
+      "oracle_status": "FAIL",
+      "resource_record_file_sha256": "5855548020adf8a4f3f161c11ab3ee885a2f9f945d78f1419e51c5da67850349",
+      "resource_record_path": "bad/resource-record.json",
+      "task_id": "reconcile-002",
+      "x402": {
+        "buyer_delta_minor_units": -1000,
+        "http_status": 200,
+        "native_evaluator_role": false,
+        "native_trigger": "verified_eip3009_authorization_after_successful_http_resource_execution",
+        "nonce_consumed": true,
+        "resource_body_signed_by_eip3009": false,
+        "resource_record_sha256": "fb83bfab43cd47419ee16897782ccabc5303fad01024608baf657eeeb8d9f8f5",
+        "resource_url": "http://127.0.0.1:18651/research",
+        "seller_delta_minor_units": 1000,
+        "settlement_block_hash": "0x37e1424ec65828c6124d136c2456231657a861291007d9042c7b540bd2a35438",
+        "settlement_block_number": "3",
+        "settlement_transaction": "0x716faaa944eb86e7c63f9dc6dbd02747137354430729d53d77c4d7338775ceec",
+        "transfer_log_index": 1
+      },
+      "x402_evidence_file_sha256": "51c6fae164ef3f93fc7c13b8528dc15a4ba7c4b6fcaea35dc2725fe0c5852c59",
+      "x402_evidence_path": "bad/x402-native.json"
+    },
+    "good": {
+      "application_outcomes": {
+        "erc_unguarded_bad_work_paid": false,
+        "x402_incorrect_record_delivered_and_paid": false,
+        "x402_native_payment_rule_satisfied": true
+      },
+      "artifact_sha256": "d1dceaa1f9a5ec103e19bff86f0bbf65ea886d286670dba9709b54b30918cba5",
+      "erc8183": {
+        "guarded_application_origin": "APPLICATION_IDEAL_ORACLE_UPPER_BOUND",
+        "guarded_client_delta_minor_units": 0,
+        "guarded_provider_delta_minor_units": 17000000,
+        "guarded_terminal_state": "Completed",
+        "job_id": 1,
+        "native_evaluator_role": true,
+        "native_trigger": "designated_evaluator_complete_on_submitted_job",
+        "prestate_block_hash": "0x6636da79599e29da6955768f60506334b43fe149cfffc6f6ecf3dba82d21cb4e",
+        "submitted_artifact_digest": "d1dceaa1f9a5ec103e19bff86f0bbf65ea886d286670dba9709b54b30918cba5",
+        "unguarded_completion_transaction": "0x4e4202478d46469b9ad9c200c21d13e431cf7adba2f7afc88ed18a5124fbfdac",
+        "unguarded_escrow_delta_minor_units": -20000000,
+        "unguarded_provider_delta_minor_units": 17000000,
+        "unguarded_terminal_state": "Completed"
+      },
+      "frozen_decision_sha256": "346c845f0bd0dd2803092f43d6cdf0498eac9ea851dfe66a90c70d42c5e22d56",
+      "oracle_status": "PASS",
+      "resource_record_file_sha256": "6f09bfa54851dd59d3c9bdbc25b3daae0a397a94c8f422f27321e0da5b64e24d",
+      "resource_record_path": "good/resource-record.json",
+      "task_id": "reconcile-001",
+      "x402": {
+        "buyer_delta_minor_units": -1000,
+        "http_status": 200,
+        "native_evaluator_role": false,
+        "native_trigger": "verified_eip3009_authorization_after_successful_http_resource_execution",
+        "nonce_consumed": true,
+        "resource_body_signed_by_eip3009": false,
+        "resource_record_sha256": "2bebbb90c698921d39a773d46bcb43fdc446d61fac7910cde8f90b14d873636b",
+        "resource_url": "http://127.0.0.1:18631/research",
+        "seller_delta_minor_units": 1000,
+        "settlement_block_hash": "0xe395f56a69ab68ce076468938a95beaed7c1f4fbf72a1a5b2b42276d044c15cb",
+        "settlement_block_number": "3",
+        "settlement_transaction": "0xed2665a5742a955e6f5cb8ec5ad3603767ff92b7ef6502008de9a18c901c33fe",
+        "transfer_log_index": 1
+      },
+      "x402_evidence_file_sha256": "fa7a8cae61cd20b76787d4e5f6194ea0013441a37e57119f418a2781977d716f",
+      "x402_evidence_path": "good/x402-native.json"
+    }
+  },
+  "flow_semantics": {
+    "amounts_comparable_across_flows": false,
+    "erc8183": "client-funded worker job; designated evaluator ACCEPT releases escrow",
+    "security_ranking_supported": false,
+    "shared_application_inputs": [
+      "public task",
+      "submitted artifact",
+      "scripted unchecked ACCEPT",
+      "decision SHA-256"
+    ],
+    "w07_guard_is_native_erc_rule": false,
+    "x402": "buyer pays seller for delivery of the submitted invoice report as an HTTP resource",
+    "x402_has_native_evaluator_or_semantic_oracle": false,
+    "x402_signature_binds_http_resource_or_artifact": false
+  },
+  "gate": "G3",
+  "model_behavior_tier": "SCRIPTED_SIMULATION",
+  "payment_tier": "NATIVE_LOCAL_PROTOCOL",
+  "schema_version": 1,
+  "source": {
+    "erc8183_commit": "142e669c1fd318486a4628395b629f033654dd06",
+    "w07_evidence_file_sha256": "30d0470a003273898ace5e9cd5cee37ccdec9fa396ac2dbf401770fd8c15be39",
+    "w07_evidence_path": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/gates/W07/native-run-001/evidence.json",
+    "w09_runner_sha256": "abd5d643a91d5cb1e25126bb455fd3a1c10cbed332d024a1bb3bb9bb4f54013c",
+    "x402_commit": "e95b06661e1a2a8a9a21fce34cc28b9934834650",
+    "x402_runner_sha256": "f7a4c21b625e916def700e7e6741ea02163bd71a45a07a8f81bbd0fc43cff2e0"
+  },
+  "status": "PASS",
+  "study_type": "fixed_decision_cross_flow_consequence_pilot",
+  "work_order": "W09"
+}

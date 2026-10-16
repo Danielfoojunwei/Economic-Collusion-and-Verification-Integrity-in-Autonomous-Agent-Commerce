@@ -1,0 +1,49 @@
+test_authentic_side_payment_executes_only_on_accept (test_experiments.TestExperiments.test_authentic_side_payment_executes_only_on_accept) ... ok
+test_cli_generation_and_verify (test_experiments.TestExperiments.test_cli_generation_and_verify) ... ok
+test_determinism (test_experiments.TestExperiments.test_determinism) ... ok
+test_local_model_endpoint_does_not_allow_cloud (test_experiments.TestExperiments.test_local_model_endpoint_does_not_allow_cloud) ... ok
+test_market_reciprocal_edges_emerge (test_experiments.TestExperiments.test_market_reciprocal_edges_emerge) ... ok
+test_matched_policy_across_protocol_adapters (test_experiments.TestExperiments.test_matched_policy_across_protocol_adapters) ... ok
+test_paired_randomness_identical_across_treatments (test_experiments.TestExperiments.test_paired_randomness_identical_across_treatments) ... ok
+test_scarcity_still_permits_verification (test_experiments.TestExperiments.test_scarcity_still_permits_verification) ... ok
+test_spoofed_offer_does_not_transfer (test_experiments.TestExperiments.test_spoofed_offer_does_not_transfer) ... ok
+test_three_auditors_are_aggregated (test_experiments.TestExperiments.test_three_auditors_are_aggregated) ... ok
+test_unaffordable_audit_is_explicit_negative_control (test_experiments.TestExperiments.test_unaffordable_audit_is_explicit_negative_control) ... ok
+test_tool_invocation_and_private_test_isolation (test_local_model_contract.TestLocalModelContract.test_tool_invocation_and_private_test_isolation) ... ok
+test_all_adapters_have_distinct_source_and_run (test_protocols.TestAllLocalProtocolAdapters.test_all_adapters_have_distinct_source_and_run) ... ok
+test_deadline_expiry_no_payment (test_protocols.TestAllLocalProtocolAdapters.test_deadline_expiry_no_payment) ... ok
+test_escrow_refunds_on_rejection (test_protocols.TestAllLocalProtocolAdapters.test_escrow_refunds_on_rejection) ... ok
+test_incorrect_payee_or_amount_does_not_charge (test_protocols.TestAllLocalProtocolAdapters.test_incorrect_payee_or_amount_does_not_charge) ... ok
+test_independent_recheck_escrow_and_x402 (test_protocols.TestAllLocalProtocolAdapters.test_independent_recheck_escrow_and_x402) ... ok
+test_mock_nonce_replay_never_pays_twice (test_protocols.TestAllLocalProtocolAdapters.test_mock_nonce_replay_never_pays_twice) ... ok
+test_no_native_semantic_truth_guarantee (test_protocols.TestAllLocalProtocolAdapters.test_no_native_semantic_truth_guarantee) ... ok
+test_receipt_swap_caught_by_extra_binding (test_protocols.TestAllLocalProtocolAdapters.test_receipt_swap_caught_by_extra_binding) ... ok
+test_role_restrictions_and_double_terminal (test_protocols.TestAllLocalProtocolAdapters.test_role_restrictions_and_double_terminal) ... ok
+test_aborted_work_no_delivery_and_separate_refund (test_study_realism.TestRealismStudy.test_aborted_work_no_delivery_and_separate_refund) ... ok
+test_binding_does_not_prove_semantic_truth (test_study_realism.TestRealismStudy.test_binding_does_not_prove_semantic_truth) ... ok
+test_calibrated_tasks_include_service_receipts (test_study_realism.TestRealismStudy.test_calibrated_tasks_include_service_receipts) ... ok
+test_distinct_job_duplicate_vs_nonce_replay (test_study_realism.TestRealismStudy.test_distinct_job_duplicate_vs_nonce_replay) ... ok
+test_factorial_conditions_are_complete (test_study_realism.TestRealismStudy.test_factorial_conditions_are_complete) ... ok
+test_frozen_replay_not_resampling_policy (test_study_realism.TestRealismStudy.test_frozen_replay_not_resampling_policy) ... ok
+test_hash_only_does_not_prove_quality (test_study_realism.TestRealismStudy.test_hash_only_does_not_prove_quality) ... ok
+test_mock_data_valid_for_every_protocol (test_study_realism.TestRealismStudy.test_mock_data_valid_for_every_protocol) ... ok
+test_small_end_to_end_study_validated (test_study_realism.TestRealismStudy.test_small_end_to_end_study_validated) ... ok
+test_swap_has_no_model_misjudgment (test_study_realism.TestRealismStudy.test_swap_has_no_model_misjudgment) ... ok
+test_x402_escrow_refunded_on_timeout (test_study_realism.TestRealismStudy.test_x402_escrow_refunded_on_timeout) ... ok
+test_x402_response_follows_settlement (test_study_realism.TestRealismStudy.test_x402_response_follows_settlement) ... ok
+test_x402_three_flow_orderings_are_distinct (test_study_realism.TestRealismStudy.test_x402_three_flow_orderings_are_distinct) ... ok
+test_good_and_bad_fixtures (test_tasks.TestTaskOracles.test_good_and_bad_fixtures) ... ok
+test_hidden_tests_not_in_agent_view (test_tasks.TestTaskOracles.test_hidden_tests_not_in_agent_view) ... ok
+test_ledger_conserves_credits_and_blocks_replay (test_tasks.TestTaskOracles.test_ledger_conserves_credits_and_blocks_replay) ... ok
+test_reconciliation_ignores_pending (test_tasks.TestTaskOracles.test_reconciliation_ignores_pending) ... ok
+test_untrusted_expression_restrictions (test_tasks.TestTaskOracles.test_untrusted_expression_restrictions) ... ok
+test_changed_economic_terms_rejected (test_wire.TestLocalHttpWireShapes.test_changed_economic_terms_rejected) ... ok
+test_x402_mpp_402_and_credentials_and_replay (test_wire.TestLocalHttpWireShapes.test_x402_mpp_402_and_credentials_and_replay) ... ok
+
+----------------------------------------------------------------------
+Ran 41 tests in 1.714s
+
+OK
+Wrote 8 OFFLINE SIMULATION trials to /tmp/tmpa06wlwyg
+Inspect: /tmp/tmpa06wlwyg/report.md, /tmp/tmpa06wlwyg/summary.csv, /tmp/tmpa06wlwyg/trials.jsonl
+PASS: 8 local trace integrity digests verified. Not cryptographic signatures.

@@ -1,0 +1,56 @@
+test_funded_counteroffer_and_bounded_negotiation (test_open_mpp_meeting.OpenMppMeetingTests.test_funded_counteroffer_and_bounded_negotiation) ... ok
+test_honest_check_feasible_for_both (test_open_mpp_meeting.OpenMppMeetingTests.test_honest_check_feasible_for_both) ... ok
+test_independent_oracle_matches_all_calibration_assignments (test_open_mpp_meeting.OpenMppMeetingTests.test_independent_oracle_matches_all_calibration_assignments) ... ok
+test_matched_claims_and_private_truth (test_open_mpp_meeting.OpenMppMeetingTests.test_matched_claims_and_private_truth) ... ok
+test_stress_is_separate_and_oracle_rejects_bad_shape (test_open_mpp_meeting.OpenMppMeetingTests.test_stress_is_separate_and_oracle_rejects_bad_shape) ... ok
+test_unauthorized_and_immutable (test_open_mpp_meeting.OpenMppMeetingTests.test_unauthorized_and_immutable) ... ok
+test_counteroffer_and_coercive_stress_are_separate (test_open_mpp_orbit.OpenMppOrbitTests.test_counteroffer_and_coercive_stress_are_separate) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f62bb19b7a0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f62b96079e0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_private_payload_and_store_tampering_fail (test_open_mpp_orbit.OpenMppOrbitTests.test_private_payload_and_store_tampering_fail) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f62bae4c6b0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f62b93034d0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_raw_action_truth_store_and_model_tampering_fail (test_open_mpp_orbit.OpenMppOrbitTests.test_raw_action_truth_store_and_model_tampering_fail) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f62b93d9820>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_roles_flow_and_blind_trial_id_guard (test_open_mpp_orbit.OpenMppOrbitTests.test_roles_flow_and_blind_trial_id_guard) ... ok
+test_saved_good_and_bad_checked_and_unchecked_controls (test_open_mpp_orbit.OpenMppOrbitTests.test_saved_good_and_bad_checked_and_unchecked_controls) ... /workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f62baeedac0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f62b922cc50>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/inspect_ai/model/_retry.py:110: DeprecationWarning: The 'initial' parameter is deprecated, use 'multiplier' instead
+  else wait_exponential_jitter(initial=3, max=(30 * 60), jitter=3)
+/workspace/upstreams/orbit-smoke/.venv/lib/python3.12/site-packages/anyio/streams/memory.py:190: ResourceWarning: Unclosed <MemoryObjectReceiveStream at 7f62b8f1d8e0>
+  warnings.warn(
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 5.498s
+
+OK

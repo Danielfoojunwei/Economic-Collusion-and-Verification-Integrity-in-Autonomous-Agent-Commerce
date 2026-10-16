@@ -1,0 +1,20 @@
+✔ all eight native controls reject B first, then accept the same unconsumed A proof (1957.743846ms)
+✔ reject protected calendar data injected into denied B response (57.692549ms)
+✔ reject B client-release credit despite claimed denial (52.462116ms)
+✔ reject a used-proof replay substituted for the required B-first order (48.161509ms)
+✔ reject wrong native payee (43.483847ms)
+✔ reject erased real session settlement gas in terminal balance (123.481407ms)
+✔ reject forged session channel identity (111.835967ms)
+✔ reject forged native receipt emitter (168.408505ms)
+✔ reject changed B scope that no longer matches raw challenge headers (65.371623ms)
+✔ reject labeling an authored guard response as an SDK rejection (45.785171ms)
+✔ reject invalid session voucher despite a genuine native opening receipt (219.299367ms)
+✔ reject changed signed charge transaction despite genuine saved receipt (187.819314ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3946.972975

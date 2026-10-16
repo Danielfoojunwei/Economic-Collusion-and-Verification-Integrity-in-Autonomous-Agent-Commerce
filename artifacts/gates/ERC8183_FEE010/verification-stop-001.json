@@ -1,0 +1,81 @@
+{
+  "completed_episodes": 0,
+  "evidence_limit": "zero calls established by old lock, absent local run path and shared ledger; external off-ledger billing is not covered",
+  "execution_order": [
+    "fee010-b0125916b5cd2e63f69109b5",
+    "fee010-3bbbc1f2d8d1b278ed9a07cb",
+    "fee010-a08688d00d0b85ae9baa6271",
+    "fee010-6db545123a8fbc2769367697",
+    "fee010-c7a93944025a751a375564f5",
+    "fee010-2f60ccb8983dd57466373d50",
+    "fee010-1655330a8835c73d62a87b11",
+    "fee010-03f7361feee0908c962d1827"
+  ],
+  "observed_ledger_hash": "e1b94c98a463811680f4947f0a4c6f29b6e730bc654e3fb83023301422357109",
+  "observed_ledger_seq": 147,
+  "old_assignment_sha256": "db6dcf6c4cca6c6a4e3ce2f527cb7d35d054c8ab6da5c42571b68bedc6d3adcd",
+  "old_lock_paid_model_calls": 0,
+  "old_lock_sha256": "3e0ad984fc13c1ae7683f0fce697bafcf1134f449aa5ca3d290d803e195beec6",
+  "old_private_rows_sha256": "5fae08d442a614cf5d3205ac70272bea18593313bf500b4c8c2e9129cbcf1be2",
+  "old_readiness_sha256": "c6c1d3549fa990c4fa9f978a5c564c363a6f60e93cd2e0696c4e5842312ab8dc",
+  "old_run_directory_present": false,
+  "old_seed_file_sha256": "9bb9211eda8b568a45eea4fd927cab96120611d291d9778e08e48620b290b46a",
+  "old_source_commit": "be284036ae17f129b757b29c058adde2dff613aa",
+  "old_source_inventory_sha256": "7a70811c3abdd0a102631d15ebadc015c9d16b64b760a4ba6bdc8b3db3e1531c",
+  "paid_model_calls": 0,
+  "pending_episodes": 0,
+  "planned_episodes": 8,
+  "preview_mismatch": {
+    "schema": {
+      "frozen": "erc8183-fee-first-assignment-v1",
+      "preview": "erc8183-fee-design-assignment-preview-v1"
+    },
+    "status": {
+      "frozen": "FROZEN_NOT_EXECUTED",
+      "preview": "UNFROZEN_NO_PAID_EXECUTION"
+    }
+  },
+  "read_only_verifier_error": {
+    "message": "frozen fee study assignment/source differs",
+    "type": "ValueError"
+  },
+  "rows": [
+    {
+      "episode_id": "fee010-b0125916b5cd2e63f69109b5",
+      "status": "STOPPED_BEFORE_EXECUTION"
+    },
+    {
+      "episode_id": "fee010-3bbbc1f2d8d1b278ed9a07cb",
+      "status": "STOPPED_BEFORE_EXECUTION"
+    },
+    {
+      "episode_id": "fee010-a08688d00d0b85ae9baa6271",
+      "status": "STOPPED_BEFORE_EXECUTION"
+    },
+    {
+      "episode_id": "fee010-6db545123a8fbc2769367697",
+      "status": "STOPPED_BEFORE_EXECUTION"
+    },
+    {
+      "episode_id": "fee010-c7a93944025a751a375564f5",
+      "status": "STOPPED_BEFORE_EXECUTION"
+    },
+    {
+      "episode_id": "fee010-2f60ccb8983dd57466373d50",
+      "status": "STOPPED_BEFORE_EXECUTION"
+    },
+    {
+      "episode_id": "fee010-1655330a8835c73d62a87b11",
+      "status": "STOPPED_BEFORE_EXECUTION"
+    },
+    {
+      "episode_id": "fee010-03f7361feee0908c962d1827",
+      "status": "STOPPED_BEFORE_EXECUTION"
+    }
+  ],
+  "schema": "fee010-preexecution-closure-v1",
+  "shared_ledger_fee010_run_ids": [],
+  "status": "CLOSED_STOPPED_BEFORE_EXECUTION",
+  "stopped_before_execution_episodes": 8,
+  "study_id": "erc8183-native-evaluator-fee-live-010"
+}

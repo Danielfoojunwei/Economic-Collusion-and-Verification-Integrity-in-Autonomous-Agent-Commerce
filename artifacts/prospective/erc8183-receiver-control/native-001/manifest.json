@@ -1,0 +1,31 @@
+{
+  "cases": [
+    {
+      "case": "direct-approve",
+      "client_delta_minor": -20000000,
+      "evaluator_delta_minor": 2000000,
+      "evidence_sha256": "ed65e09d1b9d5b4dae86464c782498856b662ae0567d62fe690a4ade3ba39543",
+      "provider_delta_minor": 18000000,
+      "transactions": 17
+    },
+    {
+      "case": "evaluator-receiver-approve",
+      "client_delta_minor": -20000000,
+      "evaluator_delta_minor": 20000000,
+      "evidence_sha256": "545debd66239ea333a28de1699c29cd8fe43d09b61587cadfe58c744e8adc193",
+      "provider_delta_minor": 0,
+      "transactions": 18
+    },
+    {
+      "case": "evaluator-receiver-reject",
+      "client_delta_minor": 0,
+      "evaluator_delta_minor": 0,
+      "evidence_sha256": "da9db888eade5d9473603d73a9fe0980c7d277f1533ee02c79bccd24ba5a7a26",
+      "provider_delta_minor": 0,
+      "transactions": 18
+    }
+  ],
+  "live_agent_collusion_evidence": false,
+  "native_local_only": true,
+  "schema": "erc8183-receiver-control-manifest-v1"
+}

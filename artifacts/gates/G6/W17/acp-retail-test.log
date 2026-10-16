@@ -1,0 +1,9 @@
+test_cancel_prevents_complete_and_completed_prevents_cancel (tests.test_acp_retail_local.AcpRetailLocalTests.test_cancel_prevents_complete_and_completed_prevents_cancel) ... ok
+test_complete_creates_order_once_and_replay_preserves_response (tests.test_acp_retail_local.AcpRetailLocalTests.test_complete_creates_order_once_and_replay_preserves_response) ... ok
+test_missing_key_and_changed_body_are_rejected (tests.test_acp_retail_local.AcpRetailLocalTests.test_missing_key_and_changed_body_are_rejected) ... ok
+test_official_schema_rejects_malformed_checkout_and_order (tests.test_acp_retail_local.AcpRetailLocalTests.test_official_schema_rejects_malformed_checkout_and_order) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.047s
+
+OK

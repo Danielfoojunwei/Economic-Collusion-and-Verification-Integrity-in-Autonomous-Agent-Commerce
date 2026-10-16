@@ -1,0 +1,98 @@
+{
+  "acp_retail": {
+    "reason": "retail checkout is outside this payment control",
+    "status": "SKIP"
+  },
+  "ap2": {
+    "reason": "delegated authorization is outside this payment control",
+    "status": "SKIP"
+  },
+  "cases": {
+    "bad": {
+      "application_outcomes": {
+        "wrongful_erc_provider_payment": true,
+        "x402_report_delivery_paid": true,
+        "x402_semantic_correctness_enforced": false
+      },
+      "auditor_checked": false,
+      "auditor_verdict": "ACCEPT",
+      "erc8183": {
+        "default_job_status": "Completed",
+        "default_provider_delta": 17000000,
+        "guard_job_status": "Rejected",
+        "guard_provider_delta": 0,
+        "job_id": 2
+      },
+      "independent_oracle_status": "FAIL",
+      "report_sha256": "3f09cbe128603be915dedfef53b75bee792f18b7cbf21b72c73e075837982e29",
+      "x402": {
+        "buyer_delta_minor_units": -1000,
+        "http_status": 200,
+        "native_evaluator_role": false,
+        "native_trigger": "verified_eip3009_authorization_after_successful_http_resource_execution",
+        "nonce_consumed": true,
+        "resource_body_signed_by_eip3009": false,
+        "resource_record_sha256": "3f09cbe128603be915dedfef53b75bee792f18b7cbf21b72c73e075837982e29",
+        "resource_url": "http://127.0.0.1:18501/research",
+        "seller_delta_minor_units": 1000,
+        "settlement_block_hash": "0x7ad9e74685bbe4a77e219695c2b7ea365fe55b1474828c2aba5b55f25093e15c",
+        "settlement_block_number": "3",
+        "settlement_transaction": "0x8dfc5d61744b7622d42275c584463ed564e5ee78470e97d0e921cf4800bd22c7",
+        "transfer_log_index": 1
+      }
+    },
+    "good": {
+      "application_outcomes": {
+        "wrongful_erc_provider_payment": false,
+        "x402_report_delivery_paid": true,
+        "x402_semantic_correctness_enforced": false
+      },
+      "auditor_checked": false,
+      "auditor_verdict": "ACCEPT",
+      "erc8183": {
+        "default_job_status": "Completed",
+        "default_provider_delta": 17000000,
+        "guard_job_status": "Completed",
+        "guard_provider_delta": 17000000,
+        "job_id": 1
+      },
+      "independent_oracle_status": "PASS",
+      "report_sha256": "3f09cbe128603be915dedfef53b75bee792f18b7cbf21b72c73e075837982e29",
+      "x402": {
+        "buyer_delta_minor_units": -1000,
+        "http_status": 200,
+        "native_evaluator_role": false,
+        "native_trigger": "verified_eip3009_authorization_after_successful_http_resource_execution",
+        "nonce_consumed": true,
+        "resource_body_signed_by_eip3009": false,
+        "resource_record_sha256": "3f09cbe128603be915dedfef53b75bee792f18b7cbf21b72c73e075837982e29",
+        "resource_url": "http://127.0.0.1:18481/research",
+        "seller_delta_minor_units": 1000,
+        "settlement_block_hash": "0xb42f48660a2059050691d5da794a64c63e80aff27f5077b0eb94ca49b26f7972",
+        "settlement_block_number": "3",
+        "settlement_transaction": "0x140a0cd04488303081b602caca5a7592e53f2c762b6e4a55d2bb93dade47419e",
+        "transfer_log_index": 1
+      }
+    }
+  },
+  "frozen_reference_source": "tests/test_protected_receipts.py::make_case,ARTIFACT",
+  "frozen_reference_source_file_sha256": "cf7dacf22914cf9b3fb6b2cd336b53d159b21bec144078aac92b50653884b184",
+  "frozen_task_source_file_sha256": "f8d80d62e5f467208b6484c33c04853bbdeb8431af30d3a3462a3e57466c6e7c",
+  "limitations": [
+    "No LLM behavior or collusion inference.",
+    "The private warehouse guard is an ideal application upper bound.",
+    "x402 pays for HTTP delivery; its signature does not attest to report truth.",
+    "ERC snapshot branches are not both on one canonical final chain.",
+    "Only disposable local tokens and localhost RPC were used."
+  ],
+  "model_behavior_tier": "SCRIPTED_SIMULATION",
+  "mpp": {
+    "reason": "MPP receipt-specific adapter not run",
+    "status": "SKIP"
+  },
+  "report_sha256": "3f09cbe128603be915dedfef53b75bee792f18b7cbf21b72c73e075837982e29",
+  "schema_version": 1,
+  "status": "PASS",
+  "study_type": "SCRIPTED_OFFLINE_CROSSRAIL_RECEIPT_CONTROL",
+  "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL"
+}

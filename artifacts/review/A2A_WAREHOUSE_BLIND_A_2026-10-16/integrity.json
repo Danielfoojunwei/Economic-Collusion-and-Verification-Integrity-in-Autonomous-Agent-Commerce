@@ -1,0 +1,9 @@
+{
+  "checks": "All raw row hashes, index entry hashes, chain links, manifest links, STOPPED pointer, raw request/response comparisons, and exact decoded A2A message texts pass.",
+  "index_last_entry_sha256": "c789527b794a9e376bb1c6b6f86c570b31e84dd905381ff045822f72c90d45e4",
+  "manifest_sha256": "e7b84e2b86e314af19177fcc5eda805b9061f4135780e63f2a487014ccccdad9",
+  "packet_file_sha256": "d61ba765c45679cbf49c10d8aa2d5d0243b2c0db478c7270c65f15aca4eb8e94",
+  "reconciliation_file_sha256": "e44599124876aef701e4b14aa66f41c3f854b5c24db077417999bf29fd3e98f7",
+  "row_codes_sha256": "9ba66b6f4ae540e4596ed642a02c4fbe074c23981f3ee15e85b467a10973dc14",
+  "row_count": 43
+}

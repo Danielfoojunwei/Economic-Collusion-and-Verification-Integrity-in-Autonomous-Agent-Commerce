@@ -1,0 +1,82 @@
+
+> impl@1.0.0 test:core
+> node --import tsx --test test/core.ts
+
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+▶ ERC8004 Registries
+  ▶ IdentityRegistry
+    ✔ Should register an agent with tokenURI (89.63237ms)
+    ✔ Should auto-increment agentId (57.15733ms)
+    ✔ Should allow owner to update tokenURI (46.689489ms)
+    ✔ Should support different URI schemes for tokenURI (36.597352ms)
+    ✔ Should set and get metadata (33.679576ms)
+    ✔ Should only allow owner to set metadata (43.04655ms)
+    ✔ Should register with metadata array (42.41176ms)
+    ✔ Should register without tokenURI and set it later (73.690355ms)
+    ✔ Should block setting reserved 'agentWallet' key via setMetadata (53.499989ms)
+    ✔ Should block setting reserved 'agentWallet' key via register with metadata (38.05334ms)
+    ✔ Should set and get agentWallet with EOA signature (68.321803ms)
+    ✔ Should reject setAgentWallet with invalid signature (98.329941ms)
+    ✔ Should reject setAgentWallet with expired deadline (61.093475ms)
+    ✔ Should reject setAgentWallet with deadline too far in future (48.047237ms)
+    ✔ Should reject setAgentWallet from unauthorized caller (49.808145ms)
+    ✔ Should default agentWallet to owner on register() (45.381277ms)
+    ✔ Should default agentWallet to owner on register(string) (45.408263ms)
+    ✔ Should default agentWallet to owner on register(string, MetadataEntry[]) (72.899963ms)
+    ✔ Should return zero address for getAgentWallet on non-existent token (57.824579ms)
+    ✔ Should clear agentWallet on transfer (86.618165ms)
+  ✔ IdentityRegistry (1151.97625ms)
+  ▶ ReputationRegistry
+    ✔ Should return the identity registry address (193.741278ms)
+    ✔ Should give feedback to an agent (155.969187ms)
+    ✔ Should revoke feedback (205.86196ms)
+    ✔ Should append response to feedback (121.716554ms)
+    ✔ Should track multiple feedbacks from same client (131.194113ms)
+    ✔ Should reject feedback for non-existent agent (133.977727ms)
+    ✔ Should reject score > 100 (103.960846ms)
+    ✔ Should accept score of 0 (77.067747ms)
+    ✔ Should accept score of 100 (65.416667ms)
+    ✔ Should reject feedback without auth (empty bytes) (73.245419ms)
+    ✔ Should calculate summary with average score (87.31015ms)
+    ✔ Should filter summary by tags (111.217738ms)
+    ✔ Should read all feedback with filters (84.590656ms)
+    ✔ Should store responses and count them (67.979626ms)
+    ✔ Should return list of clients who gave feedback (69.165204ms)
+    ✔ Should filter with empty string wildcard for tag1 in getSummary (73.244768ms)
+    ✔ Should filter with empty string wildcard for tag2 in getSummary (94.042912ms)
+    ✔ Should filter with empty string wildcard for both tags in getSummary (60.177648ms)
+    ✔ Should filter with empty string wildcard in readAllFeedback (69.578377ms)
+    ✔ Should count all responses for all feedbacks from all clients (87.052925ms)
+    ✔ Should count responses for specific client (97.79813ms)
+    ✔ Should count responses for specific feedback (127.901606ms)
+    ✔ Should filter response count by specific responders (84.758602ms)
+    ✔ Should return 0 for getLastIndex when client has no feedback (65.911326ms)
+    ✔ Should track getLastIndex correctly after multiple feedbacks (87.652311ms)
+    ✔ Should read specific feedback by index (80.968252ms)
+    ✔ Should reject reading feedback with out of bounds index (78.268738ms)
+    ✔ Should allow multiple responses from same responder to same feedback (120.122613ms)
+    ✔ Should allow responses to revoked feedback (86.614099ms)
+    ✔ Should return correct list of unique clients via getClients (107.788697ms)
+  ✔ ReputationRegistry (3008.474989ms)
+  ▶ ValidationRegistry
+    ✔ Should create validation request (75.470021ms)
+    ✔ Should submit validation response (66.665093ms)
+    ✔ Should reject duplicate validation requests (86.065644ms)
+    ✔ Should only allow validator to respond (49.761325ms)
+    ✔ Should reject response > 100 (113.51299ms)
+    ✔ Should get validation summary and track validations (101.413569ms)
+    ✔ Should only allow agent owner to request validation (75.26853ms)
+    ✔ Should allow multiple validation responses for same request (88.921916ms)
+    ✔ Should return the identity registry address (58.351056ms)
+    ✔ Should accept response of 0 (failed) (62.446042ms)
+    ✔ Should accept intermediate response values (92.99831ms)
+  ✔ ValidationRegistry (872.003514ms)
+✔ ERC8004 Registries (5033.785023ms)
+ℹ tests 61
+ℹ suites 4
+ℹ pass 61
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8723.981689

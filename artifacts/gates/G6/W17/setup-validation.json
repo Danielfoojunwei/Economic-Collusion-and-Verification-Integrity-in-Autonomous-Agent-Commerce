@@ -1,0 +1,23 @@
+{
+  "compiler_soljson_sha256": "fb59b825b7d57f9de89cd9de2415b12aab1fcc7eb2573fd2bf5c9b969eacf4d9",
+  "first_exit_code": 0,
+  "first_log_sha256": "7c8e0938ce6bc89314bc5e2f2cd110318fc15250cdaf76dbb2ef3b37d09e40c2",
+  "focused_tests_after_setup": {
+    "a2a": "1/1",
+    "acp_retail": "4/4",
+    "erc8004_upstream": "61/61"
+  },
+  "script_sha256": "6d9c16428aad3220f12a45d6fe489f1410e13b7e686d831c1144acdf408cc3e3",
+  "second_compilation": "Nothing to compile",
+  "second_exit_code": 0,
+  "second_log_sha256": "bcbbfa0aea39ac24eede533c11a167894c2a182ee4ae72c3e0eb4f159bd6de12",
+  "setup_flag": "SETUP_W17_PROTOCOLS=true",
+  "tracked_upstreams_clean": true,
+  "upstream_commits": {
+    "a2a": "7c861a597b93208de3c19357cc0d66b9f6250e9b",
+    "a2a-python": "a4c4fc91a22778f3d805e5e592bf690915a33033",
+    "acp-retail": "7fdd78df677a94dce04c770644b0fbbb1401272b",
+    "erc8004": "b9e466c250744a7e06b13dff9d3c2844ed64f825",
+    "ucp": "d9c18e0d27c7f6892e69243fbc13df0e3685864e"
+  }
+}

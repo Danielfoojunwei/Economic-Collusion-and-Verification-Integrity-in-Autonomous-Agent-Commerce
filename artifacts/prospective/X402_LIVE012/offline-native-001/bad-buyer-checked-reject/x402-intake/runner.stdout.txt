@@ -1,0 +1,1 @@
+{"status":"PASS","transaction":"0x452082b836b8cfd89681107547f1093acaa49fd14f3599891c5031e4a3c6f55d","buyerAfter":"2000000","sellerAfter":"2000000","assertionCount":12,"output":"/tmp/x402012-native-candidate-final/bad-buyer-checked-reject/x402-intake/raw-native-x402.json"}

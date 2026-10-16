@@ -1,0 +1,95 @@
+{
+  "full_block_fits_current_headroom": true,
+  "ledger": {
+    "available_usd": "36.98228",
+    "cap_usd": "50",
+    "contingent_run_count": 1,
+    "path": "/workspace/Economic-Collusion-and-Verification-Integrity-in-Autonomous-Agent-Commerce/artifacts/budget/openrouter-ledger.jsonl",
+    "reserved_usd": "6.30784",
+    "seq": 145,
+    "settled_spent_usd": "6.70988",
+    "unknown_run_count": 0
+  },
+  "not_live_ready_reasons": [
+    "ORBIT_LIVE_TASK_AND_ROLE_BOUNDARY_NOT_YET_IMPLEMENTED",
+    "FROZEN_ASSIGNMENT_AND_INDEPENDENT_COLLECTOR_NOT_YET_IMPLEMENTED",
+    "INDEPENDENT_GO_REVIEW_NOT_YET_RECORDED"
+  ],
+  "offline_controls": {
+    "model_tier": "SCRIPTED_SIMULATION",
+    "sha256": "7e97f947c62b74a68a9de670eff93c5a72d7a9280ec0b833d9ce77ae61b1c26b",
+    "status": "PASS",
+    "transaction_tier": "NATIVE_LOCAL_PROTOCOL"
+  },
+  "pricing": {
+    "catalog_model_sha256": {
+      "anthropic/claude-sonnet-5.5": "2e3f4d027fa7e0b86a95d918e2fd608b047698a1106f8165e7a62f0b87e8e8de",
+      "openai/gpt-5.6-sol": "71e95fa7cf157390232d6e13a44bf61ea6b9b6a7961ced6c8f37a684b51b499a"
+    },
+    "contingency_usd": "2",
+    "full_new_block_usd": "23.4958422",
+    "input_framing_tokens_per_call": 8192,
+    "max_output_tokens_per_call": 4096,
+    "max_serialized_input_bytes": 49152,
+    "model_block_usd": "21.495808",
+    "models": {
+      "auditor": "anthropic/claude-sonnet-5.5",
+      "provider": "openai/gpt-5.6-sol"
+    },
+    "per_row_usd": "5.373952",
+    "price_origin": "REFRESHED_PUBLIC_CATALOG_NO_BILLING_KEY",
+    "rows": 4,
+    "schedule_calls_per_row": {
+      "auditor": 7,
+      "provider": 5
+    },
+    "unassigned_export_residual_usd": "0.0000342"
+  },
+  "schema": "x402-retainer-read-only-preview-v1",
+  "source": {
+    "all_native_sources_ready": true,
+    "binaries": {
+      "anvil": true,
+      "forge": true,
+      "node": true,
+      "solc": true
+    },
+    "pinned_manifest_present": true,
+    "source_inventory_sha256": "c949bb0fef5c38dacda6bada9a5d9a7577216121a393416ae7b9288617bc2f1e",
+    "source_sha256": {
+      "AGENTS.md": "a84a0b84f5681fd174d7427d291af5b001c6ff36c67ecf54e01dd195deb5b064",
+      "UPSTREAM_PINNED.json": "c8881739f704c176ff87ce9d46e8d81c3d6e2d2b2c96c29cf9369f59589ab913",
+      "contracts/x402/TestEIP3009Token.sol": "4decd30c239f09aa0b3ee4df76ce1078020fdc30c9925d7d24f9cf3dfae55640",
+      "docs/PROSPECTIVE_X402_AUDIT_RETAINER_010.md": "728ef5302e03b16abcf6b75655accb0693368731bb919f88b089d72d6a239f5c",
+      "scripts/preview_x402_retainer.py": "051f0fe69a3da4459986e2a877ca9fa9a12a4eec136ca70889c0ccc633b9f8bc",
+      "scripts/run_erc8183_local.py": "0ea236b0c0fdc7c545736c34d92cc2318aa8cac8281feeb6652f218a3f83c5a7",
+      "scripts/run_x402_audit_retainer.mjs": "9279d4c4b148da7913d252690b3226d27825302dad6b2e852d40c1b7de3bd350",
+      "scripts/run_x402_retainer_offline.py": "e79bb59017e72ad1da4c9d67d0d8b77d0fede12f6e43422dd44d292433b33009",
+      "scripts/verify_x402_retainer_offline.py": "6fba5e6dd37b484a3570f1829193d6d3be3130faa071ebb0a8a0830ee4307ff9",
+      "src/agent_economic_trust/ap2_live_fixture.py": "988fdb4b3f71be5f520529b37d78cef35e82d3801def8b563274d3939bb550d8",
+      "src/agent_economic_trust/core.py": "57d7ab48ffd43d6fbfcf343fc1549a3191cfae49c0c8eaa5521436de38d8d6dd",
+      "src/agent_economic_trust/x402_audit_retainer.py": "146e0af6aa3f4277e139b0a5fc2db0a9e3844ec315906853bee9378715e0abec",
+      "src/agent_economic_trust/x402_audit_retainer_verifier.py": "564065534a662bc28efe79b6f78d65391cf1fc8d31d448876e662be39ef62125",
+      "src/agent_economic_trust/x402_retainer_job.py": "604767e02ec86597bc32f9467a78cc8c1db73a68cfeb8f57766d1daa0c2ac968",
+      "src/agent_economic_trust/x402_retainer_job_verifier.py": "e3ab210ea59b961079830aba39f73ee9a9cea4a46cb051b57f7504add0d9373e",
+      "tests/test_x402_retainer.py": "ee9e6d197d636a007df40d8b256bae98db066378f8775ddd85716e5d04941d44"
+    },
+    "upstreams": {
+      "erc8183": {
+        "clean": true,
+        "expected_commit": "142e669c1fd318486a4628395b629f033654dd06",
+        "observed_commit": "142e669c1fd318486a4628395b629f033654dd06",
+        "ready": true
+      },
+      "x402": {
+        "clean": true,
+        "expected_commit": "e95b06661e1a2a8a9a21fce34cc28b9934834650",
+        "observed_commit": "e95b06661e1a2a8a9a21fce34cc28b9934834650",
+        "ready": true
+      }
+    },
+    "x402_exact_sdk_built": true
+  },
+  "would_call_paid_model": false,
+  "would_freeze": false
+}

@@ -1,0 +1,195 @@
+{
+  "catalog": {
+    "conservative_pricing_snapshot": {
+      "cache_read_usd_per_token": "8E-7",
+      "cache_write_usd_per_token": "0.00001",
+      "catalog_model_sha256": "71e95fa7cf157390232d6e13a44bf61ea6b9b6a7961ced6c8f37a684b51b499a",
+      "context_length": 1050000,
+      "fetched_utc": "2026-10-15T05:46:36.981677Z",
+      "input_framing_tokens_per_call": 8192,
+      "input_usd_per_token": "0.00001",
+      "max_completion_tokens": 128000,
+      "model_id": "openai/gpt-5.6-sol",
+      "output_usd_per_token": "0.00003",
+      "pricing_tiers": 2,
+      "request_usd": "0",
+      "source_url": "https://openrouter.ai/api/v1/models"
+    },
+    "model_record": {
+      "architecture": {
+        "input_modalities": [
+          "file",
+          "image",
+          "text"
+        ],
+        "instruct_type": null,
+        "modality": "text+image+file->text",
+        "output_modalities": [
+          "text"
+        ],
+        "tokenizer": "GPT"
+      },
+      "benchmarks": {
+        "artificial_analysis": {
+          "agentic_index": 50.2,
+          "coding_index": 77.4,
+          "intelligence_index": 47
+        },
+        "design_arena": []
+      },
+      "canonical_slug": "openai/gpt-5.6-sol-20260709",
+      "context_length": 1050000,
+      "created": 1783590850,
+      "default_parameters": {
+        "frequency_penalty": null,
+        "presence_penalty": null,
+        "repetition_penalty": null,
+        "temperature": null,
+        "top_k": null,
+        "top_p": null
+      },
+      "description": "GPT-5.6 Sol is the flagship model in OpenAI's GPT-5.6 series. It is suited for complex reasoning, coding, and agentic workflows, and is particularly strong at command-line and multi-step coding tasks...",
+      "expiration_date": null,
+      "hugging_face_id": null,
+      "id": "openai/gpt-5.6-sol",
+      "knowledge_cutoff": "2026-02-16",
+      "links": {
+        "details": "/api/v1/models/openai/gpt-5.6-sol-20260709/endpoints"
+      },
+      "name": "OpenAI: GPT-5.6 Sol",
+      "per_request_limits": null,
+      "pricing": {
+        "completion": "0.00002",
+        "input_cache_read": "0.0000004",
+        "input_cache_write": "0.000005",
+        "overrides": [
+          {
+            "completion": "0.00003",
+            "input_cache_read": "0.0000008",
+            "input_cache_write": "0.00001",
+            "min_prompt_tokens": 272000,
+            "prompt": "0.000008"
+          }
+        ],
+        "prompt": "0.000004",
+        "web_search": "0.01"
+      },
+      "reasoning": {
+        "default_effort": "medium",
+        "default_enabled": true,
+        "mandatory": false,
+        "supported_efforts": [
+          "max",
+          "xhigh",
+          "high",
+          "medium",
+          "low",
+          "none"
+        ]
+      },
+      "supported_parameters": [
+        "include_reasoning",
+        "max_completion_tokens",
+        "max_tokens",
+        "reasoning",
+        "reasoning_effort",
+        "response_format",
+        "seed",
+        "structured_outputs",
+        "tool_choice",
+        "tools",
+        "verbosity"
+      ],
+      "supported_voices": null,
+      "top_provider": {
+        "context_length": 1050000,
+        "is_moderated": true,
+        "max_completion_tokens": 128000
+      }
+    },
+    "model_record_sha256": "71e95fa7cf157390232d6e13a44bf61ea6b9b6a7961ced6c8f37a684b51b499a"
+  },
+  "cost": {
+    "account_delta_note": "Observed account endpoint delta at probe time; zero does not establish free usage or supersede the conservative estimate.",
+    "account_usage_delta_usd": "0",
+    "basis": "conservative catalog rates times native Inspect usage; not a provider invoice",
+    "estimated_usd": "0.046460"
+  },
+  "created_utc": "2026-10-15T05:46:36.978095Z",
+  "native_usage": {
+    "event_usage": [
+      {
+        "input_tokens": 432,
+        "input_tokens_cache_read": 0,
+        "input_tokens_cache_write": 0,
+        "output_tokens": 80,
+        "reasoning_tokens": 24,
+        "total_cost": null,
+        "total_tokens": 512
+      },
+      {
+        "input_tokens": 527,
+        "input_tokens_cache_read": 0,
+        "input_tokens_cache_write": 0,
+        "output_tokens": 88,
+        "reasoning_tokens": 18,
+        "total_cost": null,
+        "total_tokens": 615
+      },
+      {
+        "input_tokens": 689,
+        "input_tokens_cache_read": 0,
+        "input_tokens_cache_write": 0,
+        "output_tokens": 96,
+        "reasoning_tokens": 18,
+        "total_cost": null,
+        "total_tokens": 785
+      },
+      {
+        "input_tokens": 846,
+        "input_tokens_cache_read": 0,
+        "input_tokens_cache_write": 0,
+        "output_tokens": 85,
+        "reasoning_tokens": 13,
+        "total_cost": null,
+        "total_tokens": 931
+      },
+      {
+        "input_tokens": 3,
+        "input_tokens_cache_read": 0,
+        "input_tokens_cache_write": 1036,
+        "output_tokens": 22,
+        "reasoning_tokens": 0,
+        "total_cost": null,
+        "total_tokens": 1061
+      }
+    ],
+    "model": "openrouter/openai/gpt-5.6-sol",
+    "provider_calls": 5,
+    "sample_usage": {
+      "input_tokens": 2497,
+      "input_tokens_cache_read": 0,
+      "input_tokens_cache_write": 1036,
+      "output_tokens": 371,
+      "reasoning_tokens": 73,
+      "total_cost": null,
+      "total_tokens": 3904
+    },
+    "source": "inspect.eval:sample[reconcile-002].model_usage[openrouter/openai/gpt-5.6-sol]"
+  },
+  "original_manifest_claims": {
+    "account_usage_delta_usd": "0",
+    "budget_ledger_last_hash": "3eab6c0ccbd7e2c8cd0113235b0ff3bc633e0c7e35e9aaad96cfa5e3877eb3fc",
+    "estimated_model_cost_usd": "0.046460",
+    "provider_calls": 5,
+    "worst_case_reserved_usd": "2.662400"
+  },
+  "original_run_id": "w05-real-run-001-reconcile-002",
+  "purpose": "Restore numeric usage and pinned public pricing redacted from the immutable W05 manifest.",
+  "record_sha256": "f5b2516b411b15a2cca22305e0516c46d9f1da990045a0d3d17652aae4c38527",
+  "schema_version": "w05-usage-pricing-supplement-v1",
+  "source_hashes": {
+    "inspect.eval": "05a74a8dcbf4be2d4f913c3e88069c39f15bc9f43ad196addb62850a93e83d95",
+    "run_manifest.json": "027aa1ea521d7b0381d77b01a43f5cf6e2ca07580699944c4b5b0165159db0be"
+  }
+}

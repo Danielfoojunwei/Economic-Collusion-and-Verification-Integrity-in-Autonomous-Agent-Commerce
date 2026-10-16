@@ -1,0 +1,38 @@
+{
+  "additional_reserved_buffer_usd": "3.379164",
+  "buffer_run_id": "fee011-c36239cdcfd4-fee010-b0125916b5cd2e63f69109b5-failed-request-hold",
+  "combined_maximum_exposure_usd": "3.44064",
+  "evidence_paths": {
+    "STOPPED.json": "artifacts/gates/ERC8183_FEE011/runs-001/episodes/fee010-b0125916b5cd2e63f69109b5/STOPPED.json",
+    "collection": "artifacts/gates/ERC8183_FEE011/collection-001-after-first-stop.json",
+    "erc8183/native-evidence.json": "artifacts/gates/ERC8183_FEE011/runs-001/episodes/fee010-b0125916b5cd2e63f69109b5/erc8183/native-evidence.json",
+    "forensic_note": "docs/FEE011_FIRST_STOP_FORENSICS.md",
+    "inspect.eval": "artifacts/gates/ERC8183_FEE011/runs-001/episodes/fee010-b0125916b5cd2e63f69109b5/inspect.eval"
+  },
+  "evidence_sha256": {
+    "STOPPED.json": "a958aaf91828070f5f7da74a9e9baf73eea1fdbe6e0b27c023c5b6820760195e",
+    "collection": "469ed70b289a7e142c8ffd01528abd69866147ce0c48f0b30dbf819f8d406309",
+    "erc8183/native-evidence.json": "e356343b0a0de49ac43e662fdcb2f7a793dc472d9b196e03b78f25410a055995",
+    "forensic_note": "2abd9d654bb54e8d7534f78c6ce0537770d18580299d06c3cf147e457de2f703",
+    "inspect.eval": "077db13657279d45bd80be52279362118240441dd8834d3b3bd5c00ce18d8f27"
+  },
+  "failed_event_http_status": 400,
+  "failed_event_provider": "anthropic/claude-sonnet-5.5",
+  "failed_model_events": 1,
+  "final_failed_request_charge_usd": null,
+  "ledger_prestate": {
+    "available_usd": "36.650076",
+    "last_hash": "cd9dfb2a63ab4c86fc94fbe5f6133a7f115b038013b697b9d2a9ead970c39e60",
+    "seq": 151
+  },
+  "original_ledger_run_id": "fee011-c36239cdcfd4-fee010-b0125916b5cd2e63f69109b5",
+  "original_row_reserve_usd": "3.44064",
+  "payment_tier": "REAL_LLM_REMOTE_APPROVED; native local protocol units valueless",
+  "per_call_billing_available": false,
+  "reason": "HTTP400_FINAL_PROVIDER_CHARGE_UNATTRIBUTED",
+  "release_condition": "attributable provider billing export independently reviewed; reserve remains otherwise",
+  "sample_model_events": 8,
+  "schema": "fee011-failed-request-billing-buffer-v1",
+  "settled_usage_estimate_usd": "0.061476",
+  "successful_model_events": 7
+}

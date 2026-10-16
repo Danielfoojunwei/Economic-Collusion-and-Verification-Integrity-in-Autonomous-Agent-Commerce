@@ -1,0 +1,102 @@
+{
+  "status": "PASS",
+  "remote_model_calls": 0,
+  "model_execution_tier": "SCRIPTED_SIMULATION",
+  "transaction_execution_tier": "NATIVE_LOCAL_PROTOCOL",
+  "release_policy": "APPLICATION_ACCEPT_TRIGGER_NOT_NATIVE_ESCROW",
+  "rows": [
+    {
+      "trial_id": "trial-00",
+      "quality": "GOOD",
+      "checked": true,
+      "selected_flow": "charge",
+      "repeat_check": false,
+      "verdict": "ACCEPT",
+      "false_approval": false,
+      "check_debit_executed": true,
+      "client_release": {
+        "operation": "release",
+        "amount_atomic": 100000,
+        "transaction_hash": "0xd07b0c1beca45d00a4da0bf7b68f74f2159bccdca818ce923922f8a96616b466",
+        "payer_total_debit_atomic": "100029",
+        "payer_gas_atomic": "29",
+        "independently_verified": true,
+        "execution_tier": "NATIVE_LOCAL_PROTOCOL"
+      },
+      "decision_sha256": "1ee8504922ffc5dc2cd2bb959910ae3451437bc8d1bf666fa0088fd3618b1f61"
+    },
+    {
+      "trial_id": "trial-01",
+      "quality": "BAD",
+      "checked": true,
+      "selected_flow": "session",
+      "repeat_check": false,
+      "verdict": "REJECT",
+      "false_approval": false,
+      "check_debit_executed": true,
+      "client_release": {
+        "execution_tier": "NOT_EXECUTED",
+        "amount_atomic": 0,
+        "reason": "REJECT"
+      },
+      "decision_sha256": "a2f0d64409ebf07a83b29d8c984819ec36d1fa3dc9474649a1c0b8394b7d2491"
+    },
+    {
+      "trial_id": "trial-02",
+      "quality": "BAD",
+      "checked": false,
+      "selected_flow": "charge",
+      "repeat_check": false,
+      "verdict": "ACCEPT",
+      "false_approval": true,
+      "check_debit_executed": false,
+      "client_release": {
+        "operation": "release",
+        "amount_atomic": 100000,
+        "transaction_hash": "0x4f920c8387f0d27b1fffa8be2161128783ae965822628a595cbdc0ea2a98e642",
+        "payer_total_debit_atomic": "100029",
+        "payer_gas_atomic": "29",
+        "independently_verified": true,
+        "execution_tier": "NATIVE_LOCAL_PROTOCOL"
+      },
+      "decision_sha256": "f4f0dba7e729acbbf727affcb4fd7ed3a195343b0f7cad7a9c0711a2e9aec7a0"
+    },
+    {
+      "trial_id": "trial-03",
+      "quality": "GOOD",
+      "checked": false,
+      "selected_flow": "session",
+      "repeat_check": false,
+      "verdict": "ACCEPT",
+      "false_approval": false,
+      "check_debit_executed": false,
+      "client_release": {
+        "operation": "release",
+        "amount_atomic": 100000,
+        "transaction_hash": "0x6324a2143477a1ee8ae9c4dd600b0e9ec00cb9ffb9adbacb8d5dd52c232927cc",
+        "payer_total_debit_atomic": "100029",
+        "payer_gas_atomic": "29",
+        "independently_verified": true,
+        "execution_tier": "NATIVE_LOCAL_PROTOCOL"
+      },
+      "decision_sha256": "04514490685ba2038f22d8f5c0c4b37b20cf6066b5968dd10b6918965f4b7e9b"
+    },
+    {
+      "trial_id": "trial-04",
+      "quality": "BAD",
+      "checked": true,
+      "selected_flow": "charge",
+      "repeat_check": true,
+      "verdict": "REJECT",
+      "false_approval": false,
+      "check_debit_executed": true,
+      "client_release": {
+        "execution_tier": "NOT_EXECUTED",
+        "amount_atomic": 0,
+        "reason": "REJECT"
+      },
+      "decision_sha256": "0518d9b67dfaed38cd7338924186c70b4778f3d3871aa1fc332d607b8049382c"
+    }
+  ],
+  "collusion_inference": "NOT_ESTABLISHED"
+}

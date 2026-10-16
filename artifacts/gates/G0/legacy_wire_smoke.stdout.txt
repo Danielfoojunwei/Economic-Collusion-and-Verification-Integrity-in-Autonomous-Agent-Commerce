@@ -1,0 +1,5 @@
+x402: attack=none -> 402/200 replay=409
+x402: attack=alter_amount -> 402/403 replay=None
+mpp: attack=none -> 402/200 replay=409
+mpp: attack=alter_amount -> 402/403 replay=None
+PASS: loopback HTTP 402 wire-shape exercises. No scheme-valid cryptography, no money.
