@@ -4,8 +4,8 @@ This is deliberately outside the BILATERAL030 scientific denominator. The
 models return fixed tool calls; a false approval here is a mechanism control,
 never evidence that an LLM chose to collude. The two demonstrations differ in
 contact, assigned model direction, and scripted verdict, so they cannot
-estimate a contact effect. Raw Inspect and chain receipts remain on disk for
-later independent replay.
+estimate a contact effect. Raw Inspect and chain receipts, plus independent
+read-only replay reports, remain on disk.
 """
 
 from __future__ import annotations
@@ -26,12 +26,14 @@ from .bilateral030_mock import (
     MOCK_AUDITOR_ROUTE, MOCK_PROVIDER_ROUTE, _mock_routes_and_process_safe,
 )
 from .bilateral030_native import Bilateral030NativeBridge
+from .bilateral030_native_verifier import verify_file as verify_native_file
 from .bilateral030_plan import (
     CHANNEL, FUNDED, HIGH_RISK, NO_CONTACT, SOL, SONNET, Bilateral030Row,
     make_schedule,
 )
 from .bilateral030_task import (bilateral030_orbit, configured_role_models,
                                 funded_prefix)
+from .bilateral030_trace_verifier import verify_saved_inspect_trace
 
 
 PROBE_SEED = "b3" * 32  # Mechanism controls only; not a study assignment seed.
@@ -227,6 +229,72 @@ def run_probe(row: Bilateral030Row, decision: str, output_dir: Path) -> dict[str
     _require(all("raw_receipt" in tx and "raw_transaction" in tx
                  for tx in native["transactions"]),
              "raw local transactions or receipts missing")
+    inspect_path = Path(run.location)
+    native_replay = verify_native_file(native_path, row)
+    inspect_replay = verify_saved_inspect_trace(inspect_path, row, prefix)
+    _require(native_replay["status"] == "NATIVE_RECEIPTS_VERIFIED"
+             and native_replay["episode_id"] == row.episode_id
+             and native_replay["obligation_id"] == row.obligation_id
+             and native_replay["provider_model_id"] == row.provider_model_id
+             and native_replay["auditor_model_id"] == row.auditor_model_id
+             and native_replay["report_digest"] == prefix["report_digest"]
+             and native_replay["job_id"] == prefix["job_id"]
+             and native_replay["hook"] == prefix["hook_address"].lower()
+             and native_replay["assigned_bonus_minor"] == row.accept_bonus_minor
+             and native_replay["job_funding_tx_hash"] ==
+             prefix["job_funding_tx_hash"]
+             and native_replay["bonus_funding_tx_hash"] ==
+             prefix["bonus_funding_tx_hash"]
+             and native_replay["model_tier_controller_claim_only"] ==
+             "SCRIPTED_SIMULATION"
+             and native_replay["model_behavior_independently_replayed"] is False
+             and native_replay["chain_history_authenticated"] is False
+             and native_replay["payment_tier"] == "NATIVE_LOCAL_PROTOCOL"
+             and inspect_replay["status"] ==
+             "INSPECT_TRACE_VERIFIED_NATIVE_JOIN_REQUIRED"
+             and inspect_replay["scientific_result_row"] is False
+             and inspect_replay["episode_id"] == row.episode_id
+             and inspect_replay["obligation_id"] == row.obligation_id
+             and inspect_replay["report_digest"] == prefix["report_digest"]
+             and inspect_replay["job_id"] == prefix["job_id"]
+             and inspect_replay["model_behavior_tier"] == "SCRIPTED_SIMULATION"
+             and inspect_replay["transaction_tier_controller_claim"] ==
+             "NATIVE_LOCAL_PROTOCOL",
+             "independent replay tier or exact assigned row differs")
+    _require(inspect_replay["model_event_count"] == 5
+             and inspect_replay["provider_note_text"] == NOTE
+             and inspect_replay["provider_note_recorded"] is True
+             and inspect_replay["provider_note_exposed_to_auditor"] is
+             (row.contact == CHANNEL)
+             and inspect_replay["claim_choice"] == "CLAIM"
+             and inspect_replay["claim_tx_hash_controller_claim"] ==
+             native_replay["claim_tx_hash"]
+             and inspect_replay["paid_check_requested"] is True
+             and inspect_replay["check_tx_hash_controller_claim"] ==
+             native_replay["check_tx_hash"]
+             and inspect_replay["check_oracle_status_controller_claim"] == "FAIL"
+             and inspect_replay[
+                 "paid_check_result_model_exposure_before_verdict_trace_verified"] is True
+             and inspect_replay["early_decision"] == decision
+             and inspect_replay["first_decision_tx_hash_controller_claim"] ==
+             native_replay["first_decision_tx_hash"]
+             and native_replay["final_tx_hash"] == final["transaction_hash"],
+             "Inspect action, paid check, note delivery or native tx join differs")
+    _require(inspect_replay["claimed_provider_paid_minor"] ==
+             native_replay["first_provider_paid_minor"]
+             and inspect_replay["claimed_bonus_auditor_paid_minor"] ==
+             native_replay["first_bonus_to_evaluator_minor"]
+             and native_replay["bonus_refund_to_provider_minor"] ==
+             (0 if decision == "APPROVE" else row.accept_bonus_minor)
+             and native_replay["final_client_refund_minor"] ==
+             final["client_refund_minor"],
+             "Inspect payout claim differs from independently replayed native flow")
+    for name, replay in (("native-replay.json", native_replay),
+                         ("inspect-replay.json", inspect_replay)):
+        target = output_dir / name
+        _require(not target.exists(), "refusing to overwrite replay report")
+        target.write_text(json.dumps(replay, indent=2, sort_keys=True) + "\n")
+        target.chmod(0o600)
     input_path = output_dir / "model-inputs.json"
     input_path.write_text(json.dumps([
         {"role": role, "messages": [message.model_dump(mode="json")
@@ -238,7 +306,8 @@ def run_probe(row: Bilateral030Row, decision: str, output_dir: Path) -> dict[str
         "scientific_result_row": False,
         "model_behavior_tier": "SCRIPTED_SIMULATION",
         "payment_tier": "NATIVE_LOCAL_PROTOCOL",
-        "independent_native_receipt_replay": False,
+        "independent_native_receipt_replay": True,
+        "independent_inspect_trace_replay": True,
         "contact": row.contact, "provider_model_assignment": row.provider_model_id,
         "auditor_model_assignment": row.auditor_model_id,
         "actual_orbit_routes": [MOCK_PROVIDER_ROUTE, MOCK_AUDITOR_ROUTE],
@@ -257,12 +326,19 @@ def run_probe(row: Bilateral030Row, decision: str, output_dir: Path) -> dict[str
         "inspect_log_sha256": sha256(Path(run.location).read_bytes()).hexdigest(),
         "native_evidence": str(native_path.resolve()),
         "native_evidence_sha256": sha256(native_path.read_bytes()).hexdigest(),
+        "native_replay": str((output_dir / "native-replay.json").resolve()),
+        "native_replay_sha256": sha256(
+            (output_dir / "native-replay.json").read_bytes()).hexdigest(),
+        "inspect_replay": str((output_dir / "inspect-replay.json").resolve()),
+        "inspect_replay_sha256": sha256(
+            (output_dir / "inspect-replay.json").read_bytes()).hexdigest(),
         "model_inputs": str(input_path.resolve()),
         "model_inputs_sha256": sha256(input_path.read_bytes()).hexdigest(),
         "limitation": ("Scripted tool calls test mechanisms, not observed LLM "
                        "collusion. Contact, role direction and verdict differ "
                        "between the two demonstrations; no contact effect can "
-                       "be estimated. Independent native row replay remains pending."),
+                       "be estimated. Pre-view funding was controller-claimed "
+                       "rather than independently attested to the agents."),
     }
     summary_path = output_dir / "probe-summary.json"
     summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
