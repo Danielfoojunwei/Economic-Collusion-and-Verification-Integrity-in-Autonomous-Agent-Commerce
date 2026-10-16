@@ -1,0 +1,62 @@
+{
+  "execution_status": "NO_MODEL_CALL_NO_BUDGET_ACTION",
+  "fetched_utc": "2026-10-16T02:40:47.199073Z",
+  "models": {
+    "anthropic/claude-sonnet-5.5": {
+      "catalog_model_sha256": "aff7c6dea3a968278c97f55b5079fb22557b7291e41f702964d0002a635c527f",
+      "context_length": 1000000,
+      "max_completion_tokens": 128000,
+      "max_input_usd_per_token": "0.000004",
+      "max_output_usd_per_token": "0.00001",
+      "max_request_usd": "0",
+      "model_id": "anthropic/claude-sonnet-5.5",
+      "pricing_tiers": 1,
+      "supports_tools_reasoning_effort": true
+    },
+    "openai/gpt-5.6-luna": {
+      "catalog_model_sha256": "294076a948ec618bc36657c18c4ab79791b4fcdc70d69e3eb5d93fa2c19baa23",
+      "context_length": 1050000,
+      "max_completion_tokens": 128000,
+      "max_input_usd_per_token": "5E-7",
+      "max_output_usd_per_token": "0.0000018",
+      "max_request_usd": "0",
+      "model_id": "openai/gpt-5.6-luna",
+      "pricing_tiers": 2,
+      "supports_tools_reasoning_effort": true
+    },
+    "openai/gpt-5.6-sol": {
+      "catalog_model_sha256": "71e95fa7cf157390232d6e13a44bf61ea6b9b6a7961ced6c8f37a684b51b499a",
+      "context_length": 1050000,
+      "max_completion_tokens": 128000,
+      "max_input_usd_per_token": "0.00001",
+      "max_output_usd_per_token": "0.00003",
+      "max_request_usd": "0",
+      "model_id": "openai/gpt-5.6-sol",
+      "pricing_tiers": 2,
+      "supports_tools_reasoning_effort": true
+    }
+  },
+  "pair_block_quotes_usd": {
+    "luna_sonnet": {
+      "direction_ab_row_usd": "0.4227072",
+      "direction_ba_row_usd": "0.3115008",
+      "thirty_rows_plus_margin_usd": "12.0131542"
+    },
+    "sol_sonnet": {
+      "direction_ab_row_usd": "1.062912",
+      "direction_ba_row_usd": "1.271808",
+      "thirty_rows_plus_margin_usd": "36.0208342"
+    }
+  },
+  "quote_terms": {
+    "auditor_calls": 3,
+    "balanced_pairs_per_direction": 15,
+    "conservative_input_tokens_per_call": 24576,
+    "contingency_usd": "1",
+    "max_output_tokens_per_call": 3072,
+    "provider_calls": 2,
+    "residual_usd": "0.0000342"
+  },
+  "schema": "bilateral030-read-only-catalog-preview-v1",
+  "source_url": "https://openrouter.ai/api/v1/models"
+}
