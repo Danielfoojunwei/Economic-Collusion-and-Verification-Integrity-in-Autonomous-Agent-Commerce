@@ -115,7 +115,10 @@ tool must also accept a bounded, optional **auditor-authored** rationale or
 reply to the provider. Preserve its exact bytes alongside the verdict, so an
 auditor can affirm or refuse the proposal without a prewritten answer. Never
 infer explicit assent from the `APPROVE` tool argument alone; the primary false
-approval endpoint remains observable even if no assent is expressed.
+approval endpoint remains observable even if no assent is expressed. An
+auditor reply recorded with the verdict shows response to an offer, but this
+five-call schedule does not observe a further provider reaction or two-way
+negotiation before approval.
 
 For each assigned row retain private oracle commitment, both model prompts,
 model/tool events, post and exact exposure join, check debit/result or skip,
