@@ -211,20 +211,49 @@ def _public_proof(row: Bilateral030Row, prefix: Mapping[str, Any],
 
 
 def confirm_public_funding(row: Bilateral030Row, prefix: Mapping[str, Any],
-                           archive_path: Path) -> dict[str, Any]:
+                           archive_path: Path,
+                           *, expected_hook: str | None = None) -> dict[str, Any]:
     """Independently confirm the still-funded localhost job before P1.
 
     This calls the verifier directly. Callers cannot inject a claimed status or
     substitute an archive-only replay for the read-only live confirmation.
     """
-    from .bilateral030_funding_verifier import verify_funding_file
+    from . import bilateral030_funding_verifier as funding_verifier
 
     public = funded_prefix(row, prefix)
     if archive_path is None:
         raise ValueError("native task requires pre-view funding archive")
-    verified = verify_funding_file(Path(archive_path),
-                                   public_funding_assignment(row),
-                                   confirm_live=True)
+    archive_path = Path(archive_path)
+    verified = funding_verifier.verify_funding_file(
+        archive_path, public_funding_assignment(row), confirm_live=True)
+    try:
+        if archive_path.is_symlink():
+            raise ValueError("funding archive cannot be a symlink")
+        archive_bytes = archive_path.read_bytes()
+        archive = json.loads(archive_bytes)
+        job_fund = [tx for tx in archive["transactions"]
+                    if tx["step"] == "job.fund"]
+        bonus_fund = [tx for tx in archive["transactions"]
+                      if tx["step"] == "bonus.fund"]
+        if len(job_fund) != 1 or len(bonus_fund) != int(bool(row.accept_bonus_minor)):
+            raise ValueError("funding archive transaction count differs")
+        archive_sha = sha256(archive_bytes).hexdigest()
+        source_sha = sha256(Path(funding_verifier.__file__).read_bytes()).hexdigest()
+        job_receipt_sha = sha256(canonical(job_fund[0]["raw_receipt"])).hexdigest()
+        bonus_receipt_sha = (sha256(canonical(bonus_fund[0]["raw_receipt"])).hexdigest()
+                             if bonus_fund else None)
+    except (OSError, json.JSONDecodeError, KeyError, TypeError,
+            AttributeError) as exc:
+        raise ValueError("funding archive bytes cannot be bound") from exc
+    if (not isinstance(archive, dict)
+            or archive.get("public_assignment") != public_funding_assignment(row)
+            or archive.get("public_prefix") != public
+            or archive.get("public_prefix_sha256") !=
+            sha256(canonical(public)).hexdigest()
+            or not isinstance(archive.get("hook"), str)
+            or archive.get("hook", "").lower() !=
+            (expected_hook or archive.get("hook", "")).lower()):
+        raise ValueError("funding archive row, prefix or native hook differs")
     required = {"status", "episode_id", "obligation_id", "provider_model_id",
                 "auditor_model_id", "bonus_minor", "job_id", "hook",
                 "report_digest", "public_prefix_sha256",
@@ -252,6 +281,11 @@ def confirm_public_funding(row: Bilateral030Row, prefix: Mapping[str, Any],
             or verified["bonus_funding_tx_hash"] != public["bonus_funding_tx_hash"]
             or verified["bonus_funding_receipt_sha256"] !=
             public["bonus_funding_receipt_sha256"]
+            or verified["bonus_funding_receipt_sha256"] != bonus_receipt_sha
+            or verified["job_funding_receipt_sha256"] != job_receipt_sha
+            or verified["archive_sha256"] != archive_sha
+            or verified["verifier_source_sha256"] != source_sha
+            or verified["hook"].lower() != archive["hook"].lower()
             or verified["archive_transactions_replayed"] !=
             (19 if row.accept_bonus_minor else 17)
             or verified["live_chain_checked"] is not True
@@ -634,7 +668,8 @@ def bilateral030_orbit(row: Bilateral030Row, *,
             raise ValueError("local native tier requires this row's funded bridge")
         if funding_archive_path is None:
             raise ValueError("native task requires live-confirmed funding archive")
-        proof = confirm_public_funding(row, prefix, funding_archive_path)
+        proof = confirm_public_funding(row, prefix, funding_archive_path,
+                                       expected_hook=bridge.hook)
     elif transaction_tier != "SCRIPTED_SIMULATION":
         raise ValueError("unknown transaction tier")
     elif isinstance(bridge, Bilateral030NativeBridge):

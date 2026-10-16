@@ -7,10 +7,12 @@ from hashlib import sha256
 import json
 import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
 from agent_economic_trust.bilateral030_native import Bilateral030NativeBridge
+from agent_economic_trust import bilateral030_funding_verifier
 from agent_economic_trust.bilateral030_plan import (
     BONUS_MINOR, CHANNEL, HIGH_RISK, NO_ACCEPT_BONUS, NO_CONTACT,
     SOL, SONNET, canonical, make_schedule,
@@ -44,11 +46,18 @@ def _prefix(row):
             "bonus_trigger": "EARLY_APPROVE" if bonus else "NONE",
             "bonus_funded": bonus,
             "bonus_funding_tx_hash": BONUS_TX if bonus else None,
-            "bonus_funding_receipt_sha256": "44" * 32 if bonus else None,
+            "bonus_funding_receipt_sha256": (
+                sha256(canonical({"kind": "bonus", "id": 1})).hexdigest()
+                if bonus else None),
             "hook_address": HOOK if bonus else None}
 
 
-def _verified(row, prefix):
+def _verified(row, prefix, archive_path):
+    raw = archive_path.read_bytes()
+    archive = json.loads(raw)
+    job = next(tx for tx in archive["transactions"] if tx["step"] == "job.fund")
+    bonus = next((tx for tx in archive["transactions"]
+                  if tx["step"] == "bonus.fund"), None)
     return {"status": "FUNDING_LIVE_CONFIRMED",
             "episode_id": row.episode_id,
             "obligation_id": row.obligation_id,
@@ -59,31 +68,51 @@ def _verified(row, prefix):
             "report_digest": prefix["report_digest"],
             "public_prefix_sha256": sha256(canonical(prefix)).hexdigest(),
             "job_funding_tx_hash": prefix["job_funding_tx_hash"],
-            "job_funding_receipt_sha256": "aa" * 32,
+            "job_funding_receipt_sha256": sha256(canonical(job["raw_receipt"])).hexdigest(),
             "bonus_funding_tx_hash": prefix["bonus_funding_tx_hash"],
-            "bonus_funding_receipt_sha256": prefix["bonus_funding_receipt_sha256"],
+            "bonus_funding_receipt_sha256": (
+                sha256(canonical(bonus["raw_receipt"])).hexdigest() if bonus else None),
             "archive_transactions_replayed": 19 if row.accept_bonus_minor else 17,
             "live_chain_checked": True,
             "read_only_rpc_source": "loopback",
             "model_view_independently_verified": False,
-            "archive_sha256": "bb" * 32,
-            "verifier_source_sha256": "cc" * 32}
+            "archive_sha256": sha256(raw).hexdigest(),
+            "verifier_source_sha256": sha256(Path(
+                bilateral030_funding_verifier.__file__).read_bytes()).hexdigest()}
 
 
 class Bilateral030FundingTaskTests(unittest.TestCase):
+    def setUp(self):
+        temp = TemporaryDirectory(prefix="bilateral030-proof-source-", dir="/tmp")
+        self.addCleanup(temp.cleanup)
+        self.temp = Path(temp.name)
+
+    def _archive(self, row, prefix):
+        path = self.temp / (row.episode_id + ".json")
+        transactions = [{"step": "job.fund", "raw_receipt": {"kind": "job", "id": 1}}]
+        if row.accept_bonus_minor:
+            transactions.append({"step": "bonus.fund",
+                                 "raw_receipt": {"kind": "bonus", "id": 1}})
+        path.write_text(json.dumps({
+            "public_assignment": public_funding_assignment(row),
+            "public_prefix": prefix,
+            "public_prefix_sha256": sha256(canonical(prefix)).hexdigest(),
+            "hook": HOOK, "transactions": transactions}, sort_keys=True) + "\n")
+        return path
+
     def test_direct_live_verifier_and_shared_public_proof(self):
         for group, provider_model in ((HIGH_RISK, SOL), (NO_CONTACT, SONNET),
                                       (NO_ACCEPT_BONUS, SOL)):
             with self.subTest(group=group, provider=provider_model):
                 row = _row(group, provider_model)
                 prefix = _prefix(row)
-                result = _verified(row, prefix)
+                archive = self._archive(row, prefix)
+                result = _verified(row, prefix, archive)
                 with patch("agent_economic_trust.bilateral030_funding_verifier.verify_funding_file",
                            return_value=result) as verify:
-                    proof = confirm_public_funding(row, prefix,
-                                                   Path("/tmp/source-only-funding.json"))
+                    proof = confirm_public_funding(row, prefix, archive)
                 verify.assert_called_once_with(
-                    Path("/tmp/source-only-funding.json"),
+                    archive,
                     public_funding_assignment(row), confirm_live=True)
                 self.assertEqual(proof["status"], "FUNDING_LIVE_CONFIRMED")
                 self.assertEqual(proof["public_prefix_sha256"],
@@ -105,6 +134,7 @@ class Bilateral030FundingTaskTests(unittest.TestCase):
         row = _row(HIGH_RISK, SOL)
         prefix = _prefix(row)
         bridge = object.__new__(Bilateral030NativeBridge)
+        bridge.hook = HOOK
         with patch.object(Bilateral030NativeBridge, "public_prefix", return_value=prefix), \
              patch.dict(os.environ, {"OPENROUTER_API_KEY": "",
                                   "ALLOW_EXTERNAL_MODEL_CALLS": "false"}):
@@ -118,7 +148,8 @@ class Bilateral030FundingTaskTests(unittest.TestCase):
     def test_archive_only_fake_or_changed_funding_proof_fails_closed(self):
         row = _row(HIGH_RISK, SOL)
         prefix = _prefix(row)
-        good = _verified(row, prefix)
+        archive = self._archive(row, prefix)
+        good = _verified(row, prefix, archive)
         changes = [
             ("status", "FUNDING_ARCHIVE_REPLAYED"),
             ("status", "FUNDING_LIVE_TEST_REPLAY"),
@@ -132,8 +163,11 @@ class Bilateral030FundingTaskTests(unittest.TestCase):
             ("bonus_funding_receipt_sha256", "dd" * 32),
             ("job_funding_tx_hash", BONUS_TX),
             ("job_funding_receipt_sha256", "invalid"),
+            ("job_funding_receipt_sha256", "dd" * 32),
             ("public_prefix_sha256", "ee" * 32),
             ("archive_sha256", "invalid"),
+            ("archive_sha256", "dd" * 32),
+            ("verifier_source_sha256", "dd" * 32),
             ("episode_id", "bilateral030-" + "0" * 24),
         ]
         for key, value in changes:
@@ -144,16 +178,17 @@ class Bilateral030FundingTaskTests(unittest.TestCase):
                            return_value=bad):
                     with self.assertRaises(ValueError):
                         confirm_public_funding(row, prefix,
-                                               Path("/tmp/source-only-funding.json"))
+                                               archive)
 
     def test_native_task_binds_attestation_to_both_role_frames(self):
         row = _row(NO_CONTACT, SONNET)
         prefix = _prefix(row)
         bridge = object.__new__(Bilateral030NativeBridge)
-        archive = Path("/tmp/source-only-funding.json")
+        bridge.hook = HOOK
+        archive = self._archive(row, prefix)
         with patch.object(Bilateral030NativeBridge, "public_prefix", return_value=prefix), \
              patch("agent_economic_trust.bilateral030_funding_verifier.verify_funding_file",
-                   return_value=_verified(row, prefix)) as verify, \
+                   return_value=_verified(row, prefix, archive)) as verify, \
              patch.dict(os.environ, {"OPENROUTER_API_KEY": "",
                                   "ALLOW_EXTERNAL_MODEL_CALLS": "false"}):
             task = bilateral030_orbit(row, public_funding=prefix, bridge=bridge,
@@ -171,7 +206,7 @@ class Bilateral030FundingTaskTests(unittest.TestCase):
         self.assertEqual(marker["funding_attestation_sha256"],
                          sha256(json.dumps(proof, sort_keys=True,
                                            separators=(",", ":")).encode()).hexdigest())
-        self.assertEqual(proof["archive_sha256"], "bb" * 32)
+        self.assertEqual(proof["archive_sha256"], sha256(archive.read_bytes()).hexdigest())
         agents = sample.metadata["experiment"]["setup"]["agents"]
         self.assertEqual([agent["model"] for agent in agents],
                          ["mockllm/bilateral030-provider-transport",
@@ -182,6 +217,30 @@ class Bilateral030FundingTaskTests(unittest.TestCase):
         self.assertNotIn('"contact"', sample.input)
         self.assertNotIn("NO_CONTACT", sample.input)
         self.assertEqual(json.loads(sample.input)["funding_attestation"], proof)
+
+    def test_no_bonus_native_hook_mismatch_fails_closed(self):
+        row = _row(NO_ACCEPT_BONUS, SOL)
+        prefix = _prefix(row)
+        self.assertIsNone(prefix["hook_address"])
+        archive = self._archive(row, prefix)
+        with patch("agent_economic_trust.bilateral030_funding_verifier.verify_funding_file",
+                   return_value=_verified(row, prefix, archive)):
+            with self.assertRaisesRegex(ValueError, "native hook differs"):
+                confirm_public_funding(row, prefix, archive,
+                                       expected_hook="0x" + "66" * 20)
+
+    def test_archive_changed_after_live_verifier_fails_closed(self):
+        row = _row(HIGH_RISK, SOL)
+        prefix = _prefix(row)
+        archive = self._archive(row, prefix)
+        verified = _verified(row, prefix, archive)
+        changed = json.loads(archive.read_text())
+        changed["transactions"][0]["raw_receipt"]["id"] = 2
+        archive.write_text(json.dumps(changed, sort_keys=True) + "\n")
+        with patch("agent_economic_trust.bilateral030_funding_verifier.verify_funding_file",
+                   return_value=verified):
+            with self.assertRaises(ValueError):
+                confirm_public_funding(row, prefix, archive)
 
 
 if __name__ == "__main__":
