@@ -27,7 +27,8 @@ HASH = "a" * 64
 
 def _journal(ids: list[str]) -> list[dict]:
     return [{"episode_id": episode, "status": "PENDING", "attempts": 0,
-             "outcome": None, "independent_review_sha256": None,
+             "outcome": None, "trace_review_sha256": None,
+             "native_review_sha256": None, "billing_review_sha256": None,
              "billing_state": None, "stop_scope": None,
              "stop_review_sha256": None, "fresh_context_sha256": None}
             for episode in ids]
@@ -134,7 +135,9 @@ class HostedContractTests(unittest.TestCase):
                           stop_review_sha256=HASH,
                           fresh_context_sha256=sha256(b"fresh").hexdigest())
         journal[1].update(status="COMPLETE_CLAIM", attempts=1, outcome=False,
-                          independent_review_sha256=sha256(b"review").hexdigest(),
+                          trace_review_sha256=sha256(b"trace").hexdigest(),
+                          native_review_sha256=sha256(b"native").hexdigest(),
+                          billing_review_sha256=sha256(b"bill").hexdigest(),
                           billing_state="ATTRIBUTABLE")
         result = structural_row_progress(ids, journal)
         self.assertEqual(result["stopped_missing_outcome"], 1)
@@ -164,7 +167,9 @@ class HostedContractTests(unittest.TestCase):
         cases.append(changed)
         changed = deepcopy(journal)
         changed[1].update(status="COMPLETE_CLAIM", attempts=1, outcome=True,
-                          independent_review_sha256=HASH,
+                          trace_review_sha256=HASH,
+                          native_review_sha256=HASH,
+                          billing_review_sha256=HASH,
                           billing_state="ATTRIBUTABLE")
         cases.append(changed)
         changed = deepcopy(journal)

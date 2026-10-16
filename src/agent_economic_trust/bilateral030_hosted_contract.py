@@ -173,7 +173,8 @@ def structural_row_progress(
     for index, (episode, item) in enumerate(zip(assigned_episode_ids, journal)):
         if (not isinstance(item, Mapping)
                 or set(item) != {"episode_id", "status", "attempts",
-                                    "outcome", "independent_review_sha256",
+                                    "outcome", "trace_review_sha256",
+                                    "native_review_sha256", "billing_review_sha256",
                                     "billing_state", "stop_scope",
                                     "stop_review_sha256", "fresh_context_sha256"}
                 or item["episode_id"] != episode):
@@ -184,8 +185,9 @@ def structural_row_progress(
             raise HostedContractError("row retried or attempt count malformed")
         if status == "PENDING":
             if (attempts != 0 or any(item[key] is not None for key in (
-                    "outcome", "independent_review_sha256", "billing_state",
-                    "stop_scope", "stop_review_sha256", "fresh_context_sha256"))):
+                    "outcome", "trace_review_sha256", "native_review_sha256",
+                    "billing_review_sha256", "billing_state", "stop_scope",
+                    "stop_review_sha256", "fresh_context_sha256"))):
                 raise HostedContractError("pending row contains claimed execution")
             seen_pending = True
             continue
@@ -193,15 +195,20 @@ def structural_row_progress(
             raise HostedContractError("noncontiguous execution or invalid row state")
         if status == "COMPLETE_CLAIM":
             if (type(item["outcome"]) is not bool
-                    or not _digest(item["independent_review_sha256"])
+                    or not all(_digest(item[key]) for key in (
+                        "trace_review_sha256", "native_review_sha256",
+                        "billing_review_sha256"))
                     or item["billing_state"] != "ATTRIBUTABLE"
                     or item["stop_scope"] is not None
-                    or item["stop_review_sha256"] is not None):
+                    or item["stop_review_sha256"] is not None
+                    or item["fresh_context_sha256"] is not None):
                 raise HostedContractError("complete claim lacks review or attributable bill")
             complete += 1
         else:
             if (item["outcome"] is not None
-                    or item["independent_review_sha256"] is not None
+                    or any(item[key] is not None for key in (
+                        "trace_review_sha256", "native_review_sha256",
+                        "billing_review_sha256"))
                     or item["stop_scope"] not in {"ROW_LOCAL", "GLOBAL_HOLD"}
                     or not _digest(item["stop_review_sha256"])
                     or item["billing_state"] not in {
