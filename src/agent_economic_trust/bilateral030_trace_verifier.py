@@ -21,7 +21,8 @@ from .ap2_live_fixture import protected_buyer_records
 from .bilateral030_mock import (CHANNEL_ID, MOCK_AUDITOR_ROUTE,
                                 MOCK_PROVIDER_ROUTE)
 from .bilateral030_plan import (CHANNEL, CHECK_PRICE_MINOR, MAX_OUTPUT_TOKENS,
-                                ROLE_STEPS, Bilateral030Row, validate_row)
+                                ROLE_STEPS, Bilateral030Row, canonical,
+                                validate_row)
 from .bilateral030_task import (funded_prefix, hosted_agent_spec_preview,
                                 public_input, role_system_prompts)
 from .reporting import _agent_for_event
@@ -41,6 +42,15 @@ _ASSIGNMENT_KEYS = {"delivery_to_auditor_withheld", "assigned_bonus_minor",
                     "truth", "group", "provider_prompt", "auditor_policy",
                     "contact"}
 _TX = re.compile(r"0x[0-9a-fA-F]{64}\Z")
+_SHA = re.compile(r"[0-9a-f]{64}\Z")
+_PROOF_KEYS = {"schema", "status", "episode_id", "obligation_id", "job_id",
+               "report_digest", "bonus_amount_minor", "bonus_trigger",
+               "hook_address", "job_funding_tx_hash",
+               "job_funding_receipt_sha256", "bonus_funding_tx_hash",
+               "bonus_funding_receipt_sha256", "public_prefix_sha256",
+               "archive_sha256", "verifier_source_sha256",
+               "live_chain_checked", "read_only_rpc_source",
+               "model_view_independently_verified"}
 
 
 def _tx(value: Any) -> bool:
@@ -71,6 +81,42 @@ def _private_keys(value: Any) -> bool:
     if isinstance(value, list):
         return any(_private_keys(item) for item in value)
     return False
+
+
+def _trusted_proof(row: Bilateral030Row, prefix: Mapping[str, Any],
+                   value: Mapping[str, Any]) -> dict[str, Any]:
+    """Validate a separately supplied public proof, never archive-derived.
+
+    The caller must obtain this object from independent live funding replay.
+    This function binds its values to the assigned row and public job, then
+    tests that the saved model inputs carried those exact canonical bytes.
+    """
+    _need(isinstance(value, Mapping) and set(value) == _PROOF_KEYS,
+          "trusted live funding proof fields differ")
+    proof = dict(value)
+    _need(proof["schema"] == "bilateral030-live-funding-proof-v1"
+          and proof["status"] == "FUNDING_LIVE_CONFIRMED"
+          and proof["episode_id"] == row.episode_id
+          and proof["obligation_id"] == row.obligation_id
+          and proof["job_id"] == prefix["job_id"]
+          and proof["report_digest"] == prefix["report_digest"]
+          and proof["bonus_amount_minor"] == row.accept_bonus_minor
+          and proof["bonus_trigger"] == prefix["bonus_trigger"]
+          and proof["hook_address"] == prefix["hook_address"]
+          and proof["job_funding_tx_hash"] == prefix["job_funding_tx_hash"]
+          and proof["bonus_funding_tx_hash"] == prefix["bonus_funding_tx_hash"]
+          and proof["bonus_funding_receipt_sha256"] ==
+          prefix["bonus_funding_receipt_sha256"]
+          and proof["public_prefix_sha256"] ==
+          sha256(canonical(dict(prefix))).hexdigest()
+          and all(type(proof[key]) is str and _SHA.fullmatch(proof[key]) is not None
+                  for key in ("job_funding_receipt_sha256", "public_prefix_sha256",
+                              "archive_sha256", "verifier_source_sha256"))
+          and proof["live_chain_checked"] is True
+          and proof["read_only_rpc_source"] == "loopback"
+          and proof["model_view_independently_verified"] is False,
+          "trusted live funding proof does not bind assigned job/receipts")
+    return proof
 
 
 def _one_generated_call(model_event: Any, tool_event: Any,
@@ -105,14 +151,15 @@ def _one_generated_call(model_event: Any, tool_event: Any,
 
 
 def _frame(model_event: Any, role: str, row: Bilateral030Row,
-           prefix: Mapping[str, Any], own_history: list[tuple[Any, Any]]) -> None:
+           prefix: Mapping[str, Any], own_history: list[tuple[Any, Any]],
+           proof: Mapping[str, Any] | None) -> None:
     messages = model_event.input
-    preview = hosted_agent_spec_preview(row, prefix)
+    preview = hosted_agent_spec_preview(row, prefix, proof)
     _need(len(messages) >= 2
           and isinstance(messages[0], ChatMessageSystem)
           and isinstance(messages[1], ChatMessageUser)
           and messages[0].text == preview["expected_full_system_by_role"][role]
-          and messages[1].text == public_input(row, prefix),
+          and messages[1].text == public_input(row, prefix, proof),
           "trusted system/user prompt frame differs")
     expected = []
     for previous_model, previous_tool in own_history:
@@ -164,7 +211,9 @@ def _frame(model_event: Any, role: str, row: Bilateral030Row,
 
 
 def verify_inspect_trace(log: Any, row: Bilateral030Row,
-                         prefix: Mapping[str, Any]) -> dict[str, Any]:
+                         prefix: Mapping[str, Any], *,
+                         trusted_public_proof: Mapping[str, Any] | None = None
+                         ) -> dict[str, Any]:
     """Verify one completed mock Inspect trace; return provenance, not an outcome.
 
     No chain RPC, model API or budget ledger is touched. A separate independent
@@ -189,14 +238,32 @@ def verify_inspect_trace(log: Any, row: Bilateral030Row,
           "sample assignment or scientific tier differs")
     _need(marker.get("transaction_tier") in {"SCRIPTED_SIMULATION",
           "NATIVE_LOCAL_PROTOCOL"}, "unknown callback transaction tier")
-    _need(marker.get("status") ==
-          ("SCRIPTED_MODEL_NATIVE_LOCAL_PROTOCOL_PROBE" if
-           marker["transaction_tier"] == "NATIVE_LOCAL_PROTOCOL" else
-           "MOCK_ONLY_CALLBACK_PROBE"),
-          "callback probe status differs from transaction tier")
+    attested = marker.get("status") == "SCRIPTED_MODEL_NATIVE_PREVIEW_ATTESTED_PROBE"
+    if attested:
+        _need(trusted_public_proof is not None
+              and marker["transaction_tier"] == "NATIVE_LOCAL_PROTOCOL",
+              "attested native trace requires separate trusted funding proof")
+        proof = _trusted_proof(row, prefix, trusted_public_proof)
+        proof_sha = sha256(canonical(proof)).hexdigest()
+        _need(marker.get("funding_live_attestation") is True
+              and marker.get("bonus_funding_controller_claim_only") is False
+              and marker.get("funding_attestation_sha256") == proof_sha
+              and marker.get("funding_archive_sha256") == proof["archive_sha256"],
+              "saved funding attestation metadata differs from trusted proof")
+    else:
+        _need(trusted_public_proof is None
+              and marker.get("status") ==
+              ("SCRIPTED_MODEL_NATIVE_LOCAL_PROTOCOL_PROBE" if
+               marker["transaction_tier"] == "NATIVE_LOCAL_PROTOCOL" else
+               "MOCK_ONLY_CALLBACK_PROBE")
+              and marker.get("funding_live_attestation") in (None, False)
+              and marker.get("funding_attestation_sha256") is None,
+              "legacy callback trace cannot claim live funding attestation")
+        proof = None
+        proof_sha = None
     experiment = sample.metadata.get("experiment", {})
     agents = experiment.get("setup", {}).get("agents", [])
-    prompts = role_system_prompts(row, prefix)
+    prompts = role_system_prompts(row, prefix, proof)
     _need(type(agents) is list and len(agents) == 2
           and [agent.get("name") for agent in agents] == ["provider", "auditor"]
           and all(agent.get("model") == _MODEL_ROUTES[agent["name"]]
@@ -207,7 +274,7 @@ def verify_inspect_trace(log: Any, row: Bilateral030Row,
                    ["view_claim_inbox", "buy_buyer_check", "decide_early"])
                   for agent in agents),
           "saved ORBIT routes, prompts or tool assignments differ")
-    _need(sample.input == public_input(row, prefix),
+    _need(sample.input == public_input(row, prefix, proof),
           "sample public input differs")
     observed = [(index, event) for index, event in enumerate(sample.events)
                 if event.event in {"model", "tool"}]
@@ -229,7 +296,7 @@ def verify_inspect_trace(log: Any, row: Bilateral030Row,
         _need(actors == list(ROLE_STEPS[:len(actors)]),
               "model role schedule differs")
         _one_generated_call(model, tool, role, sample)
-        _frame(model, role, row, prefix, own_history[role])
+        _frame(model, role, row, prefix, own_history[role], proof)
         _need(tool.function not in events_by_function,
               "duplicate role tool action")
         events_by_function[tool.function] = (model_index, tool_index, model, tool)
@@ -296,13 +363,17 @@ def verify_inspect_trace(log: Any, row: Bilateral030Row,
                                     "provider_choice", "claim_callback",
                                     "funding_claim", "buyer_records_included",
                                     "provider_inbox_trust", "provider_inbox",
-                                    "native_callbacks_independently_replayed"}
+                                    "native_callbacks_independently_replayed"} |
+              ({"funding_attestation"} if proof is not None else set())
               and view_result.get("interim_report_cents") == 350
               and view_result.get("native_callbacks_independently_replayed") is False
               and view_result.get("obligation_id") == row.obligation_id
               and view_result.get("provider_choice") == "CLAIM"
               and view_result.get("claim_callback") == claim
               and view_result.get("funding_claim") == prefix
+              and (view_result.get("funding_attestation") == proof
+                   if proof is not None else
+                   "funding_attestation" not in view_result)
               and view_result.get("buyer_records_included") is False
               and view_result.get("provider_inbox_trust") ==
               "UNTRUSTED_PROVIDER_CHANNEL_POST"
@@ -311,6 +382,13 @@ def verify_inspect_trace(log: Any, row: Bilateral030Row,
               and not _private_keys(view_result)
               and not _ASSIGNMENT_KEYS.intersection(view_result),
               "auditor view differs from attributed masked provider note")
+        if proof is not None:
+            _need(str(view.result) == json.dumps(view_result, sort_keys=True,
+                                                 separators=(",", ":"),
+                                                 ensure_ascii=False,
+                                                 allow_nan=False)
+                  and canonical(proof).decode() in str(view.result),
+                  "auditor inbox changed canonical trusted proof bytes")
         check = events_by_function.get("buy_buyer_check")
         if check is not None:
             check = check[3]
@@ -433,12 +511,31 @@ def verify_inspect_trace(log: Any, row: Bilateral030Row,
           (first_receipt.get("bonus_auditor_paid_minor") if first_receipt else 0),
           "score callback claim differs from raw tool event")
     note_text = note.arguments["message"] if note is not None else None
+    if proof is not None:
+        _need("provider" in actors and "auditor" in actors
+              and view is not None and proof_sha is not None,
+              "attested proof was not exposed to both model roles and auditor inbox")
     return {
         "status": "INSPECT_TRACE_VERIFIED_NATIVE_JOIN_REQUIRED",
         "scientific_result_row": False,
         "model_behavior_tier": "SCRIPTED_SIMULATION",
         "transaction_tier_controller_claim": marker["transaction_tier"],
         "native_receipts_independently_replayed": False,
+        "funding_live_verified_by_this_function": False,
+        "funding_attestation_expected_source":
+            ("CALLER_SUPPLIED_SEPARATE_LIVE_REPLAY" if proof is not None
+             else "NONE_LEGACY"),
+        "funding_attestation_exposed_both_roles": proof is not None,
+        "funding_attestation_in_auditor_inbox": proof is not None,
+        "funding_attestation_sha256": proof_sha,
+        "funding_archive_sha256":
+            (proof["archive_sha256"] if proof is not None else None),
+        "funding_verifier_source_sha256":
+            (proof["verifier_source_sha256"] if proof is not None else None),
+        "job_funding_receipt_sha256_trusted_proof":
+            (proof["job_funding_receipt_sha256"] if proof is not None else None),
+        "bonus_funding_receipt_sha256_trusted_proof":
+            (proof["bonus_funding_receipt_sha256"] if proof is not None else None),
         "episode_id": row.episode_id,
         "obligation_id": row.obligation_id,
         "report_digest": prefix["report_digest"],
@@ -493,11 +590,14 @@ def verify_inspect_trace(log: Any, row: Bilateral030Row,
 
 
 def verify_saved_inspect_trace(path: str | Path, row: Bilateral030Row,
-                               prefix: Mapping[str, Any]) -> dict[str, Any]:
+                               prefix: Mapping[str, Any], *,
+                               trusted_public_proof: Mapping[str, Any] | None = None
+                               ) -> dict[str, Any]:
     """Read a saved .eval with attachments resolved and expose its byte digest."""
     path = Path(path)
     _need(path.is_file(), "Inspect archive missing")
-    result = verify_inspect_trace(read_eval_log(path, resolve_attachments=True),
-                                  row, prefix)
+    result = verify_inspect_trace(
+        read_eval_log(path, resolve_attachments=True), row, prefix,
+        trusted_public_proof=trusted_public_proof)
     result["inspect_archive_sha256"] = sha256(path.read_bytes()).hexdigest()
     return result
