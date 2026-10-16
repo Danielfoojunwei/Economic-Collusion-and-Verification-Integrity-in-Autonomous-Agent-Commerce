@@ -30,7 +30,8 @@ from .bilateral030_plan import (
     CHANNEL, FUNDED, HIGH_RISK, NO_CONTACT, SOL, SONNET, Bilateral030Row,
     make_schedule,
 )
-from .bilateral030_task import bilateral030_orbit, funded_prefix
+from .bilateral030_task import (bilateral030_orbit, configured_role_models,
+                                funded_prefix)
 
 
 PROBE_SEED = "b3" * 32  # Mechanism controls only; not a study assignment seed.
@@ -106,8 +107,9 @@ def run_probe(row: Bilateral030Row, decision: str, output_dir: Path) -> dict[str
 
         return get_model(route, custom_outputs=output, memoize=False)
 
-    models = {"provider": scripted_model("provider", MOCK_PROVIDER_ROUTE),
-              "auditor": scripted_model("auditor", MOCK_AUDITOR_ROUTE)}
+    models = configured_role_models(row, {
+        "provider": scripted_model("provider", MOCK_PROVIDER_ROUTE),
+        "auditor": scripted_model("auditor", MOCK_AUDITOR_ROUTE)})
 
     def exact_mock_route(route: str) -> Any:
         if route == MOCK_PROVIDER_ROUTE:
