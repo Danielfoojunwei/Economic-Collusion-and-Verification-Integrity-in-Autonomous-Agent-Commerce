@@ -16,7 +16,7 @@ from agent_economic_trust.bilateral030_plan import Bilateral030Row
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests/fixtures/bilateral030_native"
 NAMES = ("funded_bad_approve", "funded_bad_reject", "funded_bad_defer",
-         "funded_bad_wait", "no_bonus_good_approve_v2")
+         "funded_bad_wait", "no_bonus_good_approve_v2", "good_funded_approve_v2")
 
 
 class Bilateral030NativeVerifierTest(unittest.TestCase):
@@ -28,12 +28,18 @@ class Bilateral030NativeVerifierTest(unittest.TestCase):
         assert pinned["plan_source_commit"] == "a649d9f"
         assert pinned["plan_source_sha256"] == (
             "afa4318492f221b4fbce485efa304127f3ca4d247a88ad19832baf97129c3a10")
-        cls.rows = {data["episode_id"]: Bilateral030Row(**data)
-                    for data in pinned["rows"]}
+        cls.legacy_rows = {data["episode_id"]: Bilateral030Row(**data)
+                           for data in pinned["rows"]}
+        cls.rows = dict(cls.legacy_rows)
         v2 = json.loads((FIXTURES / "v2_assignment_row.json").read_text())
         assert v2["schema"] == "bilateral030-v2-scripted-row-fixture-v1"
         current = Bilateral030Row(**v2["row"])
         cls.rows[current.episode_id] = current
+        funded_v2 = json.loads((FIXTURES / "v2_good_funded_assignment_row.json").read_text())
+        assert funded_v2["schema"] == "bilateral030-v2-scripted-row-fixture-v1"
+        assert funded_v2["plan_source_commit"] == "725e70e"
+        current_funded = Bilateral030Row(**funded_v2["row"])
+        cls.rows[current_funded.episode_id] = current_funded
         cls.records = {name: json.loads(gzip.decompress(
             (FIXTURES / f"{name}.json.gz").read_bytes())) for name in NAMES}
         for record in cls.records.values():
@@ -58,13 +64,14 @@ class Bilateral030NativeVerifierTest(unittest.TestCase):
         tx["raw_receipt"]["logs"][index][field] = value
         tx["logs"][index][field] = value
 
-    def test_five_scripted_native_branches_replay(self) -> None:
+    def test_six_scripted_native_branches_replay(self) -> None:
         expected = {
             "funded_bad_approve": (9_000_000, 5_000_000, 0, 10_000_000),
             "funded_bad_reject": (0, 0, 5_000_000, 20_000_000),
             "funded_bad_defer": (0, 0, 5_000_000, 20_000_000),
             "funded_bad_wait": (0, 0, 5_000_000, 20_000_000),
             "no_bonus_good_approve_v2": (9_000_000, 0, 0, 0),
+            "good_funded_approve_v2": (9_000_000, 5_000_000, 0, 0),
         }
         for name in NAMES:
             with self.subTest(name=name):
@@ -156,7 +163,7 @@ class Bilateral030NativeVerifierTest(unittest.TestCase):
     def test_legacy_good_anchor_is_not_silently_relabelled(self) -> None:
         old = json.loads(gzip.decompress(
             (FIXTURES / "no_bonus_good_approve.json.gz").read_bytes()))
-        old_row = self.rows[old["episode"]["episode_id"]]
+        old_row = self.legacy_rows[old["episode"]["episode_id"]]
         self.assertEqual(old_row.group, "GOOD_ANCHOR")
         with self.assertRaisesRegex(ValueError, "unknown row or group"):
             verify_record(old, old_row, bundle=self.bundle)
