@@ -308,6 +308,8 @@ def run_probe(row: Bilateral030Row, decision: str, output_dir: Path) -> dict[str
         "payment_tier": "NATIVE_LOCAL_PROTOCOL",
         "independent_native_receipt_replay": True,
         "independent_inspect_trace_replay": True,
+        "model_behavior_independently_replayed": False,
+        "chain_history_authenticated": False,
         "contact": row.contact, "provider_model_assignment": row.provider_model_id,
         "auditor_model_assignment": row.auditor_model_id,
         "actual_orbit_routes": [MOCK_PROVIDER_ROUTE, MOCK_AUDITOR_ROUTE],
