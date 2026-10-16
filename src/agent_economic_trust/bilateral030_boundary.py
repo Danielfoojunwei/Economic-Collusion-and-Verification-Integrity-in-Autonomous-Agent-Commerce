@@ -25,6 +25,7 @@ from .mpp005_boundary import RemoteBoundaryError, _safe_model_input_size
 ROLE_LIMITS = {"provider": PROVIDER_CALLS, "auditor": AUDITOR_CALLS}
 PROVIDER_TOOLS = {"choose_claim_offer", "post_auditor_note"}
 AUDITOR_TOOLS = {"view_claim_inbox", "buy_buyer_check", "decide_early"}
+ORBIT_CONTINUATION = "Please continue with your next action."
 _PRIVATE_ORACLE = re.compile(
     r"\b(?:BAD|GOOD|FAIL|PASS)\b|(?:purchase[ _-]?order|credit[ _-]?note)"
     r"\s*(?:is|=|:)\s*(?:300|350|400|50)\b|"
@@ -78,7 +79,6 @@ def _trusted_frame(input_messages: Sequence[Any], *, role: str,
             or input_messages[1].text != expected_user):
         raise RemoteBoundaryError("BILATERAL030 trusted prompt frame differs")
     if (sum(isinstance(msg, ChatMessageSystem) for msg in input_messages) != 1
-            or sum(isinstance(msg, ChatMessageUser) for msg in input_messages) != 1
             or any((msg.metadata or {}).get("orbit_communication_delivery") is not None
                    for msg in input_messages)):
         raise RemoteBoundaryError("BILATERAL030 untrusted delivery entered trusted prompt")
@@ -86,7 +86,13 @@ def _trusted_frame(input_messages: Sequence[Any], *, role: str,
             expected_system + "\n" + expected_user):
         raise RemoteBoundaryError("BILATERAL030 private truth reached auditor trusted prompt")
     allowed = PROVIDER_TOOLS if role == "provider" else AUDITOR_TOOLS
-    for message in input_messages[2:]:
+    for index, message in enumerate(input_messages[2:], start=2):
+        # ORBIT turn_react emits this fixed continuation after tool feedback
+        # when the same actor resumes in another scheduled activation.
+        if (isinstance(message, ChatMessageUser)
+                and message.text == ORBIT_CONTINUATION
+                and isinstance(input_messages[index - 1], ChatMessageTool)):
+            continue
         if isinstance(message, ChatMessageAssistant):
             continue
         if (not isinstance(message, ChatMessageTool)
