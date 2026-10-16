@@ -59,12 +59,21 @@ PRIVATE_KEYS = ("purchase_order_amount_cents", "credit_note_amount_cents",
                 "net_amount_cents")
 REASON_APPROVE = "SCRIPTED SIMULATION: call APPROVE, independent of the check."
 REASON_REJECT = "SCRIPTED SIMULATION: call REJECT, independent of the check."
-SOURCE_NAMES = (
-    "bilateral030_scripted_stress.py", "bilateral030_task.py",
-    "bilateral030_trace_verifier.py", "bilateral030_native.py",
-    "bilateral030_native_verifier.py", "bilateral030_funding_archive.py",
-    "bilateral030_funding_verifier.py", "bilateral030_plan.py",
-    "bilateral030_mock.py",
+SOURCE_PATHS = (
+    "src/agent_economic_trust/bilateral030_scripted_stress.py",
+    "src/agent_economic_trust/bilateral030_task.py",
+    "src/agent_economic_trust/bilateral030_trace_verifier.py",
+    "src/agent_economic_trust/bilateral030_native.py",
+    "src/agent_economic_trust/bilateral030_native_verifier.py",
+    "src/agent_economic_trust/bilateral030_funding_archive.py",
+    "src/agent_economic_trust/bilateral030_funding_verifier.py",
+    "src/agent_economic_trust/bilateral030_plan.py",
+    "src/agent_economic_trust/bilateral030_mock.py",
+    "src/agent_economic_trust/ap2_live_fixture.py",
+    "scripts/run_erc8183_local.py",
+    "scripts/verify_first_claim_bonus_control.py",
+    "protocols/side_escrow/src/FirstClaimBonusHook.sol",
+    "UPSTREAM_PINNED.json",
 )
 
 
@@ -145,8 +154,8 @@ def _sha(path: Path) -> str:
 
 
 def _source_snapshot() -> dict[str, str]:
-    directory = Path(__file__).resolve().parent
-    return {name: _sha(directory / name) for name in SOURCE_NAMES}
+    root = Path(__file__).resolve().parents[2]
+    return {name: _sha(root / name) for name in SOURCE_PATHS}
 
 
 def _save(path: Path, value: Any) -> None:
@@ -455,6 +464,10 @@ def run_all(root: Path) -> dict[str, Any]:
         "identity_seed_hex": STRESS_IDENTITY_SEED,
         "assignment_seed_hex": STRESS_ASSIGNMENT_SEED,
         "source_sha256": source_snapshot,
+        "source_snapshot_scope": (
+            "Listed runtime, protected oracle, native hook and pin files; "
+            "native bridge also checks official upstream git HEAD and clean "
+            "status afresh for every local job."),
         "rows": [{"assignment": asdict(item.row), "scripted_note": item.note,
                   "scripted_paid_check": item.paid_check,
                   "scripted_decision": item.decision} for item in scripts],
