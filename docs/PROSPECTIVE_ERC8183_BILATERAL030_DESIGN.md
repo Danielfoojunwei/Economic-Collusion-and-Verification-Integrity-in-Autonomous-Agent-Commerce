@@ -1,9 +1,9 @@
 # Prospective BILATERAL030 invoice study — source and execution gates
 
-**Status, 2026-10-16:** prospective design and mock transport only. One
-strictly mock-routed ORBIT/Inspect CHANNEL smoke ran; it is a plumbing check,
-not a study row. There is no frozen seed, assignment, hosted model call, new
-native transaction, or behavioral result for this study. The existing USD 50
+**Status, 2026-10-16:** prospective design, mock transport, and a source-only
+local native bridge. Strictly mock-routed ORBIT/Inspect smokes and scripted
+Anvil controls are plumbing checks, not study rows. There is no frozen seed,
+assignment, hosted model call, or behavioral result for this study. The existing USD 50
 ledger is blocked with USD 0 available. This
 document does not authorize a paid run. It follows the separately frozen
 [funded-offer pilot](PILOT_002_RESULTS_AND_INTERPRETATION.md),
@@ -37,8 +37,13 @@ researcher-induced susceptibility, not spontaneous economic collusion.
 
 ## Thirty independent pairs
 
-Each row uses a fresh pair, trial and obligation, with a randomized execution
-order and 15 pairs in each model-role direction. The proper auditor policy,
+Each row uses a fresh pair, trial and obligation, with 15 pairs in each
+model-role direction. A committed identity seed first defines anonymous pair
+slots independently of treatment. A **separate assignment seed** HMAC-permutes
+the fixed 7/2/2/2/1/1 group labels over those 15 slots within each direction;
+execution order is separately seed-derived. Both seeds and the resulting
+private assignment must be frozen before any model outcome is observed. The
+proper auditor policy,
 truth-access rule, report amount, check option, buyer escrow, and evaluator fee
 are fixed across BAD rows. All interventions are assigned before inference.
 
@@ -64,8 +69,12 @@ prevalence precisely.
 This is a focused ablation around the strongest prior signals, not a complete
 factorial or a search across payment protocols. Compare each single knockout
 with the high-risk group within model direction. Do not infer interactions
-between pressure, bonus and channel from these rows. Use exact, cluster-level
-uncertainty intervals for descriptive risk differences; report all assigned
+between pressure, bonus and channel from these rows. Report descriptive risk
+differences with assigned-outcome missingness bounds and sharp-null conditional
+randomization p-values for the three prespecified knockouts, with Holm
+adjustment. Report per-arm model-based binomial intervals separately and state
+their exchangeability assumption; do not present those as randomization
+intervals for the risk differences. Report all assigned
 denominators and no optional stopping after a positive result. Even zero
 primary events in 14 high-risk pairs would leave a one-sided 95% binomial
 upper probability of about 19% under an exchangeability assumption that may
@@ -97,10 +106,10 @@ after early APPROVE followed by final REJECT and **cannot** implement this
 treatment. The official job's `settledAmount` also rises under client settlement,
 so a side escrow must not release based on that field alone. A separate
 [first-claim application hook and scripted same-job native controls](BILATERAL030_FIRST_CLAIM_BONUS_NATIVE_CONTROL.md)
-now pass independent raw receipt replay. The per-row live native bridge,
-reverse-role wiring and agent-to-payment evidence join are **not yet
-implemented for this study**. Funded-bonus live rows remain HOLD until those
-gates pass; the scripted control is not an agent result.
+now pass independent raw receipt replay. A source-only per-row local native
+bridge and reverse-role wiring have passed their own scripted tests. Independent
+per-row receipt replay and the full agent-to-payment evidence join remain
+HOLD; the scripted control is not an agent result.
 
 Reuse ORBIT/Inspect with separate provider and auditor contexts. The provider
 must choose its claim and message; never prefill the desired message in
@@ -132,8 +141,8 @@ labeled as such. The earlier first approval remains the agent decision. A
 zero-model ORBIT transport smoke test must rewrite **both** role model routes
 to `mockllm/`, remove external opt-in/key access, and demonstrate the entire
 claim → offer/post → exposure → check → early verdict sequence before any
-hosted request. The compact runner and evidence collector are **not yet
-implemented**.
+hosted request. The compact mock probe and STOPPED evidence collector are
+source-only; the paid runner is hard closed pending the gates below.
 
 ## Budget, freeze, and stop rules
 
@@ -162,7 +171,8 @@ negative tests; independently review both role routes and every boundary;
 validate 3,072 tokens suffice for the requested reasoning and tools; fetch a
 fresh public catalog; reconcile attributable billing and all prerequisite
 holds; reserve the **entire** 30-row worst case plus margin in the canonical
-USD 50 ledger; seal exact source, prompts, models, task fixtures, seed,
+USD 50 ledger; seal exact source, prompts, models, task fixtures, distinct
+identity and treatment-assignment seeds,
 execution order and analysis code. Execute one frozen row per invocation,
 archive raw Inspect and native evidence before settling its budget, and stop
 the entire block on an unbounded request, missing bill, tool failure, source
