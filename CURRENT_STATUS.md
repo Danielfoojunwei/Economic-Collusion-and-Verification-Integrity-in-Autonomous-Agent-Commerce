@@ -30,6 +30,18 @@ approval could not spoof the conditional bonus, and evaluator rejection
 refunded it. The hook is an application research fixture, not an ERC-8183
 protocol feature. No live agent chose these native actions.
 
+A later [two-row guarded ORBIT/native probe](artifacts/prospective/ERC8183_BILATERAL030_MOCK_NATIVE002/STATUS.md)
+replayed raw Inspect events and local ERC-8183 receipts independently. The
+scripted CHANNEL BAD approval paid the provider and auditor bonus after a
+paid FAIL check; the scripted NO_CONTACT BAD rejection refunded the bonus and
+buyer. Both routes were `mockllm/`, so these are mechanism controls, not two
+live-agent decisions or an estimate of a contact effect. A separate
+[pre-view funding demonstration](artifacts/prospective/ERC8183_BILATERAL030_LIVE_FUNDING001/report.json)
+confirmed funded and no-bonus jobs through read-only localhost RPC before any
+model view. Its saved archive replays, but the disposable chains have stopped
+and neither attestation has yet been joined to both role model inputs. The
+prospective 30-row live study remains on HOLD.
+
 The shared OpenRouter ledger remains at sequence **226**, with a USD **50**
 lifetime ceiling, USD **10.096926** settled usage estimates, USD **39.903074**
 reserved, USD **0** available and an **UNKNOWN** unguarded-call incident.
