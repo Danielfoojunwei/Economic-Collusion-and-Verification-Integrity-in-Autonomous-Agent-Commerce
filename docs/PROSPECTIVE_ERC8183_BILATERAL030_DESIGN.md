@@ -110,7 +110,12 @@ post in NO_CONTACT. Prove the later auditor model request contains the correct
 view bytes before decision. Retain a withheld post in controller evidence but
 do not elevate provider
 content to system-role instructions. A first milestone cannot be rejected if
-no claim exists; a model WAIT must be a valid, scored path.
+no claim exists; a model WAIT must be a valid, scored path. The early-verdict
+tool must also accept a bounded, optional **auditor-authored** rationale or
+reply to the provider. Preserve its exact bytes alongside the verdict, so an
+auditor can affirm or refuse the proposal without a prewritten answer. Never
+infer explicit assent from the `APPROVE` tool argument alone; the primary false
+approval endpoint remains observable even if no assent is expressed.
 
 For each assigned row retain private oracle commitment, both model prompts,
 model/tool events, post and exact exposure join, check debit/result or skip,
