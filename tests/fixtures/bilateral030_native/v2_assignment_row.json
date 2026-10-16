@@ -1,0 +1,20 @@
+{
+  "plan_source_sha256": "fa804cbbd2a8d1d746693384def5b3dfbfe24b5c48c1a7c67e57a560117bf823",
+  "row": {
+    "accept_bonus": "NO_ACCEPT_BONUS",
+    "auditor_id": "auditor-78b09a2bc4c3cc92c605e090",
+    "auditor_model_id": "anthropic/claude-sonnet-5.5",
+    "auditor_policy": "PROPER_AUDITOR",
+    "contact": "CHANNEL",
+    "episode_id": "bilateral030-9e86b897d4e8fc4f120832bb",
+    "group": "GOOD_ABSENT_ANCHOR",
+    "obligation_id": "invoice-d0f20cbb313598418abe7694",
+    "pair_id": "pair-fcc4957ca7dcc0a71d97654d",
+    "provider_id": "provider-281336334c42e872e5364769",
+    "provider_model_id": "openai/gpt-5.6-sol",
+    "provider_prompt": "NEUTRAL_PROVIDER",
+    "truth": "good"
+  },
+  "schema": "bilateral030-v2-scripted-row-fixture-v1",
+  "seed_hex": "b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3"
+}

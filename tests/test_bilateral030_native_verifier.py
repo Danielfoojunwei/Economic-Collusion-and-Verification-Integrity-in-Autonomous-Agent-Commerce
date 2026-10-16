@@ -11,19 +11,29 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from agent_economic_trust.bilateral030_native_verifier import _artifacts, verify_file, verify_record
-from agent_economic_trust.bilateral030_plan import make_schedule
+from agent_economic_trust.bilateral030_plan import Bilateral030Row
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests/fixtures/bilateral030_native"
 NAMES = ("funded_bad_approve", "funded_bad_reject", "funded_bad_defer",
-         "funded_bad_wait", "no_bonus_good_approve")
+         "funded_bad_wait", "no_bonus_good_approve_v2")
 
 
 class Bilateral030NativeVerifierTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.bundle = _artifacts()
-        cls.rows = {row.episode_id: row for row in make_schedule("b3" * 32)}
+        pinned = json.loads((FIXTURES / "legacy_assignment_rows.json").read_text())
+        assert pinned["schema"] == "bilateral030-legacy-scripted-row-fixtures-v1"
+        assert pinned["plan_source_commit"] == "a649d9f"
+        assert pinned["plan_source_sha256"] == (
+            "afa4318492f221b4fbce485efa304127f3ca4d247a88ad19832baf97129c3a10")
+        cls.rows = {data["episode_id"]: Bilateral030Row(**data)
+                    for data in pinned["rows"]}
+        v2 = json.loads((FIXTURES / "v2_assignment_row.json").read_text())
+        assert v2["schema"] == "bilateral030-v2-scripted-row-fixture-v1"
+        current = Bilateral030Row(**v2["row"])
+        cls.rows[current.episode_id] = current
         cls.records = {name: json.loads(gzip.decompress(
             (FIXTURES / f"{name}.json.gz").read_bytes())) for name in NAMES}
         for record in cls.records.values():
@@ -54,7 +64,7 @@ class Bilateral030NativeVerifierTest(unittest.TestCase):
             "funded_bad_reject": (0, 0, 5_000_000, 20_000_000),
             "funded_bad_defer": (0, 0, 5_000_000, 20_000_000),
             "funded_bad_wait": (0, 0, 5_000_000, 20_000_000),
-            "no_bonus_good_approve": (9_000_000, 0, 0, 0),
+            "no_bonus_good_approve_v2": (9_000_000, 0, 0, 0),
         }
         for name in NAMES:
             with self.subTest(name=name):
@@ -136,6 +146,20 @@ class Bilateral030NativeVerifierTest(unittest.TestCase):
         record = deepcopy(self.records["funded_bad_approve"])
         self._tx(record, "check.debit")["transaction_hash"] = "0x" + "0" * 64
         self._reject(record, "raw transaction/receipt")
+        for field, value in (("chainId", "0x1"), ("value", "0x1"),
+                             ("blockTimestamp", "0x1")):
+            with self.subTest(raw_field=field):
+                record = deepcopy(self.records["funded_bad_approve"])
+                self._tx(record, "claim.approve")["raw_transaction"][field] = value
+                self._reject(record, "raw transaction/receipt")
+
+    def test_legacy_good_anchor_is_not_silently_relabelled(self) -> None:
+        old = json.loads(gzip.decompress(
+            (FIXTURES / "no_bonus_good_approve.json.gz").read_bytes()))
+        old_row = self.rows[old["episode"]["episode_id"]]
+        self.assertEqual(old_row.group, "GOOD_ANCHOR")
+        with self.assertRaisesRegex(ValueError, "unknown row or group"):
+            verify_record(old, old_row, bundle=self.bundle)
 
     def test_provider_bonus_source_and_early_beneficiary_tampering_rejected(self) -> None:
         record = deepcopy(self.records["funded_bad_approve"])
@@ -196,9 +220,9 @@ class Bilateral030NativeVerifierTest(unittest.TestCase):
         self._reject(record, "ERC20 transfer source")
 
     def test_no_bonus_forged_payout_and_wrong_terminal_state_rejected(self) -> None:
-        record = deepcopy(self.records["no_bonus_good_approve"])
+        record = deepcopy(self.records["no_bonus_good_approve_v2"])
         record["early_receipt"]["bonus_auditor_paid_minor"] = 5_000_000
-        self._reject(record, "first-claim callback", name="no_bonus_good_approve")
+        self._reject(record, "first-claim callback", name="no_bonus_good_approve_v2")
         record = deepcopy(self.records["funded_bad_wait"])
         record["hook_state"] = 3
         self._reject(record, "terminal native job", name="funded_bad_wait")

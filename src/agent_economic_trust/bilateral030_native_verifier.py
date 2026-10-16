@@ -218,7 +218,10 @@ def _verify(saved: dict, assigned: Bilateral030Row,
               and item["block_number"] == int(raw["blockNumber"], 16)
               == int(receipt["blockNumber"], 16) == number
               and item["block_timestamp"] == receipt["blockTimestamp"]
+              == int(raw["blockTimestamp"], 16)
               and item["block_timestamp"] >= GENESIS_TIMESTAMP
+              and int(raw["chainId"], 16) == CHAIN_ID
+              and int(raw["value"], 16) == 0
               and raw["hash"].lower() == receipt["transactionHash"].lower()
               == item["transaction_hash"].lower()
               and raw["from"].lower() == receipt["from"].lower()
