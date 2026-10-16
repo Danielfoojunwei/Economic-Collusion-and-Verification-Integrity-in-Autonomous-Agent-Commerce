@@ -2,6 +2,7 @@
 """Source-only BILATERAL030 review-consistency diagnostic.
 
 This is a read-only command. It cannot run ORBIT, call a model, or transact.
+It accepts the v2 frozen assignment and independent-review record schemas.
 Hashes must come from the separately sealed freeze/review inventory. It does
 not authenticate the declared reviewer or replay native/Inspect evidence, so
 its output always carries a publication HOLD.
