@@ -38,20 +38,39 @@ buyer. Both routes were `mockllm/`, so these are mechanism controls, not two
 live-agent decisions or an estimate of a contact effect. A separate
 [pre-view funding demonstration](artifacts/prospective/ERC8183_BILATERAL030_LIVE_FUNDING001/report.json)
 confirmed funded and no-bonus jobs through read-only localhost RPC before any
-model view. Its saved archive replays, but the disposable chains have stopped
-and neither attestation has yet been joined to both role model inputs. The
-prospective 30-row live study remains on HOLD.
+model view. Those standalone attestations were not exposed to agents; their
+saved archives replay, but the disposable chains have stopped. The subsequent
+scripted rehearsal below joined fresh attestations to both mock role inputs.
+The prospective 30-row live study remains on HOLD.
+
+The subsequent guarded [30-row scripted infrastructure rehearsal](artifacts/prospective/ERC8183_BILATERAL030_STRESS030_001/stress-index.json)
+completed all seven planned arm shapes and 15 pairs in each assigned model
+direction.
+Each valueless local job had pre-view funding confirmation and saved Inspect,
+native and model-input proof artifacts. An
+[independent separate-process review](docs/BILATERAL030_STRESS030_INDEPENDENT_REVIEW.md)
+replayed all 30 funding archives, native receipts and Inspect traces, plus
+all 210 indexed artifact hashes. Its 14 BAD first approvals were
+predetermined mock tool calls; the apparent assigned-model direction
+imbalance is a script artifact.
+This is **zero live LLM trials, zero observed bilateral collusion and no causal
+ablation estimate**. The 30 live-pair study is still blocked by billing and
+the unimplemented paid execution gate.
 
 The shared OpenRouter ledger remains at sequence **226**, with a USD **50**
 lifetime ceiling, USD **10.096926** settled usage estimates, USD **39.903074**
 reserved, USD **0** available and an **UNKNOWN** unguarded-call incident.
 Existing aggregate exports do not attribute the incident's per-request charge.
-The prospective block is therefore **HOLD**. A local native bridge, raw
-receipt verifier, and mock-only Inspect trace verifier have passed focused
-source tests. A live pre-view funding attestation, source-frozen assignment,
-attached hosted request guards and independent model/native evidence join
-must pass before any hosted row; proposed code or a mock trace is
-not a completed run. See the [mechanism and protocol hypotheses](docs/COLLUSION_MECHANISM_AND_PROTOCOL_HYPOTHESES_2026-10-16.md)
+The [read-only billing blocker review](docs/BILLING_BLOCKER_READONLY_2026-10-16.md)
+lists all seven held UTC intervals and the missing request-level provider
+evidence; the current key cannot access management analytics.
+The prospective block is therefore **HOLD**. The local native bridge, raw
+receipt verifier and mock-only Inspect trace verifier passed the scripted
+30-row rehearsal. For a hosted study, pre-view funding proof must be bound to
+the actual hosted model inputs, and a private source-frozen assignment,
+attached hosted request guards and independent model/native/billing evidence
+join must pass. Proposed code or a mock trace is not a live result. See the
+[mechanism and protocol hypotheses](docs/COLLUSION_MECHANISM_AND_PROTOCOL_HYPOTHESES_2026-10-16.md)
 for the narrow research claim and ERC-8183, x402, MPP, AP2 and ACP follow-ups.
 
 ## Latest evidence and billing status (after 22:20 UTC)
