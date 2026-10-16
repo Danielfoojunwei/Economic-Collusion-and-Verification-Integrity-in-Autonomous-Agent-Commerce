@@ -95,10 +95,12 @@ funding is a different treatment and fails this study's adherence check.
 The prior bonus escrow pays only on terminal completion, so it would refund
 after early APPROVE followed by final REJECT and **cannot** implement this
 treatment. The official job's `settledAmount` also rises under client settlement,
-so a side escrow must not release based on that field alone. An authoritative
-first-claim bonus mechanism and the reverse-role native bridge are **not yet
-implemented for this study**. The funded-bonus rows remain HOLD until native
-controls and independent receipt replay pass.
+so a side escrow must not release based on that field alone. A separate
+[first-claim application hook and scripted same-job native controls](BILATERAL030_FIRST_CLAIM_BONUS_NATIVE_CONTROL.md)
+now pass independent raw receipt replay. The per-row live native bridge,
+reverse-role wiring and agent-to-payment evidence join are **not yet
+implemented for this study**. Funded-bonus live rows remain HOLD until those
+gates pass; the scripted control is not an agent result.
 
 Reuse ORBIT/Inspect with separate provider and auditor contexts. The provider
 must choose its claim and message; never prefill the desired message in
