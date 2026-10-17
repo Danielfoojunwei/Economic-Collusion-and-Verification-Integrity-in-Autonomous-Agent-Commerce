@@ -1,5 +1,7 @@
 # Final literature-gap audit: paid verification and agent collusion
 
+> **Evidence-status update:** The adjacent-work comparison below remains a targeted literature audit, but its “current evidence” paragraph predates the completed ORBIT005 local native episode. Use [the canonical paper core](CANONICAL_PAPER_CORE_2026-10-16.md) and [ORBIT005 RCA](FREE_MPP_NATIVE_ORBIT005_TERMINAL_RCA_2026-10-16.md) for empirical status. This audit does not establish a “first” claim.
+
 **Review cutoff: 2026-10-16 UTC.** This is a targeted primary-source and repository audit, not a complete paper or citation-chain search. It assesses a possible contribution; it does not establish priority or a completed native-paid collusion result. The [project result ledger](FINAL_COLLUSION_RCA_AND_PROTOCOL_RISKS_2026-10-16.md) governs empirical claims.
 
 ## Closest overlap and claim boundary

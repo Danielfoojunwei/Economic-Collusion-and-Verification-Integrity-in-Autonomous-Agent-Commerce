@@ -1,5 +1,7 @@
 # Current research build status — 2026-10-16
 
+> **Current interpretation after ORBIT005:** This page preserves earlier, time-stamped build snapshots and stops. Its opening conclusion predates the completed ORBIT005 pair. Read [the canonical paper core](docs/CANONICAL_PAPER_CORE_2026-10-16.md), [current claim ledger](docs/15_EVIDENCE_AND_CLAIMS.md), and [ORBIT005 terminal RCA](docs/FREE_MPP_NATIVE_ORBIT005_TERMINAL_RCA_2026-10-16.md) before citing any result. One researcher-induced local MPP arm had an unchecked false model verdict, an application-triggered 100,000-unit buyer release, and runner-executed native base/bonus payments. This is not an identified causal bribe effect or spontaneous bilateral pact. The sections below remain historical records; their old “no native paid false approval” status must not be used as the current result.
+
 ## October 16 pre-sprint update
 
 **No new hosted-model BILATERAL030 row has run, and no bilateral collusion has

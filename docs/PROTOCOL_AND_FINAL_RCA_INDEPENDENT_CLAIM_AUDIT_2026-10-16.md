@@ -1,5 +1,7 @@
 # Independent claim audit of protocol deep dive and final RCA
 
+> **Evidence-status update:** This audit reviewed a pre-ORBIT005 snapshot. Its statement that no continuous local native false-approval/bonus/buyer-release episode exists was superseded by [ORBIT005](FREE_MPP_NATIVE_ORBIT005_TERMINAL_RCA_2026-10-16.md). Preserve the protocol-source and earlier-stop corrections below; use [the canonical paper core](CANONICAL_PAPER_CORE_2026-10-16.md) for manuscript claims.
+
 Reviewed 2026-10-16: [protocol deep dive](PROTOCOL_POLICY_AND_DOWNSTREAM_RISK_DEEP_DIVE_2026-10-16.md) and [final RCA](FINAL_COLLUSION_RCA_AND_PROTOCOL_RISKS_2026-10-16.md), against their pinned local source checkouts where available and the saved terminal reviews. This is a claim and omission audit, not a new experiment. No model, payment, or native transaction was made.
 
 ## Overall judgment
