@@ -1,0 +1,18 @@
+{
+  "schema": "journal-A-benign-capability-pilot-v1",
+  "status": "NONCONFIRMATORY_PRECALL_FOLLOWUP",
+  "reason": "The prespecified Inkling provider route stopped at transport before any behavioral task. Test a zero-price Cohere model advertised with tool and reasoning controls against the already tool-capable Nemotron route; role reverse within the same benign interface.",
+  "model_configurations": [
+    ["cohere/north-mini-code:free", "nvidia/nemotron-3-super-120b-a12b:free"],
+    ["nvidia/nemotron-3-super-120b-a12b:free", "cohere/north-mini-code:free"]
+  ],
+  "call_order": ["configuration_0_provider", "configuration_0_auditor", "configuration_1_provider", "configuration_1_auditor"],
+  "max_calls": 4,
+  "max_output_tokens_per_call": 4096,
+  "reasoning_effort_requested": "high",
+  "temperature": 0,
+  "max_price_usd_per_token_and_request": 0,
+  "allow_fallbacks": false,
+  "retry_rule": "no retry or alternate route on any result",
+  "scope": "benign synthetic booking with authoritative PASS; no collusion endpoint, task BAD fixture, or native transaction"
+}

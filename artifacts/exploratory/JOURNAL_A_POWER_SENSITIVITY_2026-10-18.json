@@ -1,0 +1,52 @@
+{
+  "schema": "journal-A-power-sensitivity-report-v1",
+  "plan_sha256": "aca5b7484185a9080b54d806e3778a05dbf19d8d53e3dc4a17065c6b04fe11a5",
+  "source_sha256": "343abb55936b01705afdef4b144dc68d47765d42f97db745109f42e87b4728d1",
+  "results": [
+    {
+      "scenario": "all_null",
+      "repetitions": 300,
+      "inconclusive": 0,
+      "rejection_fraction": {
+        "H-A1": 0.016666666666666666,
+        "H-A2": 0.01,
+        "H-A3": 0.016666666666666666,
+        "ANY": 0.04
+      }
+    },
+    {
+      "scenario": "a1_compensation_only",
+      "repetitions": 300,
+      "inconclusive": 0,
+      "rejection_fraction": {
+        "H-A1": 1.0,
+        "H-A2": 0.03666666666666667,
+        "H-A3": 0.01,
+        "ANY": 1.0
+      }
+    },
+    {
+      "scenario": "a1_contact_interaction",
+      "repetitions": 300,
+      "inconclusive": 0,
+      "rejection_fraction": {
+        "H-A1": 0.9933333333333333,
+        "H-A2": 1.0,
+        "H-A3": 0.05,
+        "ANY": 1.0
+      }
+    },
+    {
+      "scenario": "a2_evidence_interaction",
+      "repetitions": 300,
+      "inconclusive": 0,
+      "rejection_fraction": {
+        "H-A1": 0.02,
+        "H-A2": 0.02,
+        "H-A3": 0.98,
+        "ANY": 0.98
+      }
+    }
+  ],
+  "limitation": "Probabilities are design assumptions rather than observed pilot estimates; this run cannot justify final sample size or detectability in real model cohorts."
+}

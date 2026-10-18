@@ -133,12 +133,17 @@ def summarize(response: dict, model: str, role: str) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--plan", type=Path, default=PLAN)
     args = parser.parse_args()
     output = args.output.resolve()
-    plan_bytes = PLAN.read_bytes()
+    plan_bytes = args.plan.resolve().read_bytes()
     plan = json.loads(plan_bytes)
     configurations = plan["model_configurations"]
-    assert len(configurations) == 3 and sum(map(len, configurations)) == 6
+    if (not configurations or any(not isinstance(pair, list) or len(pair) != 2
+                                  for pair in configurations) or
+            plan.get("max_calls") != 2 * len(configurations)):
+        raise ValueError("capability plan must fix complete provider/auditor pairs")
+    planned_calls = plan["max_calls"]
     transport = OpenRouterTransport(os.environ.get("OPENROUTER_API_KEY", ""))
     catalog = transport.catalog()
     snapshots = {model: zero_price_snapshot(catalog, model)
@@ -150,7 +155,7 @@ def main() -> None:
                 "source_sha256": sha256(Path(__file__).read_bytes()).hexdigest(),
                 "created_utc": utc_now(), "price_snapshots": snapshots,
                 "account_usage_before_usd": usage_before,
-                "calls_planned": 6, "retry_rule": "none", "model_execution_tier": "REAL_LLM_REMOTE",
+                "calls_planned": planned_calls, "retry_rule": "none", "model_execution_tier": "REAL_LLM_REMOTE",
                 "transaction_execution_tier": "NOT_EXECUTED"}
     (output / "manifest.json").write_bytes(canonical(manifest) + b"\n")
     results = []
@@ -165,7 +170,10 @@ def main() -> None:
                 record.update(summarize(response, model, role))
                 record["status"] = "COMPLETE"
             except Exception as exc:
-                record.update(status="TECHNICAL_FAILURE", error_type=type(exc).__name__)
+                cause = getattr(exc, "__cause__", None)
+                status = getattr(cause, "code", None)
+                record.update(status="TECHNICAL_FAILURE", error_type=type(exc).__name__,
+                              http_status=status if type(status) is int else None)
             record["finished_utc"] = utc_now()
             results.append(record)
             (output / "index.jsonl").open("ab").write(canonical(record) + b"\n")
@@ -178,7 +186,7 @@ def main() -> None:
                "tool_capability_pass": sum(row.get("tool_capability_pass") is True for row in results),
                "complete": sum(row["status"] == "COMPLETE" for row in results),
                "technical_failure": sum(row["status"] == "TECHNICAL_FAILURE" for row in results),
-               "unattempted": 6 - len(results),
+               "unattempted": planned_calls - len(results),
                "account_usage_after_usd": str(transport.usage()),
                "limitation": "Benign tool-use preflight; no collusion endpoint or native payment."}
     (output / "summary.json").write_bytes(canonical(summary) + b"\n")

@@ -3,7 +3,8 @@ import json
 import unittest
 
 from journal_A_v1.analysis_frozen import (
-    assigned_bounds, factorial_contrasts, risk_difference_bounds)
+    A1_B_WEIGHTS, A1_BC_WEIGHTS, A2_BI_WEIGHTS, assigned_bounds,
+    assigned_wald, factorial_contrasts, holm_adjust, risk_difference_bounds)
 from journal_A_v1.compensation_schedule import Schedule, check_affordable
 from journal_A_v1.exposure_join import audit_exposure, message_hash
 
@@ -73,6 +74,17 @@ class ExposureTests(unittest.TestCase):
 
 
 class AnalysisTests(unittest.TestCase):
+    @staticmethod
+    def synthetic_rows(rate_by_cell, *, n=40):
+        rows = []
+        for stratum in ('model_a', 'model_b'):
+            for cell, rate in rate_by_cell.items():
+                for index in range(n):
+                    rows.append({'episode_id': f'{stratum}-{cell}-{index}',
+                                 'stratum': stratum, 'cell': cell, 'truth': 'BAD',
+                                 'event': index < int(n * rate)})
+        return rows
+
     def test_missing_outcome_bounds(self):
         self.assertEqual(assigned_bounds(30, 3, 11), (3 / 30, 14 / 30))
         low, high = risk_difference_bounds((30, 16, 13), (30, 3, 11))
@@ -99,6 +111,43 @@ class AnalysisTests(unittest.TestCase):
         self.assertAlmostEqual(reversed_result["tau_BC"], -.1)
         with self.assertRaises(ValueError):
             factorial_contrasts({"000": 0.1})
+
+    def test_assigned_wald_recovers_large_sample_main_and_interaction(self):
+        rates = {f'{b}{c}{v}': .1 + .2 * b + .2 * b * c
+                 for b in (0, 1) for c in (0, 1) for v in (0, 1)}
+        rows = self.synthetic_rows(rates, n=40)
+        main = assigned_wald(rows, A1_B_WEIGHTS)
+        interaction = assigned_wald(rows, A1_BC_WEIGHTS)
+        self.assertAlmostEqual(main['estimate'], .3)
+        self.assertAlmostEqual(interaction['estimate'], .2)
+        self.assertEqual(main['unresolved'], 0)
+        self.assertIsNotNone(main['normal_p_two_sided'])
+        self.assertGreater(main['standard_error'], 0)
+        self.assertLessEqual(main['risk_difference_bounds'][0], main['estimate'])
+
+    def test_missingness_keeps_bounds_and_suppresses_p_value(self):
+        rates = {f'{b}{c}{v}': .1 for b in (0, 1) for c in (0, 1) for v in (0, 1)}
+        rows = self.synthetic_rows(rates, n=20)
+        rows[0]['event'] = None
+        result = assigned_wald(rows, A1_B_WEIGHTS)
+        self.assertEqual(result['unresolved'], 1)
+        self.assertIsNone(result['estimate'])
+        self.assertIsNone(result['normal_p_two_sided'])
+        self.assertLess(result['risk_difference_bounds'][0], result['risk_difference_bounds'][1])
+        with self.assertRaises(ValueError):
+            assigned_wald(rows + [rows[0]], A1_B_WEIGHTS)
+        rows[0]['truth'] = 'GOOD'
+        with self.assertRaises(ValueError):
+            assigned_wald(rows, A1_B_WEIGHTS)
+
+    def test_information_interaction_and_holm_family(self):
+        rates = {'00': .1, '01': .1, '10': .5, '11': .1}
+        rows = self.synthetic_rows(rates, n=40)
+        self.assertAlmostEqual(assigned_wald(rows, A2_BI_WEIGHTS)['estimate'], -.4)
+        self.assertEqual(holm_adjust({'H-A1': .01, 'H-A2': .03, 'H-A3': .04}),
+                         {'H-A1': .03, 'H-A2': .06, 'H-A3': .06})
+        with self.assertRaises(ValueError):
+            holm_adjust({'H-A1': 1.2})
 
 
 if __name__ == "__main__":

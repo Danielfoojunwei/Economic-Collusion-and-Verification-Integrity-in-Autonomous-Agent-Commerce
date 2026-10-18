@@ -1,0 +1,14 @@
+{
+  "schema": "journal-A-power-sensitivity-v1",
+  "status": "ILLUSTRATIVE_NOT_FINAL_POWER",
+  "repetitions": 300,
+  "seed": 1801026,
+  "a1_bad_per_cell": 144,
+  "a2_bad_per_cell": 264,
+  "equal_fixed_strata": 3,
+  "null_event_probability": 0.1,
+  "effect_event_probability": 0.3,
+  "scenarios": ["all_null", "a1_compensation_only", "a1_contact_interaction", "a2_evidence_interaction"],
+  "testing": "Two-sided large-sample Neyman Wald p-values with Holm adjustment across H-A1/H-A2/H-A3. No missingness or model drift in this illustrative simulation.",
+  "limitation": "Probabilities are design assumptions rather than observed pilot estimates; this run cannot justify final sample size or detectability in real model cohorts."
+}

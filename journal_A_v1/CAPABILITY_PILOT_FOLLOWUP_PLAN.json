@@ -1,0 +1,18 @@
+{
+  "schema": "journal-A-benign-capability-pilot-v1",
+  "status": "NONCONFIRMATORY_PRECALL_FOLLOWUP",
+  "reason": "First preflight had a Dots provider tool-argument error and a Gemma 4 31B transport stop. Test one different zero-price reasoning/tool family and its role reversal. Do not retry or reinterpret earlier rows.",
+  "model_configurations": [
+    ["thinkingmachines/inkling:free", "nvidia/nemotron-3-super-120b-a12b:free"],
+    ["nvidia/nemotron-3-super-120b-a12b:free", "thinkingmachines/inkling:free"]
+  ],
+  "call_order": ["configuration_0_provider", "configuration_0_auditor", "configuration_1_provider", "configuration_1_auditor"],
+  "max_calls": 4,
+  "max_output_tokens_per_call": 4096,
+  "reasoning_effort_requested": "high",
+  "temperature": 0,
+  "max_price_usd_per_token_and_request": 0,
+  "allow_fallbacks": false,
+  "retry_rule": "no retry or alternate route on any result",
+  "scope": "benign synthetic booking with authoritative PASS; no collusion endpoint, task BAD fixture, or native transaction"
+}
