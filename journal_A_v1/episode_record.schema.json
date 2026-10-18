@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/journal_A_v1/episode_record.schema.json",
+  "title": "Prospective Paper A episode record, draft v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "study_id", "episode_id", "assignment_id", "obligation_id",
+    "execution_tier", "model_tier", "transaction_tier", "truth", "arms", "observation",
+    "semantics", "money", "status"
+  ],
+  "properties": {
+    "schema_version": {"const": "journal-A-draft-v1"},
+    "study_id": {"type": "string", "minLength": 1},
+    "episode_id": {"type": "string", "minLength": 1},
+    "assignment_id": {"type": "string", "minLength": 1},
+    "obligation_id": {"type": "string", "minLength": 1},
+    "source_sha256": {"$ref": "#/$defs/hashOrNull"},
+    "execution_tier": {"enum": ["SCRIPTED_SIMULATION", "REAL_LLM_LOCAL", "REAL_LLM_REMOTE", "NATIVE_LOCAL_PROTOCOL"]},
+    "model_tier": {"enum": ["SCRIPTED_SIMULATION", "REAL_LLM_LOCAL", "REAL_LLM_REMOTE"]},
+    "transaction_tier": {"enum": ["NOT_EXECUTED", "SCRIPTED_SIMULATION", "NATIVE_LOCAL_PROTOCOL"]},
+    "truth": {"enum": ["GOOD", "BAD", "UNKNOWN"]},
+    "arms": {
+      "type": "object", "additionalProperties": false,
+      "required": ["compensation", "contact", "verification_price", "proof_guard"],
+      "properties": {
+        "compensation": {"enum": ["FLAT", "CONTINGENT"]},
+        "contact": {"enum": ["WITHHELD", "DELIVERED"]},
+        "verification_price": {"enum": ["LOW", "HIGH"]},
+        "proof_guard": {"type": "boolean"}
+      }
+    },
+    "observation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["behavior_endpoint_observed", "native_endpoint_observed", "collection_complete", "billing_reconciled"],
+      "properties": {
+        "behavior_endpoint_observed": {"type": "boolean"},
+        "native_endpoint_observed": {"type": "boolean"},
+        "collection_complete": {"type": "boolean"},
+        "billing_reconciled": {"type": "boolean"}
+      }
+    },
+    "semantics": {
+      "type": "object", "additionalProperties": false,
+      "required": ["solicitation", "exposure", "assent", "authoritative_evidence", "check_completed", "verdict"],
+      "properties": {
+        "solicitation": {"$ref": "#/$defs/tristate"},
+        "exposure": {"$ref": "#/$defs/tristate"},
+        "assent": {"$ref": "#/$defs/tristate"},
+        "authoritative_evidence": {"$ref": "#/$defs/tristate"},
+        "check_completed": {"$ref": "#/$defs/tristate"},
+        "verdict": {"enum": ["APPROVE", "REJECT", "ABSTAIN", "UNKNOWN"]},
+        "request_sha256": {"$ref": "#/$defs/hashOrNull"},
+        "reviewer_ids": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "money": {
+      "type": "object", "additionalProperties": false,
+      "required": ["asset", "unit_scale", "buyer_release_minor", "buyer_refund_minor", "auditor_transfer_minor", "check_debit_minor", "execution_fee_minor"],
+      "properties": {
+        "asset": {"type": "string", "minLength": 1},
+        "unit_scale": {"type": "integer", "minimum": 1},
+        "buyer_release_minor": {"$ref": "#/$defs/amountOrNull"},
+        "buyer_refund_minor": {"$ref": "#/$defs/amountOrNull"},
+        "auditor_transfer_minor": {"$ref": "#/$defs/amountOrNull"},
+        "check_debit_minor": {"$ref": "#/$defs/amountOrNull"},
+        "execution_fee_minor": {"$ref": "#/$defs/amountOrNull"},
+        "receipt_ids": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "status": {"enum": ["COMPLETE", "PARTIAL", "TECHNICAL_FAILURE", "NOT_STARTED"]},
+    "stop_reason": {"type": ["string", "null"]}
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "NOT_STARTED"}}},
+     "then": {"properties": {"observation": {"properties": {
+       "behavior_endpoint_observed": {"const": false},
+       "native_endpoint_observed": {"const": false},
+       "collection_complete": {"const": false}}}}}},
+    {"if": {"properties": {"observation": {"properties": {
+       "native_endpoint_observed": {"const": true}}}}},
+     "then": {"properties": {"transaction_tier": {"const": "NATIVE_LOCAL_PROTOCOL"}}}}
+  ],
+  "$defs": {
+    "tristate": {"enum": ["YES", "NO", "UNKNOWN"]},
+    "amountOrNull": {"oneOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]},
+    "hashOrNull": {"oneOf": [{"type": "string", "pattern": "^[0-9a-f]{64}$"}, {"type": "null"}]}
+  }
+}

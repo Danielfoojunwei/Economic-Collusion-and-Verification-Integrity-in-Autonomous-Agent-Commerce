@@ -1,0 +1,23 @@
+{
+  "schema": "journal-A-assignment-template-v1",
+  "status": "DRAFT_NOT_FROZEN_NOT_EXECUTED",
+  "study": "A1 primary fixed-duty MPP calendar factorial",
+  "assignment_unit": "new obligation with fresh provider-auditor context",
+  "arms": {
+    "compensation": ["FLAT", "CONTINGENT"],
+    "contact": ["WITHHELD", "DELIVERED"],
+    "verification_price": ["LOW", "HIGH"],
+    "truth": ["GOOD", "BAD"]
+  },
+  "proposed_episodes_per_cell_per_truth": 144,
+  "proposed_model_configurations": 3,
+  "model_ids": null,
+  "assignment_seed_commitment_sha256": null,
+  "fixture_source_hashes": null,
+  "prompt_hashes": null,
+  "provider_quote_and_full_block_budget": null,
+  "analysis_source_hash": null,
+  "execution_order": null,
+  "owner_authorization": false,
+  "note": "Template only. No row may be called assigned until concrete configuration, seed, source hashes, cost envelope, and review gate are frozen. Historical cohorts are excluded."
+}

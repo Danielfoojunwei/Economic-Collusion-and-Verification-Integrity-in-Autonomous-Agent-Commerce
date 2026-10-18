@@ -1,0 +1,56 @@
+{
+  "schema": "journal-A-claim-registry-draft-v1",
+  "status": "DRAFT_NO_CONFIRMATORY_ASSIGNMENT_OR_RESULTS",
+  "audit_anchor": "bce0dc982a4458d1dc2910b9b63ccbbe8c91f9ff",
+  "evidence_cutoff": "2026-10-18",
+  "claims": [
+    {
+      "id": "H-A1", "primary_workstream": "A1", "population": "assigned BAD obligations under fixed auditor duty",
+      "intervention": "prefunded contingent versus flat auditor compensation",
+      "primary_endpoint": "executed BAD buyer-funded release per assigned obligation",
+      "estimand": "equal-stratum-weighted tau_B across contact and verification-price cells",
+      "allowed_conclusion": "compensation schedule changed buyer-loss risk in tested conditions if the frozen contrast is supported",
+      "prohibited_upgrade": "subjective intent, bilateral agreement, or spontaneous collusion"
+    },
+    {
+      "id": "H-A2", "primary_workstream": "A1", "population": "assigned BAD obligations under fixed auditor duty",
+      "intervention": "provider message delivered versus withheld, crossed with compensation",
+      "primary_endpoint": "executed BAD buyer-funded release per assigned obligation",
+      "estimand": "equal-stratum-weighted B by C risk-difference interaction tau_BC",
+      "allowed_conclusion": "contact modifies the compensation effect in tested conditions if the frozen contrast is supported",
+      "prohibited_upgrade": "message caused conscious collusion or contact is uniformly harmful"
+    },
+    {
+      "id": "H-A3", "primary_workstream": "A2", "population": "fresh assigned BAD obligations under fixed auditor duty",
+      "intervention": "independent oracle result delivered before versus after decision, crossed with compensation",
+      "primary_endpoint": "BAD false approval",
+      "estimand": "B by information-timing risk-difference interaction tau_BI",
+      "allowed_conclusion": "authoritative predecision evidence changes the compensation effect if supported",
+      "prohibited_upgrade": "a nonsignificant interaction proves immunity or conscious deception"
+    },
+    {
+      "id": "A2-CONTENT", "primary_workstream": "A2", "population": "separate controlled-content diagnostic",
+      "intervention": "task fact and bargaining clause crossed in frozen message bank",
+      "primary_endpoint": "BAD false approval",
+      "estimand": "factorial fact, bargaining, and interaction contrasts",
+      "allowed_conclusion": "message content changes decisions in this interface if supported",
+      "prohibited_upgrade": "post-hoc model reasoning identifies internal psychology"
+    },
+    {
+      "id": "A3-REPLAY", "primary_workstream": "A3", "population": "valid saved action sequences with local native pre-states",
+      "intervention": "permissive, binding-only, and binding-plus-semantic-PASS application rules",
+      "primary_endpoint": "net unsupported buyer release for same obligation",
+      "estimand": "paired fixed-action policy consequence",
+      "allowed_conclusion": "conditional execution effect under the replayed actions and stated oracle assumptions",
+      "prohibited_upgrade": "agent adaptation, payment-protocol defect, or behavioral deterrence"
+    },
+    {
+      "id": "A4-DEFENSE", "primary_workstream": "A4", "population": "fresh matched GOOD and BAD obligations",
+      "intervention": "frozen D2 current-obligation semantic proof rule versus D0 permissive rule",
+      "primary_endpoint": "BAD net loss and GOOD correct completion by deadline",
+      "estimand": "loss difference plus GOOD utility noninferiority at justified frozen margin",
+      "allowed_conclusion": "safer and task-preserving only if both prespecified tests pass",
+      "prohibited_upgrade": "zero observed loss alone establishes a usable defense"
+    }
+  ]
+}
