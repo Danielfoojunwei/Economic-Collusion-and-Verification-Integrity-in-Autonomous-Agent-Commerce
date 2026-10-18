@@ -1,0 +1,58 @@
+{
+  "status": "INDEPENDENT_NATIVE_TRANSFER_AND_BALANCE_PASS",
+  "model_tier": "SCRIPTED_SIMULATION",
+  "transaction_tier": "NATIVE_LOCAL_PROTOCOL",
+  "evidence_sha256": "dc56abdcc5cc8f89f10db6e22ff5774a424b91f42a36b2c9c0e85d6c2d15e03d",
+  "signer_source_sha256": "605a25cd3cfee4cc157155814b155426d1e562832b5052e76b02daaec221bcc2",
+  "chain_id": 1337,
+  "genesis_hash": "0xb54e201b325f207061d3502a1f4022b8a57c57bc86b7851958cc21a922b26a1f",
+  "cases": [
+    {
+      "job": "GOOD-FLAT-LOW",
+      "checked": true,
+      "independent_status": "PASS",
+      "buyer_release_minor": "100",
+      "provider_to_auditor_minor": "10",
+      "provider_reserve_refund_minor": "8",
+      "native_transactions": 9
+    },
+    {
+      "job": "BAD-CONTINGENT-HIGH-PERMISSIVE",
+      "checked": false,
+      "independent_status": null,
+      "buyer_release_minor": "100",
+      "provider_to_auditor_minor": "18",
+      "provider_reserve_refund_minor": "0",
+      "native_transactions": 7
+    },
+    {
+      "job": "BAD-CONTINGENT-HIGH-STRICT",
+      "checked": true,
+      "independent_status": "FAIL",
+      "buyer_release_minor": "0",
+      "provider_to_auditor_minor": "18",
+      "provider_reserve_refund_minor": "0",
+      "native_transactions": 7
+    },
+    {
+      "job": "BAD-FLAT-HIGH-REJECT",
+      "checked": true,
+      "independent_status": "FAIL",
+      "buyer_release_minor": "0",
+      "provider_to_auditor_minor": "10",
+      "provider_reserve_refund_minor": "8",
+      "native_transactions": 8
+    },
+    {
+      "job": "GOOD-FLAT-TIMEOUT",
+      "checked": false,
+      "independent_status": null,
+      "buyer_release_minor": "0",
+      "provider_to_auditor_minor": "0",
+      "provider_reserve_refund_minor": "18",
+      "native_transactions": 6
+    }
+  ],
+  "native_transactions": 37,
+  "limitation": "Receipt, historical balance, and saved MPP challenge/credential binding are independently checked. The live HTTP replay rejection and in-run policy-negative booleans were asserted by the runner, not repeated by this read-only verifier."
+}

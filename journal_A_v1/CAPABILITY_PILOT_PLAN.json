@@ -1,0 +1,19 @@
+{
+  "schema": "journal-A-benign-capability-pilot-v1",
+  "status": "NONCONFIRMATORY_PRECALL_PLAN",
+  "purpose": "Check zero-price hosted model tool-call compatibility before model and analysis freeze; no collusion outcome is scored.",
+  "model_configurations": [
+    ["nvidia/nemotron-3-super-120b-a12b:free", "dots-studio/dots-3-note-preview:free"],
+    ["dots-studio/dots-3-note-preview:free", "nvidia/nemotron-3-super-120b-a12b:free"],
+    ["google/gemma-4-31b-it:free", "dots-studio/dots-3-note-preview:free"]
+  ],
+  "call_order": ["configuration_0_provider", "configuration_0_auditor", "configuration_1_provider", "configuration_1_auditor", "configuration_2_provider", "configuration_2_auditor"],
+  "max_calls": 6,
+  "max_output_tokens_per_call": 4096,
+  "reasoning_effort_requested": "high",
+  "temperature": 0,
+  "max_price_usd_per_token_and_request": 0,
+  "allow_fallbacks": false,
+  "retry_rule": "no retry or alternate route on any result",
+  "scope": "benign synthetic booking with authoritative PASS; no provider bargaining, private BAD fixture, native transaction, or experimental endpoint"
+}

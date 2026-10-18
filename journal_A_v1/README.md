@@ -8,5 +8,8 @@ This directory is the nonexecuting preparation package for the user's 18 October
 - [Unfrozen assignment template](ASSIGNMENT.template.json)
 - [Closest-work delta](RELATED_WORK_DELTA.md)
 - [Episode record schema](episode_record.schema.json)
+- [Benign zero-price model pilot plan](CAPABILITY_PILOT_PLAN.json)
+- [Scripted native A0 evidence](../artifacts/exploratory/JOURNAL_A0_NATIVE_2026-10-18_002/evidence.json) and [independent read-only review](../artifacts/exploratory/JOURNAL_A0_NATIVE_2026-10-18_002/independent-review.json)
+- [Benign tool-call pilot summary](../artifacts/exploratory/JOURNAL_A_CAPABILITY_2026-10-18_001/summary.json)
 
-No assignment, paid call, or new native transfer was executed for Paper A. Historical accounting holds remain in force. The offline helpers in this directory are design checks and must be joined to real serialized requests and independently verified native receipts before they can support any empirical claim.
+No confirmatory assignment or positive-price call was executed for Paper A. The native A0 transfers followed scripted decisions and the model pilot had no payment or research endpoint. Historical accounting holds remain in force. The offline helpers in this directory are design checks and must be joined to real serialized requests and independently verified native receipts before they can support an empirical behavioral claim.

@@ -1,0 +1,578 @@
+{
+  "schema": "journal-a0-native-local-v1",
+  "model_tier": "SCRIPTED_SIMULATION",
+  "transaction_tier": "NATIVE_LOCAL_PROTOCOL",
+  "rpc_url": "http://127.0.0.1:19787",
+  "http_url": "http://127.0.0.1:19789",
+  "chain_id": 1337,
+  "genesis_hash": "0xb54e201b325f207061d3502a1f4022b8a57c57bc86b7851958cc21a922b26a1f",
+  "token": "0x20c0000000000000000000000000000000000000",
+  "source_sha256": "605a25cd3cfee4cc157155814b155426d1e562832b5052e76b02daaec221bcc2",
+  "case_count": 5,
+  "rows": [
+    {
+      "job": "GOOD-FLAT-LOW",
+      "good": true,
+      "contingent": false,
+      "price": "1",
+      "check": true,
+      "decision": "APPROVE",
+      "guard": true,
+      "provider": "0x530F2D574469ef6EdCFE1E8e0B8E7F0e3a94Ba53",
+      "auditor": "0x85D132650BebC7B4019Cf5e133Fa0574D62FEA9D",
+      "oracle": "0xB5A5A163eb5Fcb43BDF93dF0847fbA498658507F",
+      "buyer": "0x8a61FBD4E3125885ae9F0C2b04aDf9Fa310f7bED",
+      "escrow": "0xB3cac3bD27A65514f372e1a57386e31F30E838Aa",
+      "economic_auditor_endowment_minor": "20",
+      "auditor_gas_reserve_minor": "5980",
+      "escrow_gas_reserve_minor": "100000",
+      "common_escrow_reserve_minor": "18",
+      "proof": {
+        "job": "GOOD-FLAT-LOW",
+        "version": 1,
+        "status": "PASS",
+        "payment": {
+          "purpose": "mpp_check",
+          "hash": "0x8a33a432e50f471d2ecadab7f5722489478cc41b8028121204de074c29dd740e",
+          "block": "21",
+          "from": "0x85D132650BebC7B4019Cf5e133Fa0574D62FEA9D",
+          "to": "0xB5A5A163eb5Fcb43BDF93dF0847fbA498658507F",
+          "amount_minor": "1",
+          "status": "success"
+        },
+        "mpp_http": {
+          "challenge": {
+            "intent": "charge",
+            "method": "tempo",
+            "amount": "1",
+            "currency": "0x20c0000000000000000000000000000000000000",
+            "recipient": "0xB5A5A163eb5Fcb43BDF93dF0847fbA498658507F",
+            "chain_id": 1337,
+            "description": "Paper A A0 current booking GOOD-FLAT-LOW v1"
+          },
+          "receipt": {
+            "status": "success",
+            "reference": "0x8a33a432e50f471d2ecadab7f5722489478cc41b8028121204de074c29dd740e"
+          },
+          "authorization": "Payment eyJjaGFsbGVuZ2UiOnsiZGVzY3JpcHRpb24iOiJQYXBlciBBIEEwIGN1cnJlbnQgYm9va2luZyBHT09ELUZMQVQtTE9XIHYxIiwiZXhwaXJlcyI6IjIwMjYtMTAtMThUMDU6NDQ6MjkuNzExWiIsImlkIjoibF8zQ2FCV1FfVDFUVHRlQmFMdHVueUZ0Mm9qVVNFc3F6dU1yZnNVc3hJQSIsImludGVudCI6ImNoYXJnZSIsIm1ldGhvZCI6InRlbXBvIiwicmVhbG0iOiJqb3VybmFsLWEwLUdPT0QtRkxBVC1MT1cubG9jYWwiLCJvcGFxdWUiOiJleUpmYlhCd2VGOXViMjVqWlNJNklqQjRPRGxoTVRVek0yVmlNMkl4WXpWbFlUZGpZelUwTVRZeVlqSXdaV00zTW1NNFkyRmtZV016WlRBNE1HRTNPRE5qTmpBeU1Ea3hZak0zWkRObU5EWmxNU0o5IiwicmVxdWVzdCI6ImV5SmhiVzkxYm5RaU9pSXhJaXdpWTNWeWNtVnVZM2tpT2lJd2VESXdZekF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREFpTENKdFpYUm9iMlJFWlhSaGFXeHpJanA3SW1Ob1lXbHVTV1FpT2pFek16ZDlMQ0p5WldOcGNHbGxiblFpT2lJd2VFSTFRVFZCTVRZelpXSTFSbU5pTkROQ1JFWTVNMlJHTURnME4yWmlRVFE1T0RZMU9EVXdOMFlpZlEifSwicGF5bG9hZCI6eyJoYXNoIjoiMHg4YTMzYTQzMmU1MGY0NzFkMmVjYWRhYjdmNTcyMjQ4OTQ3OGNjNDFiODAyODEyMTIwNGRlMDc0YzI5ZGQ3NDBlIiwidHlwZSI6Imhhc2gifSwic291cmNlIjoiZGlkOnBraDplaXAxNTU6MTMzNzoweDg1RDEzMjY1MEJlYkM3QjQwMTlDZjVlMTMzRmEwNTc0RDYyRkVBOUQifQ",
+          "replay_status": 402
+        }
+      },
+      "negatives": {
+        "wrong_job_rejected": true,
+        "stale_version_rejected": true,
+        "fake_fail_rejected": true
+      },
+      "duplicate_rejected": true,
+      "buyer_released": true,
+      "auditor_pay_minor": "10",
+      "transactions": [
+        {
+          "purpose": "GOOD-FLAT-LOW:provider_fund_with_gas",
+          "hash": "0x36ff215fe765c8d9dc37d4bd8add1fb91a2bae1c91c0e7ea33b1881b954aebca",
+          "block": "11",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x530F2D574469ef6EdCFE1E8e0B8E7F0e3a94Ba53",
+          "amount_minor": "100000",
+          "status": "success"
+        },
+        {
+          "purpose": "GOOD-FLAT-LOW:auditor_fund_with_gas",
+          "hash": "0x29df688e59a3c15fd47a53e04c69d12512f678276699be32e561fc811545d2b0",
+          "block": "13",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x85D132650BebC7B4019Cf5e133Fa0574D62FEA9D",
+          "amount_minor": "6000",
+          "status": "success"
+        },
+        {
+          "purpose": "GOOD-FLAT-LOW:buyer_fund_with_gas",
+          "hash": "0x73ea0e654dc142700d14130d2f04da9edfd12716657c0511e384e140c1913214",
+          "block": "15",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x8a61FBD4E3125885ae9F0C2b04aDf9Fa310f7bED",
+          "amount_minor": "200000",
+          "status": "success"
+        },
+        {
+          "purpose": "GOOD-FLAT-LOW:escrow_gas_fund",
+          "hash": "0xca58fa248bfc7f6c973278c3c57aa372b234a923588a056f7ebb74a2b210cf7e",
+          "block": "17",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xB3cac3bD27A65514f372e1a57386e31F30E838Aa",
+          "amount_minor": "100000",
+          "status": "success"
+        },
+        {
+          "purpose": "GOOD-FLAT-LOW:prefund_common_reserve",
+          "hash": "0x5ad895927e3345e39f34144fe62519ec7352a4066bf1d50ad5fc8d1ff128bab0",
+          "block": "19",
+          "from": "0x530F2D574469ef6EdCFE1E8e0B8E7F0e3a94Ba53",
+          "to": "0xB3cac3bD27A65514f372e1a57386e31F30E838Aa",
+          "amount_minor": "18",
+          "status": "success"
+        },
+        {
+          "purpose": "mpp_check",
+          "hash": "0x8a33a432e50f471d2ecadab7f5722489478cc41b8028121204de074c29dd740e",
+          "block": "21",
+          "from": "0x85D132650BebC7B4019Cf5e133Fa0574D62FEA9D",
+          "to": "0xB5A5A163eb5Fcb43BDF93dF0847fbA498658507F",
+          "amount_minor": "1",
+          "status": "success"
+        },
+        {
+          "purpose": "GOOD-FLAT-LOW:buyer_release",
+          "hash": "0xb2cc3ce51bc187b933b10c397ebf97803448e6c15a094ebabd73bbbedbbfd034",
+          "block": "23",
+          "from": "0x8a61FBD4E3125885ae9F0C2b04aDf9Fa310f7bED",
+          "to": "0x530F2D574469ef6EdCFE1E8e0B8E7F0e3a94Ba53",
+          "amount_minor": "100",
+          "status": "success"
+        },
+        {
+          "purpose": "GOOD-FLAT-LOW:auditor_pay",
+          "hash": "0x5dee9f2faca91b52a75474336d776ccc1dfe96a03a97dd36251ad7d4b3bc69b7",
+          "block": "25",
+          "from": "0xB3cac3bD27A65514f372e1a57386e31F30E838Aa",
+          "to": "0x85D132650BebC7B4019Cf5e133Fa0574D62FEA9D",
+          "amount_minor": "10",
+          "status": "success"
+        },
+        {
+          "purpose": "GOOD-FLAT-LOW:reserve_refund",
+          "hash": "0xbe9d079223e5a636d1c7a1ba41a3fa6aff26f959bb603cc24bf99a98b84569cc",
+          "block": "27",
+          "from": "0xB3cac3bD27A65514f372e1a57386e31F30E838Aa",
+          "to": "0x530F2D574469ef6EdCFE1E8e0B8E7F0e3a94Ba53",
+          "amount_minor": "8",
+          "status": "success"
+        }
+      ]
+    },
+    {
+      "job": "BAD-CONTINGENT-HIGH-PERMISSIVE",
+      "good": false,
+      "contingent": true,
+      "price": "6",
+      "check": false,
+      "decision": "APPROVE",
+      "guard": false,
+      "provider": "0x0c9D1D3451a56Cf524dD9a314Bbf936aF14B243a",
+      "auditor": "0x3E46427828813B9dB3CC6D8c736A64C0107C6655",
+      "oracle": "0x7b84242Ea31C4B5F59747D1789360cb9cda45193",
+      "buyer": "0x3a2e9412616cB29185C37991a8f3a2Ed04237Cbb",
+      "escrow": "0xa0C7805aD2D20fb66fC3e7fA02dD7512bE55138e",
+      "economic_auditor_endowment_minor": "20",
+      "auditor_gas_reserve_minor": "5980",
+      "escrow_gas_reserve_minor": "100000",
+      "common_escrow_reserve_minor": "18",
+      "proof": null,
+      "negatives": null,
+      "duplicate_rejected": true,
+      "buyer_released": true,
+      "auditor_pay_minor": "18",
+      "transactions": [
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-PERMISSIVE:provider_fund_with_gas",
+          "hash": "0xc351a36446753648a5c6cbee925e70f4a83920c4100b961824fdec6b4e3c8398",
+          "block": "29",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x0c9D1D3451a56Cf524dD9a314Bbf936aF14B243a",
+          "amount_minor": "100000",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-PERMISSIVE:auditor_fund_with_gas",
+          "hash": "0xfda166ed9c555eac53f3a9755ea370eeeeb84195bfef4b776db81257ae629fff",
+          "block": "31",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x3E46427828813B9dB3CC6D8c736A64C0107C6655",
+          "amount_minor": "6000",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-PERMISSIVE:buyer_fund_with_gas",
+          "hash": "0xc1c5dfb555d225416d919f0456808cb8e3dc44ca9e3964a1d450911800752c80",
+          "block": "33",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x3a2e9412616cB29185C37991a8f3a2Ed04237Cbb",
+          "amount_minor": "200000",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-PERMISSIVE:escrow_gas_fund",
+          "hash": "0x5937633578a8d9a4d164aa2fea9cd1d3e1cdd7ed1fbbc9eb69f2bb8cec332111",
+          "block": "35",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xa0C7805aD2D20fb66fC3e7fA02dD7512bE55138e",
+          "amount_minor": "100000",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-PERMISSIVE:prefund_common_reserve",
+          "hash": "0xccf4623f91a0fc24f3b5c32c23e8790c028c1f69d9c8f0ed980cc9b56c4f1b9f",
+          "block": "37",
+          "from": "0x0c9D1D3451a56Cf524dD9a314Bbf936aF14B243a",
+          "to": "0xa0C7805aD2D20fb66fC3e7fA02dD7512bE55138e",
+          "amount_minor": "18",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-PERMISSIVE:buyer_release",
+          "hash": "0x8acfd13be6b75db87df1da1b19cfd52b176eb7c3bd8bf87252837c9c2aec029f",
+          "block": "39",
+          "from": "0x3a2e9412616cB29185C37991a8f3a2Ed04237Cbb",
+          "to": "0x0c9D1D3451a56Cf524dD9a314Bbf936aF14B243a",
+          "amount_minor": "100",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-PERMISSIVE:auditor_pay",
+          "hash": "0xdc4327aa8425f81a02188d7e7d8a9ee89e0d6838b9426cce51463c4fed13ecfc",
+          "block": "41",
+          "from": "0xa0C7805aD2D20fb66fC3e7fA02dD7512bE55138e",
+          "to": "0x3E46427828813B9dB3CC6D8c736A64C0107C6655",
+          "amount_minor": "18",
+          "status": "success"
+        }
+      ]
+    },
+    {
+      "job": "BAD-CONTINGENT-HIGH-STRICT",
+      "good": false,
+      "contingent": true,
+      "price": "6",
+      "check": true,
+      "decision": "APPROVE",
+      "guard": true,
+      "provider": "0xE678241f532c5AA2a365f69EdC13704a3A0Ec8Fd",
+      "auditor": "0x00b7fd397BC5a8bda0B1B2d7B45f1d809EA1dB6c",
+      "oracle": "0xC2A4470Af1F060e973012585aF5ecfA20e02c2c3",
+      "buyer": "0x76332D7aE231A1fC11f79a9bF64a429207cE1118",
+      "escrow": "0xF132d101EF42eFd5E6DC07e5eFb05baA52680Fe6",
+      "economic_auditor_endowment_minor": "20",
+      "auditor_gas_reserve_minor": "5980",
+      "escrow_gas_reserve_minor": "100000",
+      "common_escrow_reserve_minor": "18",
+      "proof": {
+        "job": "BAD-CONTINGENT-HIGH-STRICT",
+        "version": 1,
+        "status": "FAIL",
+        "payment": {
+          "purpose": "mpp_check",
+          "hash": "0x1e8c9f6d42b65a83484d1722367bc42b7f6e936ea6287f7158c91f55ccf16809",
+          "block": "53",
+          "from": "0x00b7fd397BC5a8bda0B1B2d7B45f1d809EA1dB6c",
+          "to": "0xC2A4470Af1F060e973012585aF5ecfA20e02c2c3",
+          "amount_minor": "6",
+          "status": "success"
+        },
+        "mpp_http": {
+          "challenge": {
+            "intent": "charge",
+            "method": "tempo",
+            "amount": "6",
+            "currency": "0x20c0000000000000000000000000000000000000",
+            "recipient": "0xC2A4470Af1F060e973012585aF5ecfA20e02c2c3",
+            "chain_id": 1337,
+            "description": "Paper A A0 current booking BAD-CONTINGENT-HIGH-STRICT v1"
+          },
+          "receipt": {
+            "status": "success",
+            "reference": "0x1e8c9f6d42b65a83484d1722367bc42b7f6e936ea6287f7158c91f55ccf16809"
+          },
+          "authorization": "Payment eyJjaGFsbGVuZ2UiOnsiZGVzY3JpcHRpb24iOiJQYXBlciBBIEEwIGN1cnJlbnQgYm9va2luZyBCQUQtQ09OVElOR0VOVC1ISUdILVNUUklDVCB2MSIsImV4cGlyZXMiOiIyMDI2LTEwLTE4VDA1OjQ0OjQ1LjY0OFoiLCJpZCI6IjEwcmtoX09BSjNzd2U3Ymk1OFl4S05CTklHcDJGYVZrZ2xpNURpRGlRM0EiLCJpbnRlbnQiOiJjaGFyZ2UiLCJtZXRob2QiOiJ0ZW1wbyIsInJlYWxtIjoiam91cm5hbC1hMC1CQUQtQ09OVElOR0VOVC1ISUdILVNUUklDVC5sb2NhbCIsIm9wYXF1ZSI6ImV5SmZiWEJ3ZUY5dWIyNWpaU0k2SWpCNFpqa3hNemt6WTJObFpXWXhPV0ZsWlRJNU0ySTNNV1kyTVRsaVpETmhaakkwWWpObVlXTmhaVGt6TW1abE9HTTBOV05pTkdOaU1USTBPRFUyTnpVM05DSjkiLCJyZXF1ZXN0IjoiZXlKaGJXOTFiblFpT2lJMklpd2lZM1Z5Y21WdVkza2lPaUl3ZURJd1l6QXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQWlMQ0p0WlhSb2IyUkVaWFJoYVd4eklqcDdJbU5vWVdsdVNXUWlPakV6TXpkOUxDSnlaV05wY0dsbGJuUWlPaUl3ZUVNeVFUUTBOekJCWmpGR01EWXdaVGszTXpBeE1qVTROV0ZHTldWalprRXlNR1V3TW1NeVl6TWlmUSJ9LCJwYXlsb2FkIjp7Imhhc2giOiIweDFlOGM5ZjZkNDJiNjVhODM0ODRkMTcyMjM2N2JjNDJiN2Y2ZTkzNmVhNjI4N2Y3MTU4YzkxZjU1Y2NmMTY4MDkiLCJ0eXBlIjoiaGFzaCJ9LCJzb3VyY2UiOiJkaWQ6cGtoOmVpcDE1NToxMzM3OjB4MDBiN2ZkMzk3QkM1YThiZGEwQjFCMmQ3QjQ1ZjFkODA5RUExZEI2YyJ9",
+          "replay_status": 402
+        }
+      },
+      "negatives": {
+        "wrong_job_rejected": true,
+        "stale_version_rejected": true,
+        "fake_fail_rejected": true
+      },
+      "duplicate_rejected": true,
+      "buyer_released": false,
+      "auditor_pay_minor": "18",
+      "transactions": [
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-STRICT:provider_fund_with_gas",
+          "hash": "0xbdce7d84662f281684bf6b50935bffbc472ae8e406fd1406ab36b04f10cd0601",
+          "block": "43",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xE678241f532c5AA2a365f69EdC13704a3A0Ec8Fd",
+          "amount_minor": "100000",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-STRICT:auditor_fund_with_gas",
+          "hash": "0xa476f073eff35cd91b031d71f1e24eaaf62d433bb28197eb0d06872fa4177b00",
+          "block": "45",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x00b7fd397BC5a8bda0B1B2d7B45f1d809EA1dB6c",
+          "amount_minor": "6000",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-STRICT:buyer_fund_with_gas",
+          "hash": "0x80d8fd71789590f9c3b4f0aad5540c73f93829f3306e78062cd289c267dca776",
+          "block": "47",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x76332D7aE231A1fC11f79a9bF64a429207cE1118",
+          "amount_minor": "200000",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-STRICT:escrow_gas_fund",
+          "hash": "0x719df576d141856fbe23c7d31046fb718afc95be09acb8970735998a69aebe27",
+          "block": "49",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xF132d101EF42eFd5E6DC07e5eFb05baA52680Fe6",
+          "amount_minor": "100000",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-STRICT:prefund_common_reserve",
+          "hash": "0x23f299a4a1233b47da7410d1c2c4a2fcaba936f88a916487a208051c3e4adefd",
+          "block": "51",
+          "from": "0xE678241f532c5AA2a365f69EdC13704a3A0Ec8Fd",
+          "to": "0xF132d101EF42eFd5E6DC07e5eFb05baA52680Fe6",
+          "amount_minor": "18",
+          "status": "success"
+        },
+        {
+          "purpose": "mpp_check",
+          "hash": "0x1e8c9f6d42b65a83484d1722367bc42b7f6e936ea6287f7158c91f55ccf16809",
+          "block": "53",
+          "from": "0x00b7fd397BC5a8bda0B1B2d7B45f1d809EA1dB6c",
+          "to": "0xC2A4470Af1F060e973012585aF5ecfA20e02c2c3",
+          "amount_minor": "6",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-CONTINGENT-HIGH-STRICT:auditor_pay",
+          "hash": "0x768ca4750e1ade3c509e70a32ec6dd0eab157751b2cc22fd7d6625f5c40ab2f2",
+          "block": "55",
+          "from": "0xF132d101EF42eFd5E6DC07e5eFb05baA52680Fe6",
+          "to": "0x00b7fd397BC5a8bda0B1B2d7B45f1d809EA1dB6c",
+          "amount_minor": "18",
+          "status": "success"
+        }
+      ]
+    },
+    {
+      "job": "BAD-FLAT-HIGH-REJECT",
+      "good": false,
+      "contingent": false,
+      "price": "6",
+      "check": true,
+      "decision": "REJECT",
+      "guard": true,
+      "provider": "0xE6f1A512D81370D385198f6Cf650b51E2b07B355",
+      "auditor": "0x96B12cE4aF070eA06b4FDB369d54edca98E9d092",
+      "oracle": "0xC8968DaadD0Fd95874B8e1830DB0ed70406D237F",
+      "buyer": "0xc63Ec2Fca30Ce7d1c0Ad30E644fA9A5879565B0F",
+      "escrow": "0x597A2D37750b37D3a9fa64Ab3A344bB2d3d70F1c",
+      "economic_auditor_endowment_minor": "20",
+      "auditor_gas_reserve_minor": "5980",
+      "escrow_gas_reserve_minor": "100000",
+      "common_escrow_reserve_minor": "18",
+      "proof": {
+        "job": "BAD-FLAT-HIGH-REJECT",
+        "version": 1,
+        "status": "FAIL",
+        "payment": {
+          "purpose": "mpp_check",
+          "hash": "0xc3c02ac44b78abed6feccc998a1227cb41734fe438a552b1d5b7fb7d053a954d",
+          "block": "67",
+          "from": "0x96B12cE4aF070eA06b4FDB369d54edca98E9d092",
+          "to": "0xC8968DaadD0Fd95874B8e1830DB0ed70406D237F",
+          "amount_minor": "6",
+          "status": "success"
+        },
+        "mpp_http": {
+          "challenge": {
+            "intent": "charge",
+            "method": "tempo",
+            "amount": "6",
+            "currency": "0x20c0000000000000000000000000000000000000",
+            "recipient": "0xC8968DaadD0Fd95874B8e1830DB0ed70406D237F",
+            "chain_id": 1337,
+            "description": "Paper A A0 current booking BAD-FLAT-HIGH-REJECT v1"
+          },
+          "receipt": {
+            "status": "success",
+            "reference": "0xc3c02ac44b78abed6feccc998a1227cb41734fe438a552b1d5b7fb7d053a954d"
+          },
+          "authorization": "Payment eyJjaGFsbGVuZ2UiOnsiZGVzY3JpcHRpb24iOiJQYXBlciBBIEEwIGN1cnJlbnQgYm9va2luZyBCQUQtRkxBVC1ISUdILVJFSkVDVCB2MSIsImV4cGlyZXMiOiIyMDI2LTEwLTE4VDA1OjQ0OjUyLjY5OFoiLCJpZCI6IkFpMzVvU1Q0U3M0WWdrVHdMU0lQWUtBT00tUTdQVGxNcWMwTzhlZ051eWsiLCJpbnRlbnQiOiJjaGFyZ2UiLCJtZXRob2QiOiJ0ZW1wbyIsInJlYWxtIjoiam91cm5hbC1hMC1CQUQtRkxBVC1ISUdILVJFSkVDVC5sb2NhbCIsIm9wYXF1ZSI6ImV5SmZiWEJ3ZUY5dWIyNWpaU0k2SWpCNE1EWmpabUU1TlRJMVlqSTNNVGRqWVdNeFltRTJaamhqWXpKa1lqbGhZV1UwWVRnM1pqSmhOVGczWXpZM1kySXhPVGc1TXpBM05tWTRZakEwWXpRd05TSjkiLCJyZXF1ZXN0IjoiZXlKaGJXOTFiblFpT2lJMklpd2lZM1Z5Y21WdVkza2lPaUl3ZURJd1l6QXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQXdNREF3TURBd01EQWlMQ0p0WlhSb2IyUkVaWFJoYVd4eklqcDdJbU5vWVdsdVNXUWlPakV6TXpkOUxDSnlaV05wY0dsbGJuUWlPaUl3ZUVNNE9UWTRSR0ZoWkVRd1JtUTVOVGczTkVJNFpURTRNekJFUWpCbFpEY3dOREEyUkRJek4wWWlmUSJ9LCJwYXlsb2FkIjp7Imhhc2giOiIweGMzYzAyYWM0NGI3OGFiZWQ2ZmVjY2M5OThhMTIyN2NiNDE3MzRmZTQzOGE1NTJiMWQ1YjdmYjdkMDUzYTk1NGQiLCJ0eXBlIjoiaGFzaCJ9LCJzb3VyY2UiOiJkaWQ6cGtoOmVpcDE1NToxMzM3OjB4OTZCMTJjRTRhRjA3MGVBMDZiNEZEQjM2OWQ1NGVkY2E5OEU5ZDA5MiJ9",
+          "replay_status": 402
+        }
+      },
+      "negatives": {
+        "wrong_job_rejected": true,
+        "stale_version_rejected": true,
+        "fake_fail_rejected": true
+      },
+      "duplicate_rejected": true,
+      "buyer_released": false,
+      "auditor_pay_minor": "10",
+      "transactions": [
+        {
+          "purpose": "BAD-FLAT-HIGH-REJECT:provider_fund_with_gas",
+          "hash": "0xca2fbbf454dc5045a7a960bfe5b2c119af7bfd2dbf4af18b1bac4dde4a5a168d",
+          "block": "57",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xE6f1A512D81370D385198f6Cf650b51E2b07B355",
+          "amount_minor": "100000",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-FLAT-HIGH-REJECT:auditor_fund_with_gas",
+          "hash": "0x77d90dfc3de0e9fe8cba3e11e7d8d6118f5dc724f4eb6fbe1d4df58b47a27a9e",
+          "block": "59",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x96B12cE4aF070eA06b4FDB369d54edca98E9d092",
+          "amount_minor": "6000",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-FLAT-HIGH-REJECT:buyer_fund_with_gas",
+          "hash": "0xcca7703f6914ebeae491cc4354f0f7ea795204bf4716a861b6152ecee387645e",
+          "block": "61",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0xc63Ec2Fca30Ce7d1c0Ad30E644fA9A5879565B0F",
+          "amount_minor": "200000",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-FLAT-HIGH-REJECT:escrow_gas_fund",
+          "hash": "0x5c99b897e0874d19f9035f078a27786684ecdad40e287b85615f6d2ac5d8764f",
+          "block": "63",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x597A2D37750b37D3a9fa64Ab3A344bB2d3d70F1c",
+          "amount_minor": "100000",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-FLAT-HIGH-REJECT:prefund_common_reserve",
+          "hash": "0x2365250bcd75b79f6a8a0932ef1fb2e0084c1e8d8cc8739529a043df389856de",
+          "block": "65",
+          "from": "0xE6f1A512D81370D385198f6Cf650b51E2b07B355",
+          "to": "0x597A2D37750b37D3a9fa64Ab3A344bB2d3d70F1c",
+          "amount_minor": "18",
+          "status": "success"
+        },
+        {
+          "purpose": "mpp_check",
+          "hash": "0xc3c02ac44b78abed6feccc998a1227cb41734fe438a552b1d5b7fb7d053a954d",
+          "block": "67",
+          "from": "0x96B12cE4aF070eA06b4FDB369d54edca98E9d092",
+          "to": "0xC8968DaadD0Fd95874B8e1830DB0ed70406D237F",
+          "amount_minor": "6",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-FLAT-HIGH-REJECT:auditor_pay",
+          "hash": "0x9df314a33eccd83120b2693fe5e6b15c920579f291a87f088b1207bf9f7c2f12",
+          "block": "69",
+          "from": "0x597A2D37750b37D3a9fa64Ab3A344bB2d3d70F1c",
+          "to": "0x96B12cE4aF070eA06b4FDB369d54edca98E9d092",
+          "amount_minor": "10",
+          "status": "success"
+        },
+        {
+          "purpose": "BAD-FLAT-HIGH-REJECT:reserve_refund",
+          "hash": "0xa4a83b984ea8fe34e0ebce9e9f9ab91bc6c3a485e44b049ee5072342aa95d543",
+          "block": "71",
+          "from": "0x597A2D37750b37D3a9fa64Ab3A344bB2d3d70F1c",
+          "to": "0xE6f1A512D81370D385198f6Cf650b51E2b07B355",
+          "amount_minor": "8",
+          "status": "success"
+        }
+      ]
+    },
+    {
+      "job": "GOOD-FLAT-TIMEOUT",
+      "good": true,
+      "contingent": false,
+      "price": "1",
+      "check": false,
+      "decision": "TIMEOUT",
+      "guard": true,
+      "provider": "0x8e40E6168Fdd869cd2AF64AD63F06196638634D4",
+      "auditor": "0x9eBb83FC48833b5AA9baeb1607b3b6384C49DA08",
+      "oracle": "0xcD0d4562832DdedC33A173acC682Bd98e91125d2",
+      "buyer": "0x51C8D8D404c7Be126CB123cD0DCc10d3e775988C",
+      "escrow": "0x237665BA5F5145fC3dF504CA2852d7464cfF2EF2",
+      "economic_auditor_endowment_minor": "20",
+      "auditor_gas_reserve_minor": "5980",
+      "escrow_gas_reserve_minor": "100000",
+      "common_escrow_reserve_minor": "18",
+      "proof": null,
+      "negatives": {
+        "wrong_job_rejected": true,
+        "stale_version_rejected": true,
+        "fake_fail_rejected": true
+      },
+      "duplicate_rejected": true,
+      "buyer_released": false,
+      "auditor_pay_minor": "0",
+      "transactions": [
+        {
+          "purpose": "GOOD-FLAT-TIMEOUT:provider_fund_with_gas",
+          "hash": "0x9d1ae714fb316a88db23b5fcf62db3503135d874aad294d6f73e2120ebf54c6f",
+          "block": "73",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x8e40E6168Fdd869cd2AF64AD63F06196638634D4",
+          "amount_minor": "100000",
+          "status": "success"
+        },
+        {
+          "purpose": "GOOD-FLAT-TIMEOUT:auditor_fund_with_gas",
+          "hash": "0x7d9697edb9f92f97b9b757545ee4bc107f050e50d5cd5863507110f5253ce889",
+          "block": "75",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x9eBb83FC48833b5AA9baeb1607b3b6384C49DA08",
+          "amount_minor": "6000",
+          "status": "success"
+        },
+        {
+          "purpose": "GOOD-FLAT-TIMEOUT:buyer_fund_with_gas",
+          "hash": "0xb01dafe059312d2f1a05a4f76ea12a515cc955c590272f2db0ffe68d515ab410",
+          "block": "77",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x51C8D8D404c7Be126CB123cD0DCc10d3e775988C",
+          "amount_minor": "200000",
+          "status": "success"
+        },
+        {
+          "purpose": "GOOD-FLAT-TIMEOUT:escrow_gas_fund",
+          "hash": "0xf759ffc20dbdcd7518fa7dce893a4a0a6141a0bf975bddb0840d2128b08423b0",
+          "block": "79",
+          "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+          "to": "0x237665BA5F5145fC3dF504CA2852d7464cfF2EF2",
+          "amount_minor": "100000",
+          "status": "success"
+        },
+        {
+          "purpose": "GOOD-FLAT-TIMEOUT:prefund_common_reserve",
+          "hash": "0xa232cc2b65232dadf5d0ae02d28e0bffc0cf3f4f13ed627ef3e5289af753abf3",
+          "block": "81",
+          "from": "0x8e40E6168Fdd869cd2AF64AD63F06196638634D4",
+          "to": "0x237665BA5F5145fC3dF504CA2852d7464cfF2EF2",
+          "amount_minor": "18",
+          "status": "success"
+        },
+        {
+          "purpose": "GOOD-FLAT-TIMEOUT:reserve_refund",
+          "hash": "0x1cc94eb613facabbe280ca03960134a03a8be19ca4022159499bfc92db15bf4d",
+          "block": "83",
+          "from": "0x237665BA5F5145fC3dF504CA2852d7464cfF2EF2",
+          "to": "0x8e40E6168Fdd869cd2AF64AD63F06196638634D4",
+          "amount_minor": "18",
+          "status": "success"
+        }
+      ]
+    }
+  ]
+}
